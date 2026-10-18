@@ -36,6 +36,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install Python validation dependencies
+        run: python -m pip install Pillow
       - name: Install Node.js 22
         uses: actions/setup-node@v4
         with:
