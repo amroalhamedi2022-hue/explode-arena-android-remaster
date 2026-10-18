@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');
+const core=require('../web/core.js');
+const f={w:64,h:64,obstacle:{x:0,y:0,w:8,h:8,grid:Array.from({length:8},()=>Array(8).fill(0))}};
+assert.equal(core.tile(f,4,4),0);assert.equal(core.tile(f,-1,4),-1);
+assert.equal(core.blocked(f,15,15),false);assert.equal(core.blocked(f,2,2),true);
+f.obstacle.grid[2][2]=21;assert.equal(core.tile(f,17,17),21);assert.equal(core.blocked(f,17,17),true);
+assert.deepEqual(core.nearestFree(f,40,40),{x:40,y:40});
+const rays=core.explosionCells(f,24,24,2);assert(rays.length>1);assert(rays.every(c=>c.x>=0&&c.x<f.w));
+assert(core.blastHits({x:8,y:8},9,8));assert(!core.blastHits({x:8,y:8},30,8));
+console.log('PASS core movement / blocking / blast calculations (provisional behavior)');

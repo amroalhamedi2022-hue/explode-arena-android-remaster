@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#10151f"><title>Explode Arena · Mainline</title>
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<div class="shell">
+  <header class="header"><div class="brand"><div class="brand-mark">✹</div><div><h1>EXPLODE <span>ARENA</span></h1><div class="subtitle">FAITHFUL REMASTER <span class="accent">·</span> MAINLINE DEVELOPMENT</div></div></div>
+    <div class="build-badge">IN DEVELOPMENT <span>●</span></div></header>
+  <div class="toolbar">
+    <label for="stage">Arena <select id="stage" aria-label="Select original arena"></select></label>
+    <button id="restart" title="Restart arena">↻ Restart</button>
+    <button id="pause" title="Pause or resume">Ⅱ Pause</button>
+    <label class="toggle"><input id="bot" type="checkbox"/> Demo bot</label>
+    <label class="toggle"><input id="duel" type="checkbox"/> Local 2P</label>
+    <button id="sound" title="Mute or unmute sound effects">♫ Sound</button>
+    <button id="music" title="Play or stop original soundtrack preview">♫ Music Off</button>
+  </div>
+  <section class="playzone">
+    <div class="game-info"><span id="stageName">Arena 00 / 40</span><span id="hint">Original assets · Rules under verification</span></div>
+    <div id="gameContainer" class="game-container"><canvas id="arena" width="256" height="320" tabindex="0" aria-label="Explode Arena gameplay"></canvas><div id="pausedCover" class="paused-cover hidden"><div>PAUSED</div><small>Press Resume to continue</small></div></div>
+    <div class="under-game"><div><strong id="health">♥ ♥ ♥</strong><small>HEALTH</small></div><div><strong id="bombs">1</strong><small>BOMBS</small></div><div id="p2Hud" class="hidden"><strong id="health2">♥ ♥ ♥</strong><small>PLAYER 2</small></div><div><strong id="score">0</strong><small>SCORE</small></div><div><strong id="timer">00:00</strong><small>SESSION</small></div></div>
+    <div class="status-strip">Session: <strong id="matchStatus" aria-live="polite">PLAYING</strong> · Rule behavior is provisional pending original-game validation</div>
+    <div class="touch-controls"><div class="dpad" aria-label="Touch movement controls"><button class="pad up" data-dir="up" aria-label="Up">▲</button><button class="pad left" data-dir="left" aria-label="Left">◀</button><button class="pad down" data-dir="down" aria-label="Down">▼</button><button class="pad right" data-dir="right" aria-label="Right">▶</button><div class="center-pad"></div></div><div class="touch-helpers"><span id="controlsLegend">ARROWS / WASD · MOVE<br/>SPACE · BOMB<br/>GAMEPAD SUPPORTED</span><button id="bombButton" class="bomb-button" aria-label="Place bomb"><span>✹</span><small>BOMB</small></button></div></div>
+    <div id="duelTouch" class="touch-controls duel-touch-controls hidden" aria-label="Player 2 touch controls">
+      <div class="dpad" aria-label="Player 2 movement controls">
+        <button class="pad up" data-dir2="up" aria-label="Player 2 up">▲</button>
+        <button class="pad left" data-dir2="left" aria-label="Player 2 left">◀</button>
+        <button class="pad down" data-dir2="down" aria-label="Player 2 down">▼</button>
+        <button class="pad right" data-dir2="right" aria-label="Player 2 right">▶</button>
+        <div class="center-pad"></div>
+      </div>
+      <div class="touch-helpers"><span>PLAYER 2<br/>WASD + F</span>
+        <button id="bombButton2" class="bomb-button" aria-label="Player 2 place bomb"><span>✹</span><small>P2 BOMB</small></button>
+      </div>
+    </div>
+  </section>
+  <footer><strong>Original-source assets:</strong> all 41 maps, character frames, blast frames, WAV effects and original MOD-derived soundtrack. <strong>Gameplay rules under validation:</strong> speed, bombs, blast ranges, health, bot AI and collision approximation require EKA2L1 validation. Local 2P is an optional practice mode, not a claim about the original Bluetooth mode. Gameplay remains provisional.</footer>
+</div>
+<script src="assets/stages.js"></script><script src="core.js"></script><script src="world.js"></script><script src="game.js"></script>
+</body></html>
