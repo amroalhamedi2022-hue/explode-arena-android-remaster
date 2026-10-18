@@ -49,7 +49,8 @@ jobs:
           test -n "$ANDROID_SDK_ROOT"
           "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --version
       - name: Install Android SDK platform and build tools
-        run: "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0'
+        run: |
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0'
       - name: Run deterministic gameplay tests
         run: |
           node --check web/core.js
