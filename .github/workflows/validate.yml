@@ -1,0 +1,36 @@
+name: Validate Explode Arena Mainline
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  source-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install image-validation dependency
+        run: python -m pip install Pillow
+      - name: Verify logic and stage resources
+        run: |
+          node --check web/core.js
+          node --check web/world.js
+          node --check web/game.js
+          node tests/test_core.js
+          node tests/test_world.js
+          node tests/test_duel.js
+          node tests/test_bot.js
+          node tests/test_all_arenas.js
+          python tools/sync_android.py
+          python tests/test_data.py
+          python tests/test_android_config.py
+      - name: Verify self-contained web build
+        run: |
+          python tools/build_standalone.py
+          python -c "from pathlib import Path; p=Path('Explode_Arena_Offline.html'); assert p.stat().st_size > 1000000"
