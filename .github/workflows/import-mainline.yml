@@ -19,7 +19,9 @@ jobs:
           unzip -q Explode_Arena_Mainline.zip -d /tmp/explode-arena-import
           test -f /tmp/explode-arena-import/Explode_Arena_Mainline/README_AR.md
           cp -a /tmp/explode-arena-import/Explode_Arena_Mainline/. .
-          rm -f Explode_Arena_Mainline.zip .github/workflows/import-mainline.yml
+          rm -f Explode_Arena_Mainline.zip
+          rm -rf .github/workflows
+          git checkout -- .github/workflows/import-mainline.yml
       - name: Commit complete source tree
         run: |
           git config user.name "ChatGPT Work"
