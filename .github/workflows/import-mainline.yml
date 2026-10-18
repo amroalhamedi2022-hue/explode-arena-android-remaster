@@ -1,0 +1,29 @@
+name: Import Explode Arena Mainline
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import-mainline:
+    if: ${{ github.event.repository.private == true }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify authoritative archive
+        run: echo "9f77bec75b4aac4b1019279165fc40ad9db0af4f7b2014ae49601ce4620d026d  Explode_Arena_Mainline.zip" | sha256sum --check -
+      - name: Expand Mainline 0.21 into repository root
+        run: |
+          unzip -q Explode_Arena_Mainline.zip -d /tmp/explode-arena-import
+          test -f /tmp/explode-arena-import/Explode_Arena_Mainline/README_AR.md
+          cp -a /tmp/explode-arena-import/Explode_Arena_Mainline/. .
+          rm -f Explode_Arena_Mainline.zip .github/workflows/import-mainline.yml
+      - name: Commit complete source tree
+        run: |
+          git config user.name "ChatGPT Work"
+          git config user.email "actions@users.noreply.github.com"
+          git add --all
+          git commit -m "Import Explode Arena Mainline 0.21 Alpha"
+          git push origin HEAD:main
