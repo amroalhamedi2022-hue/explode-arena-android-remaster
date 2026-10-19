@@ -5,7 +5,7 @@ const STAGES=window.EXPLODE_STAGES,Core=window.EACore,World=window.EAWorld;
 const $=id=>document.getElementById(id),canvas=$('arena'),ctx=canvas.getContext('2d',{alpha:false});
 ctx.imageSmoothingEnabled=false;
 const select=$('stage');for(const stage of STAGES){const option=document.createElement('option');option.value=stage.id;option.textContent=`Arena ${String(stage.id).padStart(2,'0')} · ${stage.w} × ${stage.h}`;select.appendChild(option)}
-const cache=new Map(),keys=new Set(),touch=new Set(),touch2=new Set();let muted=false,musicEnabled=false,musicTrack=null,w=null,accumulator=0,lastTs=0,visualTime=0,pendingBomb=new Set(),seq=0,lastGamepadBomb=[false,false];
+const cache=new Map(),keys=new Set(),touch=new Set(),touch2=new Set();let muted=false,musicEnabled=false,musicTrack=null,w=null,accumulator=0,lastTs=0,visualTime=0,pendingBomb=new Set(),pendingRemote=new Set(),seq=0,lastGamepadBomb=[false,false];
 const PREFS_KEY='ea.mainline.prefs.v1';
 function readPrefs(){try{return JSON.parse(localStorage.getItem(PREFS_KEY)||'{}')}catch(_){return {}}}
 function savePrefs(){try{localStorage.setItem(PREFS_KEY,JSON.stringify({stage:w?.stage?.id??0,muted,musicEnabled,bot:$('bot').checked,duel:$('duel').checked}))}catch(_){}}
@@ -36,14 +36,14 @@ function hideCover(){$('pausedCover').classList.add('hidden')}
 function stageTitle(){return `Arena ${String(w.stage.id).padStart(2,'0')} / 40`}
 function setup(id){const s=STAGES[Number(id)];if(!s)return;
  try{w=World.create(s,{bot:$('bot').checked,duel:$('duel').checked,seed:((s.id+1)*2654435761)>>>0})}catch(err){showCover('ARENA ERROR',err.message);throw err}
- accumulator=0;pendingBomb.clear();visualTime=0;keys.clear();touch.clear();touch2.clear();lastGamepadBomb=[false,false];seq++;
- canvas.width=s.w;canvas.height=s.h;ctx.imageSmoothingEnabled=false;resource(s.image);$('stageName').textContent=stageTitle();select.value=String(s.id);$('hint').textContent=w.duel?'Local two-player practice · Not original Bluetooth':'Original assets · Rules under verification';$('controlsLegend').innerHTML=w.duel?'P1: ARROWS + SPACE<br/>P2: WASD + F<br/>2 GAMEPADS SUPPORTED':'ARROWS / WASD · MOVE<br/>SPACE · BOMB<br/>GAMEPAD SUPPORTED';hideCover();syncHud();syncPause();syncMusic(false);savePrefs();
+ accumulator=0;pendingBomb.clear();pendingRemote.clear();visualTime=0;keys.clear();touch.clear();touch2.clear();lastGamepadBomb=[false,false];seq++;
+ canvas.width=s.w;canvas.height=s.h;ctx.imageSmoothingEnabled=false;resource(s.image);$('stageName').textContent=stageTitle();select.value=String(s.id);$('hint').textContent=w.duel?'Local two-player practice · Not original Bluetooth':'Original assets · Rules under verification';$('controlsLegend').innerHTML=w.duel?'P1: ARROWS + SPACE<br/>P2: WASD + F<br/>2 GAMEPADS SUPPORTED':'ARROWS / WASD · MOVE<br/>5 / SPACE · BOMB<br/>8 · REMOTE (WITH PICKUP)<br/>GAMEPAD SUPPORTED';hideCover();syncHud();syncPause();syncMusic(false);savePrefs();
 }
-function syncHud(){if(!w)return;$('health').textContent=w.health?'♥ '.repeat(w.health).trim():'—';$('p2Hud').classList.toggle('hidden',!w.duel);$('duelTouch').classList.toggle('hidden',!w.duel);$('health2').textContent=w.health2?'♥ '.repeat(w.health2).trim():'—';$('bombs').textContent=String(Math.max(0,w.rules.bombLimit-w.bombs.filter(b=>b.owner==='player').length));$('score').textContent=String(w.score);const seconds=Math.floor(w.elapsed);$('timer').textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
+function syncHud(){if(!w)return;$('health').textContent=w.health?'♥ '.repeat(w.health).trim():'—';$('p2Hud').classList.toggle('hidden',!w.duel);$('duelTouch').classList.toggle('hidden',!w.duel);$('remoteButton').classList.toggle('hidden',!w.player.remoteDetonator);$('health2').textContent=w.health2?'♥ '.repeat(w.health2).trim():'—';$('bombs').textContent=String(Math.max(0,w.rules.bombLimit-w.bombs.filter(b=>b.owner==='player').length));$('score').textContent=String(w.score);const seconds=Math.floor(w.elapsed);$('timer').textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
  const stat=$('matchStatus');if(stat)stat.textContent=w.status==='draw'?'DRAW':w.duel&&w.winner?'WINNER '+w.winner:w.status==='defeat'?'ROUND LOST':w.status==='victory'?'ROUND WON':w.status==='paused'?'PAUSED':w.duel?'LOCAL DUEL':'PLAYING';}
 function syncPause(){$('pause').textContent=w?.status==='paused'?'▶ Resume':'Ⅱ Pause';}
 function pause(v=true){if(!w||w.status==='defeat'||w.status==='victory'||w.status==='draw')return;
- w.status=v?'paused':'playing';if(v){showCover('PAUSED','Press Resume to continue');pendingBomb.clear();keys.clear();touch.clear();touch2.clear();document.querySelectorAll('.pad.is-down').forEach(el=>el.classList.remove('is-down'))}else{hideCover();accumulator=0;lastTs=performance.now()}
+ w.status=v?'paused':'playing';if(v){showCover('PAUSED','Press Resume to continue');pendingBomb.clear();pendingRemote.clear();keys.clear();touch.clear();touch2.clear();document.querySelectorAll('.pad.is-down').forEach(el=>el.classList.remove('is-down'))}else{hideCover();accumulator=0;lastTs=performance.now()}
  syncPause();syncHud();syncMusic(!v);}
 function gamepadInput(){
  let pads=[];try{pads=Array.from(navigator.getGamepads?.()||[]).filter(p=>p&&p.connected)}catch(_){}
@@ -63,13 +63,14 @@ function input(){
  down:keys.has('ArrowDown')||(!duel&&keys.has('KeyS'))||touch.has('down')||pads.p1.down,
  left:keys.has('ArrowLeft')||(!duel&&keys.has('KeyA'))||touch.has('left')||pads.p1.left,
  right:keys.has('ArrowRight')||(!duel&&keys.has('KeyD'))||touch.has('right')||pads.p1.right,
- bomb:pendingBomb.has('player'),
+ bomb:pendingBomb.has('player'),remote:pendingRemote.has('player'),
  p2:duel?{up:keys.has('KeyW')||touch2.has('up')||pads.p2.up,down:keys.has('KeyS')||touch2.has('down')||pads.p2.down,
- left:keys.has('KeyA')||touch2.has('left')||pads.p2.left,right:keys.has('KeyD')||touch2.has('right')||pads.p2.right,bomb:pendingBomb.has('player2')}:undefined};
+ left:keys.has('KeyA')||touch2.has('left')||pads.p2.left,right:keys.has('KeyD')||touch2.has('right')||pads.p2.right,bomb:pendingBomb.has('player2'),remote:pendingRemote.has('player2')}:undefined};
 }
 function requestBomb(owner='player'){if(!w||w.status!=='playing')return;pendingBomb.add(owner)}
-function advance(dt){if(!w||w.status!=='playing'){pendingBomb.clear();return}
- const controls=input();World.step(w,controls,dt);pendingBomb.clear();
+function requestRemote(owner='player'){if(!w||w.status!=='playing')return;pendingRemote.add(owner)}
+function advance(dt){if(!w||w.status!=='playing'){pendingBomb.clear();pendingRemote.clear();return}
+ const controls=input();World.step(w,controls,dt);pendingBomb.clear();pendingRemote.clear();
  for(const e of w.events){if(e.type==='place')audio('bomb_place');if(e.type==='explode')audio('bomb_explode1');if(e.type==='playerHit')audio('hero_respawn');if(e.type==='enemyHit')audio('bonus');}
  syncMusic(false);
  if(w.status==='draw')showCover('DRAW','Both players eliminated · Restart to play');
@@ -115,11 +116,11 @@ function loop(ts){if(!lastTs)lastTs=ts;const elapsed=Math.min(.12,Math.max(0,(ts
  }else accumulator=0;
  render();requestAnimationFrame(loop);
 }
-const handled=new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyW','KeyA','KeyS','KeyD','KeyF']);
+const handled=new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','Digit5','Digit8','KeyW','KeyA','KeyS','KeyD','KeyF']);
 window.addEventListener('keydown',e=>{if(handled.has(e.code)){
  // Do not consume keys while a select or other form field is focused.
  if(e.target instanceof HTMLSelectElement||(e.target instanceof HTMLInputElement&&e.target.type!=='checkbox'))return;
- e.preventDefault();keys.add(e.code);if(e.code==='Space'&&!e.repeat)requestBomb();if(e.code==='KeyF'&&!e.repeat&&w?.duel)requestBomb('player2');}
+ e.preventDefault();keys.add(e.code);if((e.code==='Space'||e.code==='Digit5')&&!e.repeat)requestBomb();if(e.code==='Digit8'&&!e.repeat)requestRemote();if(e.code==='KeyF'&&!e.repeat&&w?.duel)requestBomb('player2');}
  if(e.code==='Escape'&&w){e.preventDefault();pause(w.status!=='paused')}});
 window.addEventListener('keyup',e=>keys.delete(e.code));
 window.addEventListener('blur',()=>{keys.clear();touch.clear();touch2.clear();pause(true)});
@@ -137,6 +138,8 @@ for(const el of document.querySelectorAll('[data-dir2]')){const direction=el.dat
 $('bombButton2').addEventListener('pointerdown',e=>{e.preventDefault();requestBomb('player2')});
 $('bombButton2').addEventListener('click',e=>{if(e.detail===0)requestBomb('player2')});
 $('bombButton').addEventListener('pointerdown',e=>{e.preventDefault();requestBomb()});
+$('remoteButton').addEventListener('pointerdown',e=>{e.preventDefault();requestRemote()});
+$('remoteButton').addEventListener('click',e=>{if(e.detail===0)requestRemote()});
 // Keyboard-triggered clicks have detail=0; pointerdown already handled touch/mouse.
 $('bombButton').addEventListener('click',e=>{if(e.detail===0)requestBomb()});
 $('restart').addEventListener('click',()=>{audio('menu_select');setup(w.stage.id)});
@@ -147,6 +150,6 @@ $('duel').addEventListener('change',()=>{if($('duel').checked)$('bot').checked=f
 $('sound').addEventListener('click',()=>{muted=!muted;$('sound').textContent=muted?'♫ Muted':'♫ Sound';syncMusic(true);savePrefs()});
 $('music').addEventListener('click',()=>{musicEnabled=!musicEnabled;$('music').textContent=musicEnabled?'♫ Music On':'♫ Music Off';syncMusic(true);savePrefs()});
 window.EAApp={pause:()=>pause(true),resume:()=>pause(false)};
-window.EADebug={getState:()=>World.snapshot(w),setStage:setup,placeBomb:()=>World.placeBomb(w),tick:dt=>{World.step(w,input(),dt);syncHud()},render,getWorld:()=>w,requestBomb};
+window.EADebug={getState:()=>World.snapshot(w),setStage:setup,placeBomb:()=>World.placeBomb(w),tick:dt=>{World.step(w,input(),dt);syncHud()},render,getWorld:()=>w,requestBomb,requestRemote,grantRemote:()=>{const ok=World.setRemoteDetonator(w,'player');syncHud();return ok}};
 setup(Number.isInteger(prefs.stage)&&prefs.stage>=0&&prefs.stage<STAGES.length?prefs.stage:0);requestAnimationFrame(loop);
 })();
