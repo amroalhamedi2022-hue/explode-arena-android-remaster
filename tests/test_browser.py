@@ -42,6 +42,25 @@ with sync_playwright() as p:
     assert moved['x']>start['x'] or moved['y']!=start['y'],(start,moved)
     page.keyboard.press('Space');page.wait_for_timeout(100)
     assert page.evaluate('window.EADebug.getState().bombs')==1
+    # UI regression for Symbian 5/8 controls; pickup acquisition is debug-only.
+    page.locator('#restart').click()
+    assert not page.locator('#remoteButton').is_visible()
+    assert page.evaluate('window.EADebug.grantRemote()')
+    assert page.locator('#remoteButton').is_visible()
+    page.keyboard.press('Digit5')
+    page.wait_for_timeout(140)
+    assert page.evaluate('window.EADebug.getState().bombs')==1
+    page.wait_for_timeout(1830)
+    assert page.evaluate('window.EADebug.getState().bombs')==1,'remote bomb cannot auto-detonate'
+    page.keyboard.press('Digit8')
+    page.wait_for_timeout(110)
+    assert page.evaluate('window.EADebug.getState().bombs')==0,'keypad 8 triggers the remote bomb'
+    page.locator('#restart').click()
+    assert page.evaluate('window.EADebug.grantRemote()')
+    page.keyboard.press('Digit5');page.wait_for_timeout(130)
+    page.locator('#remoteButton').click();page.wait_for_timeout(120)
+    assert page.evaluate('window.EADebug.getState().bombs')==0,'touch remote button triggers bomb'
+    page.locator('#restart').click()
     page.locator('#stage').select_option('18');page.wait_for_timeout(200)
     assert page.evaluate('window.EADebug.getState().stage')==18
     page.locator('#pause').click();assert page.evaluate('window.EADebug.getState().paused')
