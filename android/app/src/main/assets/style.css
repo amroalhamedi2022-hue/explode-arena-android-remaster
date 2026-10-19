@@ -6,3 +6,6 @@
 #p2Hud strong{color:#ffcf91}.toolbar .toggle{margin-left:0;white-space:nowrap}.toolbar .toggle:first-of-type{margin-left:auto}button:focus-visible,select:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid #93f5df;outline-offset:2px}
 
 .duel-touch-controls{border-top:1px solid #3c5060;padding-top:16px}.duel-touch-controls .pad{background:linear-gradient(145deg,#695044,#342c36);border-color:#ac836b;color:#ffe3c5}.duel-touch-controls .pad.is-down{background:#996d4c}.duel-touch-controls .bomb-button{background:radial-gradient(circle at 35% 20%,#c5806f,#793b45 70%,#482530);border-color:#ff9e91}.duel-touch-controls .bomb-button:focus-visible{outline:2px solid #ffe9bd}
+
+/* Faithful remote-detonator control is only displayed after acquisition. */
+.remote-button{border:1px solid #6ac6bf;background:linear-gradient(145deg,#203e48,#193440);color:#b2f3dd;border-radius:12px;padding:12px 10px;min-height:52px;font-weight:800;letter-spacing:.04em;touch-action:manipulation}.remote-button:active{background:#32726d}.touch-helpers{gap:9px;flex-wrap:wrap}.remote-button:focus-visible{outline:2px solid #93f5df;outline-offset:2px}
