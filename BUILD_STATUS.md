@@ -3,8 +3,8 @@
 - Browser / offline HTML: regression tests run in Chromium desktop and simulated mobile-size viewport; local two-player controls and game logic included.
 - 41 stage assets, 464 original object records and 106 marker references remain available for fidelity work.
 - Shared Android WebView source: synced from web and checked byte-for-byte. WebView origin restricted; manifest requests no INTERNET permission.
-- GitHub Actions Android workflow: **CREATED BUT NOT EXECUTED** (requires private repo and user action).
-- Android Debug APK: **NOT BUILT**. Android SDK/Gradle are absent. Network DNS resolution for `dl.google.com` failed in this environment.
+- Private GitHub repository and Actions workflows: **ACTIVE**. Source validation and the Android build run successfully on `main`.
+- Android Debug APK: **BUILT AND SIGNATURE-VERIFIED** by GitHub Actions on 2026-10-18. The artifact contains `app-debug.apk`, its SHA-256 checksum and the `apksigner --print-certs` report. This proves compilation and package signing, not device compatibility.
 - Actual Android device/emulator: **NOT TESTED**.
 - Game mechanics matched against EKA2L1: **NOT VERIFIED**. Local two-player mode is new, provisional practice behavior, not faithful Bluetooth implementation.
 - HD asset remaster: **NOT STARTED**.
