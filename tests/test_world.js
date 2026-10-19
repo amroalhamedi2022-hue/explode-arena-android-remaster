@@ -55,3 +55,45 @@ const makeStage=(id=0,blocked=[])=>( {id,w:128,h:128,spawns:[{x:40,y:40},{x:104,
  const a=W.snapshot(w);assert.equal(a.status,'playing');assert.equal(a.stage,0);
 }
 console.log('PASS world engine: movement, bomb limit, pass-through, chain reactions, damage, victory/defeat states, reproducibility, obstacles');
+// Symbian-observed remote rules, without guessing multi-bomb targeting.
+ {
+ const stage=makeStage(),w=W.create(stage);
+ assert.equal(W.detonateRemote(w),false,'no remote bomb: no detonation');
+ assert.equal(W.setRemoteDetonator(w,'player'),true);
+ assert.equal(w.player.remoteDetonator,true);
+ assert.equal(W.placeBomb(w),true);
+ const b=w.bombs[0];assert.equal(b.remote,true);assert.equal(b.fuse,null);
+ for(let i=0;i<900;i++)W.step(w,{},C.STEP);
+ assert.equal(w.bombs.length,1,'remote bombs must never auto-detonate');
+ assert.equal(w.bombs[0].fuse,null);
+ W.step(w,{remote:true},C.STEP);
+ assert.equal(w.bombs.length,0);assert.equal(w.events.filter(e=>e.type==='explode').length,1);
+ assert.equal(W.detonateRemote(w),false,'repeated remote action must not explode twice');
+}
+{
+ const stage=makeStage(),w=W.create(stage,{rules:{bombLimit:2}});
+ assert.equal(W.setRemoteDetonator(w,'player2'),false,'P2 does not exist without duel');
+ assert.equal(W.setRemoteDetonator(w,'bot'),false,'bot remote power is not verified');
+ assert.equal(W.setRemoteDetonator(w,'player',false),true);
+ assert.equal(W.placeBomb(w),true);assert.equal(w.bombs[0].remote,false);
+ assert.equal(W.detonateRemote(w),false,'ordinary bombs must not be remote-triggered');
+ for(let i=0;i<110;i++)W.step(w,{},C.STEP);
+ assert.equal(w.bombs.length,0,'ordinary timer stays intact');
+}
+{
+ const stage=makeStage(),w=W.create(stage,{rules:{bombLimit:3}});
+ W.setRemoteDetonator(w);
+ assert(W.placeBomb(w));w.player.x=72;w.player.y=72;assert(W.placeBomb(w));
+ assert.equal(W.detonateRemote(w),false,'multiple remote bomb selection is unverified');
+ assert.equal(w.bombs.length,2);
+ w.status='paused';assert.equal(W.detonateRemote(w),false,'paused game cannot detonate');
+}
+{
+ const w=W.create(makeStage(),{duel:true});
+ assert(W.setRemoteDetonator(w,'player2'));
+ assert(W.placeBomb(w,'player2'));
+ assert.equal(w.bombs[0].owner,'player2');
+ assert.equal(W.detonateRemote(w,'player'),false,'remote triggers only the owner');
+ assert.equal(W.detonateRemote(w,'player2'),true);
+}
+console.log('PASS remote bomb regression: no countdown, keypad trigger, normal bombs, owner isolation, pause, unresolved multi-bomb policy');
