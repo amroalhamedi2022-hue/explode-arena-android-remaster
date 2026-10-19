@@ -15,7 +15,7 @@
    }
    return Object.freeze(result);
  }
- function actorAt(point){return {x:point.x,y:point.y,dir:2,moving:false,invincible:1,passBomb:null};}
+ function actorAt(point){return {x:point.x,y:point.y,dir:2,moving:false,invincible:1,passBomb:null,remoteDetonator:false};}
  function alternateSpawn(stage,p){
    const candidate=stage.spawns[1]||{x:stage.w-p.x-14,y:stage.h-p.y-14};
    let best=C.nearestFree(stage,candidate.x,candidate.y),dist=best?Math.hypot(best.x-p.x,best.y-p.y):-1;
@@ -59,10 +59,28 @@
    if(!actor||w.bombs.filter(b=>b.owner===owner).length>=w.rules.bombLimit)return false;
    const x=C.cellCenter(actor.x),y=C.cellCenter(actor.y);
    if(C.blocked(w.stage,x,y,3)||w.bombs.some(b=>b.x===x&&b.y===y))return false;
-   const b={id:w.nextBomb++,x,y,fuse:w.rules.bombFuse,owner};
+   const remote=actor.remoteDetonator===true;
+   const b={id:w.nextBomb++,x,y,fuse:remote?null:w.rules.bombFuse,remote,owner};
    w.bombs.push(b);
    if(C.touchesBomb(b,actor.x,actor.y,5))actor.passBomb=b.id;
    emit(w,'place',{owner});return true;
+ }
+// Awarding the original remote pickup is the responsibility of the future
+ // item system. Until then, only a debug/test harness may enable it.
+ function setRemoteDetonator(w,owner='player',enabled=true){
+   if(w.status!=='playing'||typeof enabled!=='boolean')return false;
+   const actor=owner==='player'?w.player:owner==='player2'?w.player2:null;
+   if(!actor)return false;
+   actor.remoteDetonator=enabled;
+   emit(w,'remotePower',{owner,enabled});return true;
+ }
+ // Source Symbian confirms key 8 and no remote timer. Multi-remote ordering
+ // is unverified, so safely refuse to guess if several are armed.
+ function detonateRemote(w,owner='player'){
+   if(w.status!=='playing'||!['player','player2'].includes(owner))return false;
+   const candidates=w.bombs.filter(b=>b.owner===owner&&b.remote===true);
+   if(candidates.length!==1)return false;
+   return detonate(w,[candidates[0].id])>=1;
  }
  function detonate(w,ids){
    const queue=[...ids],exploded=new Set();
@@ -115,15 +133,17 @@
    const p=w.player;p.invincible=Math.max(0,p.invincible-dt);
    move(w,p,(input.right?1:0)-(input.left?1:0),(input.down?1:0)-(input.up?1:0),w.rules.speed,dt);
    if(input.bomb)placeBomb(w);
+   if(input.remote)detonateRemote(w);
    if(w.duel){
      const p2=w.player2,d=input.p2||{};
      p2.invincible=Math.max(0,p2.invincible-dt);
      move(w,p2,(d.right?1:0)-(d.left?1:0),(d.down?1:0)-(d.up?1:0),w.rules.speed,dt);
      if(d.bomb)placeBomb(w,'player2');
+     if(d.remote)detonateRemote(w,'player2');
    }
    for(const f of w.flames)f.life-=dt;
    w.flames=w.flames.filter(f=>f.life>0);
-   const due=[];for(const b of w.bombs){b.fuse-=dt;if(b.fuse<=0)due.push(b.id)}
+   const due=[];for(const b of w.bombs){if(b.remote)continue;b.fuse-=dt;if(b.fuse<=0)due.push(b.id)}
    if(due.length)detonate(w,due);
    hitPlayer(w,p,'health','P1');
    if(w.duel){
@@ -155,7 +175,7 @@
  function snapshot(w){return {stage:w.stage.id,x:w.player.x,y:w.player.y,x2:w.player2?.x??null,y2:w.player2?.y??null,
    health:w.health,health2:w.health2,bombs:w.bombs.length,flames:w.flames.length,score:w.score,
    paused:w.status==='paused',status:w.status,winner:w.winner,duel:w.duel,gameTime:w.t,ticks:w.ticks,enemyAlive:w.enemy.alive};}
- const api={CFG,rulesFor,create,move,placeBomb,detonate,nextPathCell,step,snapshot,unsafe};
+ const api={CFG,rulesFor,create,move,placeBomb,setRemoteDetonator,detonateRemote,detonate,nextPathCell,step,snapshot,unsafe};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
  root.EAWorld=api;
 })(typeof window!=='undefined'?window:globalThis);
