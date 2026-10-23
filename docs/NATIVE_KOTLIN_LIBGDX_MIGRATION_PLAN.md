@@ -1,5 +1,5 @@
 # Explode Arena — Native Kotlin + libGDX Migration Plan
-**Approved user direction:** 2026-10-23. **Status:** PLAN ACCEPTED; IMPLEMENTATION NOT STARTED / NOT VERIFIED.
+**Approved user direction:** 2026-10-23. **Status:** N00 STRUCTURAL AUDIT PARTIAL; N01 KOTLIN/LIBGDX SOURCE IMPLEMENTED BUT NATIVE BUILD NOT VERIFIED (2026-10-23).
 **Target:** Android first (Xiaomi Pad 5 + Android phones), same single **Explode Arena Mainline**, not a separate game or throwaway prototype.
 **Repository:** `amroalhamedi2022-hue/explode-arena-android-remaster`; public as observed 2026-10-23, user changed visibility.
 
@@ -21,8 +21,8 @@
 ## Phases and mandatory evidence
 | ID | Concrete work (same Mainline) | Required test/evidence | Status |
 |---|---|---|---|
-| N00 | Snapshot existing JS/WebView Mainline, original SIS/EKA2L1 observations, 41 arenas and SHA-256 asset inventory; identify known **provisional** mechanics and user-approved visuals | Reproducible baseline and itemized parity manifest; keep separate Symbian vs Windows Mobile evidence | NOT STARTED |
-| N01 | Add official-style Gradle `core` Kotlin libGDX simulation module and Android libGDX launcher within this repo, preserving app ID. Use a simple native boot/screen, no WebView as gameplay backend | `core` Kotlin unit tests and native Android debug APK built from exact SHA | NOT STARTED |
+| N00 | Snapshot existing JS/WebView Mainline, original SIS/EKA2L1 observations, 41 arenas and SHA-256 asset inventory; identify known **provisional** mechanics and user-approved visuals | Reproducible baseline and itemized parity manifest; keep separate Symbian vs Windows Mobile evidence | IN PROGRESS: 41-stage structural inventory checked; SHA-256/EKA2L1 not tested |
+| N01 | Add official-style Gradle `core` Kotlin libGDX simulation module and Android libGDX launcher within this repo, preserving app ID. Use a simple native boot/screen, no WebView as gameplay backend | `core` Kotlin unit tests and native Android debug APK built from exact SHA | SOURCE ADDED; Kotlin smoke PASS, Gradle/native APK NOT TESTED |
 | N02 | Port all 41 arena formats/data, object/spawn/wall mappings, deterministic seeded RNG and fixed 60Hz tick/step accounting to Kotlin **without changing values silently** | 41-stage schema/positions/invariants + fixed-seed replay and data SHA comparison to checked-in baseline | NOT STARTED |
 | N03 | Port movement, tile/pixel collisions, bomb placement ownership/counting/fuses, blast spread/chain reactions, invulnerability and damage; port documented verified keypad remote behavior if supported | Property/negative tests and JS-versus-Kotlin golden replay **for existing provisional behavior**; separate direct Symbian EKA2L1 matching tests | NOT STARTED |
 | N04 | Port native SpriteBatch rendering (player frames, 41 stages, NPS explosions), depth/layers, camera/scaling and touch/gamepad/key input; original audio with libGDX asset lifecycle | Golden-frame / asset presence checks; portrait/landscape controls and performance on supported Android | NOT STARTED |
@@ -56,3 +56,6 @@ Android-only release goal; optional headless/desktop libGDX test harness is allo
 5. Track every user requirement in `docs/AUTONOMOUS_ACCEPTANCE.md` with PASS / FAIL / NOT TESTED / BLOCKED, tested SHA and actual command/run link. A successful JS test or old WebView APK is **not** native completion.
 6. No public **release/artifact promotion** of original copyrighted resources without separately checking rights. The user has already changed repository visibility to public; report that original assets in public source may be accessible and may carry copyright restrictions. Never silently change visibility.
 7. No auto-merge, no force push, no replacing Mainline with an unrelated project. Final independent double recheck must include physical-device verification.
+
+## First implementation checkpoint (2026-10-23)
+The first native source slice now exists on this PR branch: `android/core` (Kotlin simulation, 41-stage JSON data parser, fixed 60Hz clock, deterministic LCG, JUnit tests), and `NativeGameActivity`/libGDX Android dependencies. The internal native activity renders the original map texture and a provisional actor. It is intentionally **not** the launcher yet, to avoid destroying the existing playable WebView path before native parity. No original game mode is claimed restored by this slice. Current GitHub Actions source-check CI only tests JS/Python; the existing Android workflow is disabled by its private-repository guard after the user's visibility change. See `docs/AUTONOMOUS_ACCEPTANCE.md` for evidence and blockers.
