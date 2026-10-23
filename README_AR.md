@@ -1,3 +1,5 @@
+> **قرار تطوير معتمد بتاريخ 2026-10-23:** نقل محرك Explode Arena من HTML/JavaScript داخل WebView إلى **Kotlin + libGDX Native Android** مع الحفاظ على نفس Mainline وسلوك Symbian الأصلي. الخطة الملزمة: [docs/NATIVE_KOTLIN_LIBGDX_MIGRATION_PLAN.md](docs/NATIVE_KOTLIN_LIBGDX_MIGRATION_PLAN.md). **الانتقال لم يبدأ ولم يتم التحقق منه بعد**؛ الأقسام أدناه تصف الحالة التاريخية لـ v0.21 WebView. المستودع أصبح **Public** باختيار المستخدم؛ الإشارات القديمة إلى Private تاريخية، وعلنية المصدر لا تمنح ترخيصًا لأصول اللعبة الأصلية.
+
 # Explode Arena — المشروع الرئيسي (0.21 Alpha)
 
 هذه **شجرة المصدر الرئيسية الوحيدة** لعمل Faithful Remaster للعبة Symbian على Android. نطوّر نفس المشروع بدل إنشاء Prototype منفصل مع كل تحديث.
