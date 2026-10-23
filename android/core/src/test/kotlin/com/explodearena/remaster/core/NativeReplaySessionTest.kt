@@ -32,7 +32,7 @@ class NativeReplaySessionTest {
         assertEquals(first, second)
         assertTrue(first.first().contains("|bombs=1"))
         assertTrue(first.any { it.contains("|flames=1") })
-        assertTrue(first.last().startsWith("EA-NATIVE-PROVISIONAL-v1|7|125|"))
+        assertTrue(first.last().startsWith("EA-NATIVE-PROVISIONAL-v2|7|125|"))
     }
 
     @Test fun replayChangesWhenMovementInputChanges() {
@@ -66,4 +66,28 @@ class NativeReplaySessionTest {
         assertTrue(detonated.bombs.isEmpty())
         assertTrue(detonated.flames.isNotEmpty())
     }
+    @Test fun traceIncludesHiddenCollisionGraceAndFutureBombIdentity() {
+        val replay = NativeReplaySession(stage(), Spawn(24.0, 24.0))
+        val initial = replay.snapshot()
+        assertNull(initial.passBomb)
+        assertEquals(1L, initial.nextBombId)
+        val planted = replay.step(NativeReplayInput(placeBomb = true))
+        assertEquals(planted.bombs.single().id, planted.passBomb)
+        assertEquals(2L, planted.nextBombId)
+        assertTrue(planted.traceLine().contains("|pass=1|"))
+        assertTrue(planted.traceLine().contains("|nextBombId=2|"))
+        repeat(20) { replay.step(NativeReplayInput(dx = 1.0)) }
+        assertNull(replay.snapshot().passBomb)
+    }
+
+    @Test fun traceDistinguishesRemotePowerBeforeBombPlacement() {
+        val baseline = NativeReplaySession(stage(), Spawn(24.0, 24.0))
+        val remote = NativeReplaySession(stage(), Spawn(24.0, 24.0))
+        assertEquals(baseline.snapshot().traceLine(), remote.snapshot().traceLine())
+        assertTrue(remote.setRemoteDetonator(enabled = true))
+        assertNotEquals(baseline.snapshot().traceLine(), remote.snapshot().traceLine())
+        assertEquals(listOf("player"), remote.snapshot().remoteDetonatorOwners)
+        assertTrue(remote.snapshot().traceLine().contains("|remoteOwners=player|"))
+    }
+
 }
