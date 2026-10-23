@@ -121,7 +121,19 @@ class NativeBombSimulation(
                 val px = (cx + dx * n) * BOMB_CELL + 8.0
                 val py = (cy + dy * n) * BOMB_CELL + 8.0
                 if (px < 0 || py < 0 || px >= stage.width || py >= stage.height) break
-                if (StageCollision.blocked(stage, px, py, 3.0)) break
+                // A 16px blast step can skip an 8px obstacle when the stage
+                // grid has an offset. Sample the entire ray segment rather
+                // than just its endpoint, so flames cannot tunnel through
+                // narrow walls. Symbian blast parity remains unverified.
+                val startX = (cx + dx * (n - 1)) * BOMB_CELL + 8.0
+                val startY = (cy + dy * (n - 1)) * BOMB_CELL + 8.0
+                val pathBlocked = (1..4).any { substep ->
+                    val fraction = substep / 4.0
+                    val sx = startX + (px - startX) * fraction
+                    val sy = startY + (py - startY) * fraction
+                    StageCollision.blocked(stage, sx, sy, 3.0)
+                }
+                if (pathBlocked) break
                 hit.add(Spawn(px, py))
             }
         }
