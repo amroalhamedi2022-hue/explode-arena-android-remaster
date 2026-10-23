@@ -40,7 +40,10 @@ class NativeBombSimulation(
         val y = cellCenter(actor.y)
         if (StageCollision.blocked(stage, x, y, 3.0) ||
             activeBombs.any { it.x == x && it.y == y }) return false
-        activeBombs.add(Bomb(nextId++, owner, x, y, bombFuseSeconds))
+        val bomb = Bomb(nextId++, owner, x, y, bombFuseSeconds)
+        activeBombs.add(bomb)
+        // Match provisional JS: the placing actor can leave its own bomb once.
+        if (StageCollision.touchesBomb(bomb, actor.x, actor.y)) actor.passBomb = bomb.id
         return true
     }
 
