@@ -14,13 +14,16 @@ Repository visibility: **PRIVATE**; never expose original extracted assets publi
 | Requirement | Status | Evidence / limitation |
 |---|---|---|
 | Collision radius used for blast hits | PASS | Fetched exact branch JS and evaluated in isolated V8: P1 hit at 11px, safe at 13px, P2 hit, practice bot hit; all assertions passed. |
-| Existing core/world/bot regression suites | PASS | `tests/test_core.js`, `tests/test_world.js` (including new blast suite), `tests/test_bot.js` executed against fetched branch source in V8 with equivalent strict assertion adapters; all passed. This was **not** a full Node.js/CI run. |
-| 41 original stages / extracted art inventory | NOT TESTED | Existing repository contains map assets; full 41-stage CI regression and sprite fidelity were not rerun this round. |
+| Existing core/world/bot/duel/all-arenas regression suites | PASS | All five original JS suites plus the new blast suite evaluated against the fetched branch source in isolated V8 with Node-compatible strict assertion and fs/path adapters. Includes **41 original arenas**, 6,150 duel steps and 17,967 all-arenas ticks. This was **not** Node CLI or Android CI. |
+| 41 original stages / extracted art inventory | PASS | Fetched 160,767-byte `web/assets/stages.js` and exercised all 41 stages in duel and arena integration suites in V8. Pixel/sprite fidelity remains NOT TESTED. |
 | Exact EKA2L1 Symbian bomb fuse, blast width, collision, movement, bot rules | NOT TESTED | No new synchronized original Symbian measurement; do not equate current 5px provisional hitbox with original. |
 | Original modes, enemy AI, power-ups, HUD, HD layered art | NOT TESTED | Outstanding requirements; do not claim faithful remaster complete. |
 | APK installation, controls, audio and performance on Xiaomi Pad 5 | NOT TESTED | No device available in this run. |
-| CI on new PR head | NOT TESTED | Awaiting PR workflow evidence. The most recent main run `39941732599` failed within ~2 seconds **before any runner steps** (`runner_id=0`, empty steps), so its failure cannot be attributed to this source change. URL: https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/39941732599 |
+| CI on PR head | BLOCKED | PR run `39949057118` on SHA `152f8ca28e56fb91118c5f4435e5c97f82dda2c6` failed **before any steps** (`runner_id=0`, empty steps; completed within 2 seconds). Same infrastructure pattern as main run `39941732599`. Source tests could not execute on GitHub; cause of runner refusal unknown. https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/39949057118 |
 | Security and asset privacy | PASS | Changes restricted to private repo, no new permissions, no original assets published. |
+
+## Existing unmerged research
+- Separate `feature/symbian-remote-v33` includes documented keypad-5 bomb placement and keypad-8 remote detonation, based on first-hand Symbian observation. It remains isolated; **do not overwrite or silently merge it**. See `research/REMOTE_DETONATOR_v33_AR.md` on that branch.
 
 ## Next bounded actions
 1. Diagnose why private-repository GitHub Actions jobs fail before runner allocation without starting paid services; run full `node tests/test_*.js` suite and `python tests/test_*.py` on a permitted free runner or local checkout.
