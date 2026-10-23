@@ -55,3 +55,4 @@ const makeStage=(id=0,blocked=[])=>( {id,w:128,h:128,spawns:[{x:40,y:40},{x:104,
  const a=W.snapshot(w);assert.equal(a.status,'playing');assert.equal(a.stage,0);
 }
 console.log('PASS world engine: movement, bomb limit, pass-through, chain reactions, damage, victory/defeat states, reproducibility, obstacles');
+require('./test_blast_hitboxes.js');
