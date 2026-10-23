@@ -3,7 +3,7 @@ Project repo: amroalhamedi2022-hue/explode-arena-android-remaster
 Authoritative working base: `main`
 
 ## Approved outcome
-Continue single Mainline faithful HD Symbian S60v2 Explode Arena remaster. Inspect original SIS-derived research, available EKA2L1 references, stage layouts/41 maps, gameplay mechanics and original graphics/audio. Prove actual Symbian-specific behavior rather than assume Windows Mobile footage applies. Match visuals, movement, bombs/collisions/modes/HUD and stable Android APK. Preserve licensed/private source and assets; never move them to a public repository. Do not generate generic roster mockups or abandon existing Mainline.
+Continue single Mainline faithful HD Symbian S60v2 Explode Arena remaster. Inspect original SIS-derived research, available EKA2L1 references, stage layouts/41 maps, gameplay mechanics and original graphics/audio. Prove actual Symbian-specific behavior rather than assume Windows Mobile footage applies. Match visuals, movement, bombs/collisions/modes/HUD and stable Android APK. Respect copyrighted/third-party source and asset rights. Repository is now public by the user's explicit action; do not publish additional private references or release redistributed original assets without rights review. Do not generate generic roster mockups or abandon existing Mainline.
 
 ## Mandatory development loop
 1. On each authorized run, inspect actual files, authoritative handoff, current branch, last PR and CI results. Never restart the project or invent progress. Do not treat READMEs as more recent than verified commits.
