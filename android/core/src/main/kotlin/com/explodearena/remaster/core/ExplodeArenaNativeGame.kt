@@ -102,8 +102,15 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         val touch = touchControls.update(contacts, width, height)
         if (touch.nextStage || Gdx.input.isKeyJustPressed(Input.Keys.PAGE_DOWN)) selectStage(stageIndex + 1)
         else if (touch.previousStage || Gdx.input.isKeyJustPressed(Input.Keys.PAGE_UP)) selectStage(stageIndex - 1)
-        if (touch.placeBomb || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+        // Original Symbian first-hand input evidence: keypad 5 plants and 8
+        // requests remote detonation. Remote power remains unavailable until
+        // its actual pickup mapping is established; Space/touch are modern aids.
+        if (touch.placeBomb || Gdx.input.isKeyJustPressed(Input.Keys.SPACE) ||
+            Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
             if (vitality.defeated) retryStage() else bombSimulation.place(actor)
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_8) && !vitality.defeated) {
+            bombSimulation.detonateRemote()
         }
         val keyX = (if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) 1 else 0) -
             (if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) 1 else 0)
