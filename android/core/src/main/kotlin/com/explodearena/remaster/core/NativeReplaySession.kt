@@ -24,6 +24,9 @@ data class NativeReplayFrame(
     val actorY: Double,
     val health: Int,
     val invulnerableSeconds: Double,
+    val passBomb: Long?,
+    val remoteDetonatorOwners: List<String>,
+    val nextBombId: Long,
     val bombs: List<NativeBombSimulation.Bomb>,
     val flames: List<NativeBombSimulation.Flame>,
 ) {
@@ -35,9 +38,12 @@ data class NativeReplayFrame(
     fun traceLine(): String = buildString {
         fun bits(value: Double): String =
             java.lang.Long.toHexString(java.lang.Double.doubleToLongBits(value))
-        append("EA-NATIVE-PROVISIONAL-v1|").append(stageId).append('|').append(tick)
+        append("EA-NATIVE-PROVISIONAL-v2|").append(stageId).append('|').append(tick)
         append('|').append(bits(actorX)).append(',').append(bits(actorY))
         append('|').append(health).append(',').append(bits(invulnerableSeconds))
+        append("|pass=").append(passBomb?.toString() ?: "none")
+        append("|remoteOwners=").append(remoteDetonatorOwners.joinToString(","))
+        append("|nextBombId=").append(nextBombId)
         append("|bombs=").append(bombs.size)
         for (bomb in bombs) {
             append(';').append(bomb.id).append(',').append(bomb.owner)
@@ -82,6 +88,9 @@ class NativeReplaySession(
         actorY = actor.y,
         health = vitality.health,
         invulnerableSeconds = vitality.invulnerableSeconds,
+        passBomb = actor.passBomb,
+        remoteDetonatorOwners = bombSimulation.remoteDetonatorOwners,
+        nextBombId = bombSimulation.nextBombId,
         bombs = bombSimulation.bombs,
         flames = bombSimulation.flames.map { flame ->
             flame.copy(cells = flame.cells.map { it.copy() })
