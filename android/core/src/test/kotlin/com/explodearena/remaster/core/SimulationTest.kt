@@ -48,4 +48,27 @@ class SimulationTest {
         val safe = StageCollision.nearestFree(stage, 26.0, 26.0)!!
         assertFalse(StageCollision.blocked(stage, safe.x, safe.y, 4.0))
     }
+    @Test fun invalidCoordinatesNeverBecomeFreeTiles() {
+        val stage = stage()
+        assertEquals(-1, StageCollision.tile(stage, Double.NaN, 12.0))
+        assertEquals(-1, StageCollision.tile(stage, 12.0, Double.POSITIVE_INFINITY))
+        assertTrue(StageCollision.blocked(stage, Double.NaN, 12.0))
+        assertTrue(StageCollision.blocked(stage, 12.0, Double.NEGATIVE_INFINITY))
+        assertTrue(StageCollision.blocked(stage, 12.0, 12.0, Double.NaN))
+        assertTrue(StageCollision.blocked(stage, 12.0, 12.0, -1.0))
+    }
+
+    @Test fun movementRejectsNonfiniteSpeedAndTimeWithoutMutatingActor() {
+        val stage = stage()
+        val actor = Actor(12.0, 12.0)
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCollision.move(stage, actor, 1.0, 0.0, Double.POSITIVE_INFINITY, 1.0 / 60.0)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCollision.move(stage, actor, 1.0, 0.0, 77.0, Double.NaN)
+        }
+        assertEquals(12.0, actor.x, 0.0)
+        assertEquals(12.0, actor.y, 0.0)
+    }
+
 }
