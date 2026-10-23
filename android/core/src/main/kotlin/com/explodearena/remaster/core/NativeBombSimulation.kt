@@ -29,6 +29,8 @@ class NativeBombSimulation(
         require(blastLifetimeSeconds.isFinite() && blastLifetimeSeconds in 0.05..5.0)
     }
 
+    val nextBombId: Long get() = nextId
+    val remoteDetonatorOwners: List<String> get() = remoteOwners.sorted()
     val bombs: List<Bomb> get() = activeBombs.toList()
     val flames: List<Flame> get() = activeFlames.toList()
 
