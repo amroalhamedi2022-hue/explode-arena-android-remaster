@@ -84,6 +84,22 @@ class SimulationTest {
         assertEquals(12.0, actor.y, 0.0)
     }
 
+    @Test fun rejectedReplayMovementPreservesBombGraceAndPosition() {
+        // A previously exited bomb is no longer in the bomb list. Invalid
+        // movement must not clear the actor's passBomb before throwing.
+        val arena = stage()
+        val actor = Actor(12.0, 12.0, passBomb = 42L)
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCollision.move(arena, actor, 1.0, 0.0, 100_000.0, 1.0)
+        }
+        assertEquals(12.0, actor.x, 0.0)
+        assertEquals(12.0, actor.y, 0.0)
+        assertEquals(42L, actor.passBomb)
+        // A valid stationary tick still clears stale grace as intended.
+        StageCollision.move(arena, actor, 0.0, 0.0, 77.0, 1.0 / 60.0)
+        assertNull(actor.passBomb)
+    }
+
     @Test fun nearestFreeRejectsNonFiniteOrOversizedQueries() {
         val arena = stage()
         assertNull(StageCollision.nearestFree(arena, Double.NaN, 12.0))
