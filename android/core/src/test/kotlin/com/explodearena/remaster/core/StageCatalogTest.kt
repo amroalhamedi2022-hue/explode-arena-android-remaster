@@ -24,4 +24,16 @@ class StageCatalogTest {
         val bad = catalog(41).replace("\"w\":2", "\"w\":3")
         assertThrows(IllegalArgumentException::class.java) { StageCatalog.parse(bad) }
     }
+    @Test fun originalMainlineStageFileHas41ValidGeometryRecords() {
+        // Gradle :core:test runs from android/core; never substitute mock arenas
+        // for the original stage inventory when checking the native port.
+        val file = java.io.File("../../web/assets/stages.js")
+        assertTrue("Original stage catalog missing: ${file.absolutePath}", file.isFile)
+        val stages = StageCatalog.parse(file.readText(Charsets.UTF_8))
+        assertEquals(41, stages.size)
+        assertTrue(stages.all { it.gridWidth * 8 == it.width && it.gridHeight * 8 == it.height })
+        assertTrue(stages.all { it.spawns.isNotEmpty() })
+        assertTrue(stages.all { it.image.matches(Regex("assets/maps/map_[0-9]{3}\\.png")) })
+    }
+
 }
