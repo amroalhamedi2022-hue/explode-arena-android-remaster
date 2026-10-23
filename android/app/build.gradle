@@ -24,6 +24,16 @@ android {
 configurations { natives }
 
 dependencies {
+    // AndroidX Core 1.17 needs compileSdk 36 and AGP >=8.9.1. The existing
+    // Mainline stays on tested AGP 8.6.1 / compileSdk 35 for now. Pin the
+    // compatible AndroidX Core 1.16 API instead of silently upgrading the
+    // entire legacy build toolchain or weakening the private APK guard.
+    constraints {
+        implementation('androidx.core:core:1.16.0') {
+            version { strictly '1.16.0' }
+            because 'Android API 35 and AGP 8.6.1 compatibility'
+        }
+    }
     implementation 'androidx.webkit:webkit:1.11.0' // Legacy Mainline until native parity
     implementation project(':core')
     implementation 'com.badlogicgames.gdx:gdx-backend-android:1.14.2'
