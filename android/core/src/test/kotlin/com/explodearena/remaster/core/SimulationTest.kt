@@ -43,6 +43,19 @@ class SimulationTest {
         assertFalse(StageCollision.blocked(stage, 12.0, 12.0))
     }
 
+    @Test fun hitboxCannotEncloseSolidCellWhileAllCornersLookFree() {
+        val arena = stage() // Solid tile occupies [24,32) on both axes.
+        // Actor spans [23,33] on both axes: every corner is in a
+        // neighboring empty tile, but the entire solid cell is inside.
+        assertEquals(0, StageCollision.tile(arena, 23.0, 23.0))
+        assertEquals(0, StageCollision.tile(arena, 33.0, 33.0))
+        assertTrue(StageCollision.blocked(arena, 28.0, 28.0, 5.0))
+        // Near, but not yet touching the solid cell.
+        assertFalse(StageCollision.blocked(arena, 18.0, 28.0, 5.0))
+        // Once the actor overlaps the cell, the collision is solid.
+        assertTrue(StageCollision.blocked(arena, 20.0, 28.0, 5.0))
+    }
+
     @Test fun nearestFreeNeverReturnsBlockedTile() {
         val stage = stage()
         val safe = StageCollision.nearestFree(stage, 26.0, 26.0)!!
