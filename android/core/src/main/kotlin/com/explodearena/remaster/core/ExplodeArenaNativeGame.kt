@@ -3,6 +3,7 @@ package com.explodearena.remaster.core
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
@@ -29,6 +30,8 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     private lateinit var batch: SpriteBatch
     private lateinit var shapes: ShapeRenderer
     private lateinit var font: BitmapFont
+    private lateinit var placeSound: Sound
+    private lateinit var explosionSound: Sound
     private val touchControls = NativeTouchControls()
     private lateinit var arena: Texture
     private val clock = FixedStepClock()
@@ -50,6 +53,9 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         batch = SpriteBatch()
         shapes = ShapeRenderer()
         font = BitmapFont()
+        // Original bundled WAVs, owned by this native screen and disposed with it.
+        placeSound = Gdx.audio.newSound(Gdx.files.internal("assets/sfx/bomb_place.wav"))
+        explosionSound = Gdx.audio.newSound(Gdx.files.internal("assets/sfx/bomb_explode1.wav"))
         viewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
     }
 
@@ -107,10 +113,11 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         // its actual pickup mapping is established; Space/touch are modern aids.
         if (touch.placeBomb || Gdx.input.isKeyJustPressed(Input.Keys.SPACE) ||
             Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
-            if (vitality.defeated) retryStage() else bombSimulation.place(actor)
+            if (vitality.defeated) retryStage()
+            else if (bombSimulation.place(actor)) placeSound.play(0.65f)
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_8) && !vitality.defeated) {
-            bombSimulation.detonateRemote()
+            if (bombSimulation.detonateRemote()) explosionSound.play(0.75f)
         }
         val keyX = (if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) 1 else 0) -
             (if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) 1 else 0)
@@ -124,7 +131,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
                     stage, actor, dx, dy, 77.0,
                     FixedStepClock.STEP_SECONDS, bombSimulation.bombs,
                 )
-                bombSimulation.tick()
+                if (bombSimulation.tick() > 0) explosionSound.play(0.75f)
                 // Use the actor's actual provisional 5px collision radius, not a
                 // point sample that misses flame hits along the sprite edge.
                 vitality.tick(bombSimulation.isBurning(actor.x, actor.y, radius = StageCollision.ACTOR_RADIUS))
@@ -186,12 +193,18 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         Gdx.gl.glDisable(GL20.GL_BLEND)
     }
 
-    override fun pause() { touchControls.reset() }
+    override fun pause() {
+        touchControls.reset()
+        if (::placeSound.isInitialized) placeSound.stop()
+        if (::explosionSound.isInitialized) explosionSound.stop()
+    }
 
     override fun dispose() {
         if (::arena.isInitialized) arena.dispose()
         if (::batch.isInitialized) batch.dispose()
         if (::shapes.isInitialized) shapes.dispose()
         if (::font.isInitialized) font.dispose()
+        if (::placeSound.isInitialized) placeSound.dispose()
+        if (::explosionSound.isInitialized) explosionSound.dispose()
     }
 }
