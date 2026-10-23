@@ -63,4 +63,16 @@ class NativeBombSimulationTest {
         assertThrows(IllegalArgumentException::class.java) { NativeBombSimulation(stage(), bombRange = 99) }
         assertThrows(IllegalArgumentException::class.java) { NativeBombSimulation(stage(), blastLifetimeSeconds = 0.0) }
     }
+    @Test fun edgeOfActorHitboxTouchesLastFlameCell() {
+        val sim = NativeBombSimulation(stage())
+        assertTrue(sim.place(Actor(24.0, 24.0)))
+        repeat(96) { sim.tick() }
+        // The last eastward flame is centered at x=72. Actor at x=84
+        // overlaps its 8px flame extent with a 5px actor radius, but its
+        // center is outside the flame. This is provisional JS parity only.
+        assertFalse(sim.isBurning(84.0, 24.0, radius = 0.0))
+        assertTrue(sim.isBurning(84.0, 24.0, radius = StageCollision.ACTOR_RADIUS))
+        assertFalse(sim.isBurning(85.0, 24.0, radius = StageCollision.ACTOR_RADIUS))
+    }
+
 }
