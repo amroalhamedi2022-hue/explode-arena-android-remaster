@@ -31,7 +31,7 @@ data class StageData(
     }
 }
 
-data class Actor(var x: Double, var y: Double)
+data class Actor(var x: Double, var y: Double, var passBomb: Long? = null)
 
 object StageCollision {
     const val CELL = 8
@@ -44,16 +44,28 @@ object StageCollision {
         return stage.grid[row][col]
     }
 
-    fun blocked(stage: StageData, x: Double, y: Double, radius: Double = ACTOR_RADIUS): Boolean {
+    fun blocked(
+        stage: StageData, x: Double, y: Double, radius: Double = ACTOR_RADIUS,
+        bombs: List<NativeBombSimulation.Bomb> = emptyList(), ignoreBombId: Long? = null,
+    ): Boolean {
         if (x - radius < 0 || y - radius < 0 || x + radius >= stage.width || y + radius >= stage.height) return true
         for (dx in doubleArrayOf(-radius, radius)) for (dy in doubleArrayOf(-radius, radius)) {
             if (tile(stage, x + dx, y + dy) != 0) return true
         }
-        return false
+        // Mirrors the current PROVISIONAL JS touchesBomb (7px half-size),
+        // not yet a verified Symbian collision rule.
+        return bombs.any { it.id != ignoreBombId && touchesBomb(it, x, y, radius) }
     }
 
+    fun touchesBomb(bomb: NativeBombSimulation.Bomb, x: Double, y: Double, radius: Double = ACTOR_RADIUS): Boolean =
+        kotlin.math.abs(bomb.x - x) < 7.0 + radius &&
+            kotlin.math.abs(bomb.y - y) < 7.0 + radius
+
     /** JS-compatible axis-separated movement and <=3 pixel substeps. */
-    fun move(stage: StageData, actor: Actor, dx: Double, dy: Double, speed: Double, dt: Double) {
+    fun move(
+        stage: StageData, actor: Actor, dx: Double, dy: Double, speed: Double, dt: Double,
+        bombs: List<NativeBombSimulation.Bomb> = emptyList(),
+    ) {
         require(speed >= 0.0 && dt >= 0.0 && dx.isFinite() && dy.isFinite())
         val length = hypot(dx, dy)
         if (length == 0.0 || dt == 0.0) return
@@ -62,8 +74,13 @@ object StageCollision {
         val sx = dx / length * distance / steps
         val sy = dy / length * distance / steps
         repeat(steps) {
-            if (!blocked(stage, actor.x + sx, actor.y)) actor.x += sx
-            if (!blocked(stage, actor.x, actor.y + sy)) actor.y += sy
+            if (!blocked(stage, actor.x + sx, actor.y, ACTOR_RADIUS, bombs, actor.passBomb)) actor.x += sx
+            if (!blocked(stage, actor.x, actor.y + sy, ACTOR_RADIUS, bombs, actor.passBomb)) actor.y += sy
+            // Owner may walk OUT of a newly placed bomb, but cannot re-enter.
+            val passing = actor.passBomb
+            if (passing != null && bombs.none { it.id == passing && touchesBomb(it, actor.x, actor.y) }) {
+                actor.passBomb = null
+            }
         }
     }
 
