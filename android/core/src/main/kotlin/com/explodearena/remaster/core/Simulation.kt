@@ -67,6 +67,11 @@ object StageCollision {
         bombs: List<NativeBombSimulation.Bomb> = emptyList(),
     ) {
         require(speed >= 0.0 && dt >= 0.0 && dx.isFinite() && dy.isFinite())
+        // Clear stale grace even when standing still after the bomb detonates.
+        val prior = actor.passBomb
+        if (prior != null && bombs.none { it.id == prior && touchesBomb(it, actor.x, actor.y) }) {
+            actor.passBomb = null
+        }
         val length = hypot(dx, dy)
         if (length == 0.0 || dt == 0.0) return
         val distance = speed * dt
