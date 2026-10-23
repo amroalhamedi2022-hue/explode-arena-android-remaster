@@ -78,9 +78,11 @@
    for(const actor of [w.player,w.player2,w.enemy])if(actor&&actor.passBomb!==null&&exploded.has(actor.passBomb))actor.passBomb=null;
    return exploded.size;
  }
- function unsafe(w,x,y){return w.flames.some(f=>f.cells.some(c=>C.blastHits(c,x,y,0)))}
+ // Apply the same provisional 5px actor hitbox used for movement collisions.
+ // This fixes missed edge-of-flame hits; original Symbian geometry is not yet proven.
+ function unsafe(w,x,y,radius=0){return w.flames.some(f=>f.cells.some(c=>C.blastHits(c,x,y,radius)))}
  function hitPlayer(w,actor,field,identity){
-   if(actor.invincible!==0||!unsafe(w,actor.x,actor.y))return;
+   if(actor.invincible!==0||!unsafe(w,actor.x,actor.y,5))return;
    w[field]=Math.max(0,w[field]-1);actor.invincible=w.rules.invulnerability;
    emit(w,'playerHit',{player:identity});
  }
@@ -148,7 +150,7 @@
      if(w.t>=e.nextBombAt&&e.passBomb===null&&Math.hypot(e.x-p.x,e.y-p.y)<48){
        if(placeBomb(w,'bot'))e.nextBombAt=w.t+2.8;else e.nextBombAt=w.t+.45;
      }
-     if(unsafe(w,e.x,e.y)){e.alive=false;w.score+=100;emit(w,'enemyHit');emit(w,'roundWon');w.status='victory';w.winner='P1'}
+     if(unsafe(w,e.x,e.y,5)){e.alive=false;w.score+=100;emit(w,'enemyHit');emit(w,'roundWon');w.status='victory';w.winner='P1'}
    }
    return w;
  }
