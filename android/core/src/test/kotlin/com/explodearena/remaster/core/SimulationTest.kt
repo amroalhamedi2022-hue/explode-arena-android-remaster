@@ -35,17 +35,17 @@ class SimulationTest {
 
     @Test fun movementUsesAxisSeparatedCollisionAndNoWallPenetration() {
         val stage = stage()
-        val actor = Actor(12.0, 28.0)
+        val actor = Actor(12.0, 26.0)
         StageCollision.move(stage, actor, 1.0, 0.0, 77.0, 1.0)
         assertTrue(actor.x < 19.0)
-        assertEquals(28.0, actor.y, 1e-9)
-        assertTrue(StageCollision.blocked(stage, 28.0, 28.0))
+        assertEquals(26.0, actor.y, 1e-9)
+        assertTrue(StageCollision.blocked(stage, 26.0, 26.0))
         assertFalse(StageCollision.blocked(stage, 12.0, 12.0))
     }
 
     @Test fun nearestFreeNeverReturnsBlockedTile() {
         val stage = stage()
-        val safe = StageCollision.nearestFree(stage, 28.0, 28.0)!!
+        val safe = StageCollision.nearestFree(stage, 26.0, 26.0)!!
         assertFalse(StageCollision.blocked(stage, safe.x, safe.y, 4.0))
     }
 }
