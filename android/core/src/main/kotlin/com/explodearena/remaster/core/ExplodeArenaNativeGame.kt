@@ -33,6 +33,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     private lateinit var arena: Texture
     private val clock = FixedStepClock()
     private lateinit var bombSimulation: NativeBombSimulation
+    private lateinit var vitality: NativeVitality
 
     override fun create() {
         stages = StageCatalog.parse(Gdx.files.internal("assets/stages.js").readString("UTF-8"))
@@ -42,6 +43,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
             ?: error("Original arena ${stage.id} has no free player spawn")
         actor = Actor(safe.x, safe.y)
         bombSimulation = NativeBombSimulation(stage)
+        vitality = NativeVitality()
         arena = Texture(Gdx.files.internal(stage.image))
         camera = OrthographicCamera()
         viewport = FitViewport(stage.width.toFloat(), stage.height.toFloat(), camera)
@@ -73,8 +75,18 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         stage = next
         actor = Actor(safe.x, safe.y)
         bombSimulation = NativeBombSimulation(next)
+        vitality = NativeVitality()
         viewport = FitViewport(next.width.toFloat(), next.height.toFloat(), camera)
         viewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
+    }
+
+    private fun retryStage() {
+        val spawn = stage.spawns.firstOrNull() ?: Spawn(stage.width / 2.0, stage.height / 2.0)
+        val safe = StageCollision.nearestFree(stage, spawn.x, spawn.y)
+            ?: error("Original arena ${stage.id} has no free player spawn")
+        actor = Actor(safe.x, safe.y)
+        bombSimulation = NativeBombSimulation(stage)
+        vitality = NativeVitality()
     }
 
     override fun render() {
@@ -90,7 +102,9 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         val touch = touchControls.update(contacts, width, height)
         if (touch.nextStage || Gdx.input.isKeyJustPressed(Input.Keys.PAGE_DOWN)) selectStage(stageIndex + 1)
         else if (touch.previousStage || Gdx.input.isKeyJustPressed(Input.Keys.PAGE_UP)) selectStage(stageIndex - 1)
-        if (touch.placeBomb || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) bombSimulation.place(actor)
+        if (touch.placeBomb || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            if (vitality.defeated) retryStage() else bombSimulation.place(actor)
+        }
         val keyX = (if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) 1 else 0) -
             (if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) 1 else 0)
         val keyY = (if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)) 1 else 0) -
@@ -98,11 +112,14 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         val dx = (keyX + touch.dx).coerceIn(-1f, 1f).toDouble()
         val dy = (keyY + touch.dy).coerceIn(-1f, 1f).toDouble()
         clock.advance(Gdx.graphics.deltaTime.toDouble()) {
-            StageCollision.move(
-                stage, actor, dx, dy, 77.0,
-                FixedStepClock.STEP_SECONDS, bombSimulation.bombs,
-            )
-            bombSimulation.tick()
+            if (!vitality.defeated) {
+                StageCollision.move(
+                    stage, actor, dx, dy, 77.0,
+                    FixedStepClock.STEP_SECONDS, bombSimulation.bombs,
+                )
+                bombSimulation.tick()
+                vitality.tick(bombSimulation.isBurning(actor.x, actor.y, radius = 0.0))
+            }
         }
         ScreenUtils.clear(0f, 0f, 0f, 1f)
         viewport.apply()
@@ -114,7 +131,8 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         shapes.projectionMatrix = camera.combined
         shapes.begin(ShapeRenderer.ShapeType.Filled)
-        shapes.setColor(0.12f, 0.92f, 0.78f, 1f)
+        if (vitality.defeated) shapes.setColor(0.96f, 0.24f, 0.26f, 1f)
+        else shapes.setColor(0.12f, 0.92f, 0.78f, 1f)
         shapes.circle(actor.x.toFloat(), (stage.height - actor.y).toFloat(), 5f, 16)
         // Native provisional bomb/flame overlays. Real original NPS sprites
         // and their timing will replace these placeholders after parity review.
@@ -148,10 +166,13 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         shapes.end()
         batch.projectionMatrix = overlay
         batch.begin()
-        font.draw(batch, "ARENA ${stageIndex + 1}/${stages.size}", width * 0.43f, height - controls.stageY + 6f)
+        font.draw(batch, "ARENA ${stageIndex + 1}/${stages.size}  HP ${vitality.health}", width * 0.39f, height - controls.stageY + 6f)
+        if (vitality.defeated) {
+            font.draw(batch, "DEFEAT - PRESS B TO RETRY", width * 0.32f, height * 0.53f)
+        }
         font.draw(batch, "<", controls.previousX - 4f, height - controls.stageY + 6f)
         font.draw(batch, ">", controls.nextX - 4f, height - controls.stageY + 6f)
-        font.draw(batch, "B", controls.bombX - 5f, height - controls.bombY + 6f)
+        font.draw(batch, if (vitality.defeated) "R" else "B", controls.bombX - 5f, height - controls.bombY + 6f)
         batch.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
     }
