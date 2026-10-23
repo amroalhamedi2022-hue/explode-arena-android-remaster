@@ -54,7 +54,7 @@ class NativeBombSimulation(
         val updated = activeBombs.map { it.copy(remaining = it.remaining - dt) }
         activeBombs.clear()
         activeBombs.addAll(updated)
-        val queue = ArrayDeque<Long>()
+        val queue = java.util.ArrayDeque<Long>()
         updated.filter { it.remaining <= 1e-10 }.forEach { queue.addLast(it.id) }
         val detonated = mutableSetOf<Long>()
         while (queue.isNotEmpty()) {
