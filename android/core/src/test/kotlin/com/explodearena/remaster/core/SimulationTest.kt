@@ -92,4 +92,35 @@ class SimulationTest {
         assertNull(StageCollision.nearestFree(arena, 12.0, 12.0, 100.0))
     }
 
+
+    @Test fun nearestFreeRespectsOffsetGridCellCenters() {
+        // Only the center 8px cell is walkable. Its center is (24,24),
+        // not the world-aligned (20,20) chosen by the old search.
+        val offset = StageData(
+            42, "offset.png", 48, 48, 4, 4,
+            List(5) { row -> IntArray(5) { col ->
+                if (row == 2 && col == 2) 0 else 751
+            } },
+            listOf(Spawn(8.0, 8.0)),
+        )
+        val found = StageCollision.nearestFree(offset, 8.0, 8.0, radius = 3.0)
+        assertNotNull(found)
+        assertEquals(24.0, found!!.x, 0.0)
+        assertEquals(24.0, found.y, 0.0)
+        assertFalse(StageCollision.blocked(offset, found.x, found.y, 3.0))
+    }
+
+    @Test fun movementRejectsInvalidActorAndOverflowedDirection() {
+        val arena = stage()
+        val actor = Actor(Double.NaN, 12.0)
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCollision.move(arena, actor, 1.0, 0.0, 77.0, 1.0 / 60.0)
+        }
+        val safe = Actor(12.0, 12.0)
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCollision.move(arena, safe, Double.MAX_VALUE, Double.MAX_VALUE, 77.0, 1.0 / 60.0)
+        }
+        assertEquals(12.0, safe.x, 0.0)
+        assertEquals(12.0, safe.y, 0.0)
+    }
 }
