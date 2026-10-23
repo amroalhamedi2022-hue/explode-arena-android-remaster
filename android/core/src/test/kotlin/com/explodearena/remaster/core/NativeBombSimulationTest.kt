@@ -57,6 +57,35 @@ class NativeBombSimulationTest {
         assertFalse(sim.isBurning(88.0, 24.0))
     }
 
+    @Test fun blastRayCannotSkipThinWallOnOffsetObstacleGrid() {
+        // Wall occupies x=28..35, between bomb-cell centers x=24 and x=40.
+        // Checking only the next 16px endpoint incorrectly lets flame pass.
+        val offsetStage = StageData(
+            id = 0, image = "assets/maps/map_000.png", width = 128, height = 64,
+            obstacleX = 4, obstacleY = 0,
+            grid = List(8) { IntArray(16) { col -> if (col == 3) 751 else 0 } },
+            spawns = listOf(Spawn(24.0, 24.0)),
+        )
+        val sim = NativeBombSimulation(offsetStage)
+        assertTrue(sim.place(Actor(24.0, 24.0)))
+        repeat(96) { sim.tick() }
+        assertTrue(sim.isBurning(24.0, 24.0))
+        assertFalse(sim.isBurning(40.0, 24.0))
+    }
+
+    @Test fun blastRayStillTraversesClearOffsetObstacleGrid() {
+        val offsetStage = StageData(
+            id = 0, image = "assets/maps/map_000.png", width = 128, height = 64,
+            obstacleX = 4, obstacleY = 0,
+            grid = List(8) { IntArray(16) },
+            spawns = listOf(Spawn(24.0, 24.0)),
+        )
+        val sim = NativeBombSimulation(offsetStage)
+        assertTrue(sim.place(Actor(24.0, 24.0)))
+        repeat(96) { sim.tick() }
+        assertTrue(sim.isBurning(40.0, 24.0))
+    }
+
     @Test fun invalidRulesAreRejectedBeforeSimulation() {
         assertThrows(IllegalArgumentException::class.java) { NativeBombSimulation(stage(), bombLimit = 0) }
         assertThrows(IllegalArgumentException::class.java) { NativeBombSimulation(stage(), bombFuseSeconds = Double.NaN) }
