@@ -76,7 +76,9 @@ object StageCollision {
         if (prior != null && bombs.none { it.id == prior && touchesBomb(it, actor.x, actor.y) }) {
             actor.passBomb = null
         }
+        require(actor.x.isFinite() && actor.y.isFinite()) { "Invalid actor position" }
         val length = hypot(dx, dy)
+        require(length.isFinite()) { "Movement direction magnitude overflow" }
         if (length == 0.0 || dt == 0.0) return
         val distance = speed * dt
         // A malformed replay/input must not overflow the step count or hang
@@ -104,13 +106,22 @@ object StageCollision {
         val bx = x.coerceIn(radius + 1, stage.width - radius - 2.0)
         val by = y.coerceIn(radius + 1, stage.height - radius - 2.0)
         if (!blocked(stage, bx, by, radius)) return Spawn(bx, by)
-        val ox = floor(bx / CELL).toInt()
-        val oy = floor(by / CELL).toInt()
-        val limit = ceil(max(stage.width, stage.height) / CELL.toDouble()).toInt()
-        for (r in 1..limit) for (dy in -r..r) for (dx in -r..r) {
-            if (max(kotlin.math.abs(dx), kotlin.math.abs(dy)) != r) continue
-            val px = (ox + dx) * CELL + CELL / 2.0
-            val py = (oy + dy) * CELL + CELL / 2.0
+        // The obstacle grid is not necessarily aligned to world origin.
+        // Search its actual cell centers, including half-cell stage offsets.
+        // A world-aligned search could miss the only walkable spawn cell.
+        val ox = floor((bx - stage.obstacleX) / CELL).toInt()
+        val oy = floor((by - stage.obstacleY) / CELL).toInt()
+        val candidates = ArrayList<Pair<Int, Int>>(stage.gridWidth * stage.gridHeight)
+        for (row in 0 until stage.gridHeight) for (col in 0 until stage.gridWidth) {
+            candidates.add(col to row)
+        }
+        candidates.sortWith(compareBy<Pair<Int, Int>> {
+            max(kotlin.math.abs(it.first.toLong() - ox), kotlin.math.abs(it.second.toLong() - oy))
+        }.thenBy { it.second }.thenBy { it.first })
+        for ((col, row) in candidates) {
+            if (stage.grid[row][col] != 0) continue
+            val px = stage.obstacleX + col * CELL + CELL / 2.0
+            val py = stage.obstacleY + row * CELL + CELL / 2.0
             if (!blocked(stage, px, py, radius)) return Spawn(px, py)
         }
         return null
