@@ -38,6 +38,7 @@ object StageCollision {
     const val ACTOR_RADIUS = 5.0
 
     fun tile(stage: StageData, x: Double, y: Double): Int {
+        if (!x.isFinite() || !y.isFinite()) return -1
         val col = floor((x - stage.obstacleX) / CELL).toInt()
         val row = floor((y - stage.obstacleY) / CELL).toInt()
         if (col !in 0 until stage.gridWidth || row !in 0 until stage.gridHeight) return -1
