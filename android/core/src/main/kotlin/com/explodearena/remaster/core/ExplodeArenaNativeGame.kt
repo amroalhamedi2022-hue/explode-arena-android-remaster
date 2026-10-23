@@ -56,7 +56,10 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
                 (if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) 1 else 0)
             val dy = (if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)) 1 else 0) -
                 (if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)) 1 else 0)
-            StageCollision.move(stage, actor, dx.toDouble(), dy.toDouble(), 77.0, FixedStepClock.STEP_SECONDS)
+            StageCollision.move(
+                stage, actor, dx.toDouble(), dy.toDouble(), 77.0,
+                FixedStepClock.STEP_SECONDS, bombSimulation.bombs,
+            )
             bombSimulation.tick()
         }
         ScreenUtils.clear(0f, 0f, 0f, 1f)
