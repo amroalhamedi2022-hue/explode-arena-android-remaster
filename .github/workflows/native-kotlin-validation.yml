@@ -1,0 +1,40 @@
+name: Native Kotlin/libGDX validation (no artifacts)
+
+on:
+  pull_request:
+    paths:
+      - 'android/**'
+      - '.github/workflows/native-kotlin-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: explode-native-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-check:
+    # No APK or original Symbian art/audio is uploaded or released. This
+    # intentionally does NOT remove the private-only legacy APK artifact guard.
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Install Android SDK platform
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$(find "${ANDROID_SDK_ROOT}/cmdline-tools" -path '*/bin/sdkmanager' | sort -V | tail -1)"
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
+      - name: Test native core and compile Android (do not publish APK)
+        run: gradle --project-dir android :core:test :app:assembleDebug --stacktrace --no-daemon
