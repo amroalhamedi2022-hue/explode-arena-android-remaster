@@ -71,4 +71,25 @@ class SimulationTest {
         assertEquals(12.0, actor.y, 0.0)
     }
 
+    @Test fun hugeFiniteMovementCannotOverflowOrHangSimulation() {
+        val arena = stage()
+        val actor = Actor(12.0, 12.0)
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCollision.move(arena, actor, 1.0, 0.0, Double.MAX_VALUE, Double.MAX_VALUE)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCollision.move(arena, actor, 1.0, 0.0, 100_000.0, 1.0)
+        }
+        assertEquals(12.0, actor.x, 0.0)
+        assertEquals(12.0, actor.y, 0.0)
+    }
+
+    @Test fun nearestFreeRejectsNonFiniteOrOversizedQueries() {
+        val arena = stage()
+        assertNull(StageCollision.nearestFree(arena, Double.NaN, 12.0))
+        assertNull(StageCollision.nearestFree(arena, 12.0, Double.POSITIVE_INFINITY))
+        assertNull(StageCollision.nearestFree(arena, 12.0, 12.0, Double.NaN))
+        assertNull(StageCollision.nearestFree(arena, 12.0, 12.0, 100.0))
+    }
+
 }
