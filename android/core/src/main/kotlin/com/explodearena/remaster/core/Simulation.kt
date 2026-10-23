@@ -71,14 +71,15 @@ object StageCollision {
         bombs: List<NativeBombSimulation.Bomb> = emptyList(),
     ) {
         require(speed.isFinite() && dt.isFinite() && speed >= 0.0 && dt >= 0.0 && dx.isFinite() && dy.isFinite())
-        // Clear stale grace even when standing still after the bomb detonates.
+        require(actor.x.isFinite() && actor.y.isFinite()) { "Invalid actor position" }
+        val length = hypot(dx, dy)
+        require(length.isFinite()) { "Movement direction magnitude overflow" }
+        // Validate the full request before changing even transient actor state.
+        // Clear stale grace when standing still after a bomb detonates.
         val prior = actor.passBomb
         if (prior != null && bombs.none { it.id == prior && touchesBomb(it, actor.x, actor.y) }) {
             actor.passBomb = null
         }
-        require(actor.x.isFinite() && actor.y.isFinite()) { "Invalid actor position" }
-        val length = hypot(dx, dy)
-        require(length.isFinite()) { "Movement direction magnitude overflow" }
         if (length == 0.0 || dt == 0.0) return
         val distance = speed * dt
         // A malformed replay/input must not overflow the step count or hang
