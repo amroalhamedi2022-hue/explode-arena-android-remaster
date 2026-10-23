@@ -16,10 +16,11 @@ class NativeBombSimulation(
     private val blastLifetimeSeconds: Double = 0.45,
     private val bombRange: Int = 3,
 ) {
-    data class Bomb(val id: Long, val owner: String, val x: Double, val y: Double, val remaining: Double)
+    data class Bomb(val id: Long, val owner: String, val x: Double, val y: Double, val remaining: Double?, val remote: Boolean = false)
     data class Flame(val cells: List<Spawn>, val remaining: Double)
     private val activeBombs = mutableListOf<Bomb>()
     private val activeFlames = mutableListOf<Flame>()
+    private val remoteOwners = mutableSetOf<String>()
     private var nextId = 1L
 
     init {
@@ -31,6 +32,20 @@ class NativeBombSimulation(
     val bombs: List<Bomb> get() = activeBombs.toList()
     val flames: List<Flame> get() = activeFlames.toList()
 
+    /**
+     * Remote power is only granted explicitly by a future verified pickup
+     * handler or tests. Do not infer pickup identity from sprite colors.
+     * The no-fuse rule and keypad 8 were reported from original Symbian;
+     * blast/chain rules and multi-bomb targeting remain provisional.
+     */
+    fun setRemoteDetonator(owner: String, enabled: Boolean): Boolean {
+        if (owner != "player" && owner != "player2") return false
+        if (enabled) remoteOwners.add(owner) else remoteOwners.remove(owner)
+        return true
+    }
+
+    fun hasRemoteDetonator(owner: String): Boolean = owner in remoteOwners
+
     /** Return false if owner has reached the limit or the bomb tile is blocked/occupied. */
     fun place(actor: Actor, owner: String = "player"): Boolean {
         require(owner == "player" || owner == "player2" || owner == "bot")
@@ -40,25 +55,40 @@ class NativeBombSimulation(
         val y = cellCenter(actor.y)
         if (StageCollision.blocked(stage, x, y, 3.0) ||
             activeBombs.any { it.x == x && it.y == y }) return false
-        val bomb = Bomb(nextId++, owner, x, y, bombFuseSeconds)
+        val remote = owner in remoteOwners
+        val bomb = Bomb(nextId++, owner, x, y, if (remote) null else bombFuseSeconds, remote)
         activeBombs.add(bomb)
         // Match provisional JS: the placing actor can leave its own bomb once.
         if (StageCollision.touchesBomb(bomb, actor.x, actor.y)) actor.passBomb = bomb.id
         return true
     }
 
-    /** Advance fuses/flames one simulation tick and detonate all chain reactions. */
+    /** Advance fuses/flames one simulation tick and detonate chain reactions. */
     fun tick(): Int {
         val dt = FixedStepClock.STEP_SECONDS
         val flamesRemaining = activeFlames.map { it.copy(remaining = it.remaining - dt) }
             .filter { it.remaining > 1e-10 }
         activeFlames.clear()
         activeFlames.addAll(flamesRemaining)
-        val updated = activeBombs.map { it.copy(remaining = it.remaining - dt) }
+        val updated = activeBombs.map { bomb ->
+            if (bomb.remote) bomb else bomb.copy(remaining = requireNotNull(bomb.remaining) - dt)
+        }
         activeBombs.clear()
         activeBombs.addAll(updated)
+        return detonate(updated.filter { it.remaining != null && it.remaining <= 1e-10 }.map { it.id })
+    }
+
+    /** Keypad 8 requests the one owned remote bomb; ambiguous multi-bomb order is NOT guessed. */
+    fun detonateRemote(owner: String = "player"): Boolean {
+        if (owner != "player" && owner != "player2") return false
+        val candidates = activeBombs.filter { it.owner == owner && it.remote }
+        if (candidates.size != 1) return false
+        return detonate(listOf(candidates.single().id)) >= 1
+    }
+
+    private fun detonate(ids: Collection<Long>): Int {
         val queue = java.util.ArrayDeque<Long>()
-        updated.filter { it.remaining <= 1e-10 }.forEach { queue.addLast(it.id) }
+        ids.forEach { queue.addLast(it) }
         val detonated = mutableSetOf<Long>()
         while (queue.isNotEmpty()) {
             val id = queue.removeFirst()
