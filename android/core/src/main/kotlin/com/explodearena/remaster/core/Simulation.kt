@@ -79,6 +79,11 @@ object StageCollision {
         val length = hypot(dx, dy)
         if (length == 0.0 || dt == 0.0) return
         val distance = speed * dt
+        // A malformed replay/input must not overflow the step count or hang
+        // the render thread in billions of collision iterations. Normal
+        // 60 Hz movement is unchanged; the bound is relative to arena size.
+        val maxTravel = max(stage.width, stage.height).toDouble() * 2.0
+        require(distance.isFinite() && distance <= maxTravel) { "Movement exceeds safe arena bounds" }
         val steps = max(1, ceil(distance / 3.0).toInt())
         val sx = dx / length * distance / steps
         val sy = dy / length * distance / steps
@@ -94,6 +99,8 @@ object StageCollision {
     }
 
     fun nearestFree(stage: StageData, x: Double, y: Double, radius: Double = 4.0): Spawn? {
+        if (!x.isFinite() || !y.isFinite() || !radius.isFinite() || radius < 0.0 ||
+            stage.width <= radius * 2 + 3 || stage.height <= radius * 2 + 3) return null
         val bx = x.coerceIn(radius + 1, stage.width - radius - 2.0)
         val by = y.coerceIn(radius + 1, stage.height - radius - 2.0)
         if (!blocked(stage, bx, by, radius)) return Spawn(bx, by)
