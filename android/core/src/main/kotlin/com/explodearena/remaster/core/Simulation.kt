@@ -53,8 +53,18 @@ object StageCollision {
         // tile (floor(NaN).toInt() otherwise silently aliases tile zero).
         if (!x.isFinite() || !y.isFinite() || !radius.isFinite() || radius < 0) return true
         if (x - radius < 0 || y - radius < 0 || x + radius >= stage.width || y + radius >= stage.height) return true
-        for (dx in doubleArrayOf(-radius, radius)) for (dy in doubleArrayOf(-radius, radius)) {
-            if (tile(stage, x + dx, y + dy) != 0) return true
+        // A 10px actor hitbox can fully contain an 8px solid cell while all
+        // four corners are on empty neighbors. Check every overlapped cell,
+        // not only the corners, or actors can clip through small obstacles.
+        // This is a native collision correctness fix; original Symbian hitbox
+        // parity still requires independent EKA2L1 observation.
+        val left = floor((x - radius - stage.obstacleX) / CELL).toInt()
+        val right = floor((x + radius - stage.obstacleX) / CELL).toInt()
+        val top = floor((y - radius - stage.obstacleY) / CELL).toInt()
+        val bottom = floor((y + radius - stage.obstacleY) / CELL).toInt()
+        if (left < 0 || top < 0 || right >= stage.gridWidth || bottom >= stage.gridHeight) return true
+        for (row in top..bottom) for (col in left..right) {
+            if (stage.grid[row][col] != 0) return true
         }
         // Mirrors the current PROVISIONAL JS touchesBomb (7px half-size),
         // not yet a verified Symbian collision rule.
