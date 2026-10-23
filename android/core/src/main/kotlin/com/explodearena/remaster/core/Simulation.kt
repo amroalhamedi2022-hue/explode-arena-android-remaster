@@ -48,6 +48,9 @@ object StageCollision {
         stage: StageData, x: Double, y: Double, radius: Double = ACTOR_RADIUS,
         bombs: List<NativeBombSimulation.Bomb> = emptyList(), ignoreBombId: Long? = null,
     ): Boolean {
+        // Invalid coordinates must never be interpreted as a traversable
+        // tile (floor(NaN).toInt() otherwise silently aliases tile zero).
+        if (!x.isFinite() || !y.isFinite() || !radius.isFinite() || radius < 0) return true
         if (x - radius < 0 || y - radius < 0 || x + radius >= stage.width || y + radius >= stage.height) return true
         for (dx in doubleArrayOf(-radius, radius)) for (dy in doubleArrayOf(-radius, radius)) {
             if (tile(stage, x + dx, y + dy) != 0) return true
@@ -66,7 +69,7 @@ object StageCollision {
         stage: StageData, actor: Actor, dx: Double, dy: Double, speed: Double, dt: Double,
         bombs: List<NativeBombSimulation.Bomb> = emptyList(),
     ) {
-        require(speed >= 0.0 && dt >= 0.0 && dx.isFinite() && dy.isFinite())
+        require(speed.isFinite() && dt.isFinite() && speed >= 0.0 && dt >= 0.0 && dx.isFinite() && dy.isFinite())
         // Clear stale grace even when standing still after the bomb detonates.
         val prior = actor.passBomb
         if (prior != null && bombs.none { it.id == prior && touchesBomb(it, actor.x, actor.y) }) {
