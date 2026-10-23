@@ -125,7 +125,9 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
                     FixedStepClock.STEP_SECONDS, bombSimulation.bombs,
                 )
                 bombSimulation.tick()
-                vitality.tick(bombSimulation.isBurning(actor.x, actor.y, radius = 0.0))
+                // Use the actor's actual provisional 5px collision radius, not a
+                // point sample that misses flame hits along the sprite edge.
+                vitality.tick(bombSimulation.isBurning(actor.x, actor.y, radius = StageCollision.ACTOR_RADIUS))
             }
         }
         ScreenUtils.clear(0f, 0f, 0f, 1f)
