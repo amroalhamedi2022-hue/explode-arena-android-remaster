@@ -74,19 +74,21 @@ object StageCollision {
         require(actor.x.isFinite() && actor.y.isFinite()) { "Invalid actor position" }
         val length = hypot(dx, dy)
         require(length.isFinite()) { "Movement direction magnitude overflow" }
-        // Validate the full request before changing even transient actor state.
-        // Clear stale grace when standing still after a bomb detonates.
-        val prior = actor.passBomb
-        if (prior != null && bombs.none { it.id == prior && touchesBomb(it, actor.x, actor.y) }) {
-            actor.passBomb = null
-        }
-        if (length == 0.0 || dt == 0.0) return
+        // Validate the ENTIRE request before mutating actor position OR bomb
+        // exit grace. Previously a rejected oversized replay could clear
+        // passBomb, changing collision state despite throwing an exception.
         val distance = speed * dt
         // A malformed replay/input must not overflow the step count or hang
         // the render thread in billions of collision iterations. Normal
         // 60 Hz movement is unchanged; the bound is relative to arena size.
         val maxTravel = max(stage.width, stage.height).toDouble() * 2.0
         require(distance.isFinite() && distance <= maxTravel) { "Movement exceeds safe arena bounds" }
+        // Clear stale grace when standing still after a bomb detonates.
+        val prior = actor.passBomb
+        if (prior != null && bombs.none { it.id == prior && touchesBomb(it, actor.x, actor.y) }) {
+            actor.passBomb = null
+        }
+        if (length == 0.0 || dt == 0.0) return
         val steps = max(1, ceil(distance / 3.0).toInt())
         val sx = dx / length * distance / steps
         val sy = dy / length * distance / steps
