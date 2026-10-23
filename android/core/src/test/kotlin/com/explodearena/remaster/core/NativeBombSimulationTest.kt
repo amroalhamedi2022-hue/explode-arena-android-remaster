@@ -49,8 +49,9 @@ class NativeBombSimulationTest {
     @Test fun obstacleStopsBlastBeforeNextBomb() {
         val sim = NativeBombSimulation(stage(wallColumn = 8)) // x = 64..71; blocks center 72
         assertTrue(sim.place(Actor(24.0, 24.0)))
+        repeat(48) { sim.tick() }
         assertTrue(sim.place(Actor(88.0, 24.0), "player2"))
-        repeat(95) { sim.tick() }
+        repeat(47) { sim.tick() }
         assertEquals(1, sim.tick())
         assertEquals(1, sim.bombs.size)
         assertFalse(sim.isBurning(88.0, 24.0))
