@@ -99,7 +99,9 @@ class NativeReplayTraceValidationTest {
         fields[5] = "pass=${nextId + 1}"
         assertEquals("expected-pass-bomb", issue(fields.joinToString("|")))
         fields[5] = "pass=1"
-        assertEquals("previously allocated grace remains valid", "accepted-invalid-trace: " + fields.joinToString("|"), issue(fields.joinToString("|")))
+        val validLine = fields.joinToString("|")
+        assertNull("previously allocated grace remains valid",
+            NativeReplayComparison.firstDivergence(listOf(validLine), listOf(validLine)))
     }
 
     @Test fun rejectsExpiredFlamesEvenWhenBothTracesMatch() {
