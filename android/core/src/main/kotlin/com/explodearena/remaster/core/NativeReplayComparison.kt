@@ -16,6 +16,18 @@ object NativeReplayComparison {
         "pass-bomb", "remote-owners", "next-bomb-id", "bombs", "flames",
     )
 
+    /** Reject malformed/empty or discontinuous recordings even when both match. */
+    private fun invalidFrame(parts: List<String>, previousTick: Long?): String? {
+        if (parts.size != 10) return "trace-fields"
+        val stage = parts[1].toIntOrNull()
+        if (stage == null || stage < 0) return "stage"
+        val tick = parts[2].toLongOrNull()
+        if (tick == null || tick < 0) return "tick"
+        if (previousTick != null &&
+            (previousTick == Long.MAX_VALUE || tick != previousTick + 1L)) return "tick-sequence"
+        return null
+    }
+
     data class Divergence(
         val frameIndex: Int,
         val field: String,
@@ -28,6 +40,8 @@ object NativeReplayComparison {
         val left = expected.iterator()
         val right = actual.iterator()
         var frame = 0
+        var expectedPreviousTick: Long? = null
+        var actualPreviousTick: Long? = null
         while (left.hasNext() && right.hasNext()) {
             val a = left.next()
             val b = right.next()
@@ -39,10 +53,12 @@ object NativeReplayComparison {
             if (rhs.firstOrNull() != SCHEMA) {
                 return Divergence(frame, "actual-schema", SCHEMA, rhs.firstOrNull())
             }
-            // v2 has a schema, stage, tick, then seven state fields.
-            if (lhs.size != 10 || rhs.size != 10) {
-                return Divergence(frame, "trace-fields", lhs.size.toString(), rhs.size.toString())
-            }
+            // A matching malformed trace is not a valid regression result.
+            // Validate each side before comparing its fields.
+            val expectedIssue = invalidFrame(lhs, expectedPreviousTick)
+            if (expectedIssue != null) return Divergence(frame, "expected-$expectedIssue", null, a)
+            val actualIssue = invalidFrame(rhs, actualPreviousTick)
+            if (actualIssue != null) return Divergence(frame, "actual-$actualIssue", null, b)
             if (a != b) {
                 val index = lhs.indices.first { lhs[it] != rhs[it] }
                 val name = when (index) {
@@ -52,9 +68,13 @@ object NativeReplayComparison {
                 }
                 return Divergence(frame, name, lhs[index], rhs[index])
             }
+            expectedPreviousTick = lhs[2].toLong()
+            actualPreviousTick = rhs[2].toLong()
             frame++
         }
         return when {
+            frame == 0 && !left.hasNext() && !right.hasNext() ->
+                Divergence(0, "empty-trace", null, null)
             left.hasNext() -> Divergence(frame, "frame-count", left.next(), null)
             right.hasNext() -> Divergence(frame, "frame-count", null, right.next())
             else -> null
