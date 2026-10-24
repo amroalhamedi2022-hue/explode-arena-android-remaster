@@ -20,12 +20,12 @@ object NativeReplayComparison {
     private fun invalidFrame(parts: List<String>, previousTick: Long?): String? {
         if (parts.size != 10) return "trace-fields"
         val stage = parts[1].toIntOrNull()
-        if (stage == null || stage < 0) return "stage"
+        if (stage == null || stage !in 0..40) return "stage"
         val tick = parts[2].toLongOrNull()
         if (tick == null || tick < 0) return "tick"
         if (previousTick != null &&
             (previousTick == Long.MAX_VALUE || tick != previousTick + 1L)) return "tick-sequence"
-        return null
+        return NativeTraceFieldValidation.issue(parts)
     }
 
     data class Divergence(
@@ -42,6 +42,8 @@ object NativeReplayComparison {
         var frame = 0
         var expectedPreviousTick: Long? = null
         var actualPreviousTick: Long? = null
+        var expectedStage: Int? = null
+        var actualStage: Int? = null
         while (left.hasNext() && right.hasNext()) {
             val a = left.next()
             val b = right.next()
@@ -59,6 +61,12 @@ object NativeReplayComparison {
             if (expectedIssue != null) return Divergence(frame, "expected-$expectedIssue", null, a)
             val actualIssue = invalidFrame(rhs, actualPreviousTick)
             if (actualIssue != null) return Divergence(frame, "actual-$actualIssue", null, b)
+            if (expectedStage != null && lhs[1].toInt() != expectedStage) {
+                return Divergence(frame, "expected-stage-sequence", expectedStage.toString(), lhs[1])
+            }
+            if (actualStage != null && rhs[1].toInt() != actualStage) {
+                return Divergence(frame, "actual-stage-sequence", actualStage.toString(), rhs[1])
+            }
             if (a != b) {
                 val index = lhs.indices.first { lhs[it] != rhs[it] }
                 val name = when (index) {
@@ -68,6 +76,8 @@ object NativeReplayComparison {
                 }
                 return Divergence(frame, name, lhs[index], rhs[index])
             }
+            expectedStage = lhs[1].toInt()
+            actualStage = rhs[1].toInt()
             expectedPreviousTick = lhs[2].toLong()
             actualPreviousTick = rhs[2].toLong()
             frame++
