@@ -5,7 +5,7 @@ package com.explodearena.remaster.core
  *
  * Bomb placement MUST precede movement: the escape planner predicts a blast
  * at the actor position it receives, and placing after movement can snap the
- * bomb into a different 8px cell near tile boundaries. No Symbian AI parity
+ * bomb into a different 16px bomb cell near tile boundaries. No Symbian AI parity
  * is claimed by this ordering fix.
  */
 internal object NativeBotTurn {
