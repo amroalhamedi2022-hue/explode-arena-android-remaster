@@ -91,6 +91,17 @@ class NativeReplayTraceValidationTest {
         }
     }
 
+    @Test fun rejectsPassBombGraceForAnIdNotYetAllocated() {
+        val fields = sample().split('|').toMutableList()
+        val nextId = fields[7].removePrefix("nextBombId=").toLong()
+        fields[5] = "pass=$nextId"
+        assertEquals("expected-pass-bomb", issue(fields.joinToString("|")))
+        fields[5] = "pass=${nextId + 1}"
+        assertEquals("expected-pass-bomb", issue(fields.joinToString("|")))
+        fields[5] = "pass=1"
+        assertEquals("previously allocated grace remains valid", "accepted-invalid-trace: " + fields.joinToString("|"), issue(fields.joinToString("|")))
+    }
+
     @Test fun rejectsExpiredFlamesEvenWhenBothTracesMatch() {
         val fields = sample().split('|').toMutableList()
         fields[9] = "flames=1;0:4038000000000000,4038000000000000/"
