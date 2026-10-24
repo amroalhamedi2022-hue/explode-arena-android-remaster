@@ -163,6 +163,9 @@ class FixedStepClock {
     var ticks: Long = 0
         private set
 
+    /** Discard partial frame time on pause, stage swap or restart. */
+    fun clearPending() { accumulator = 0.0 }
+
     fun advance(deltaSeconds: Double, tick: () -> Unit): Int {
         require(deltaSeconds.isFinite() && deltaSeconds >= 0) { "Invalid frame time" }
         accumulator += min(deltaSeconds, MAX_FRAME_SECONDS)

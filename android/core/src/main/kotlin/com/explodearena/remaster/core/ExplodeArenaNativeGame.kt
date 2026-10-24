@@ -34,6 +34,16 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     private lateinit var explosionSound: Sound
     private val touchControls = NativeTouchControls()
     private lateinit var arena: Texture
+    // Original Mainline sprites (not yet an HD reconstruction). Frames are
+    // mapped from the existing web renderer, not guessed Symbian animation.
+    private lateinit var playerFrames: Array<Texture>
+    private lateinit var bombSprite: Texture
+    private lateinit var blastCenter: Array<Texture>
+    private lateinit var blastVertical: Array<Texture>
+    private lateinit var blastHorizontal: Array<Texture>
+    private var facing = 2 // front/down, matching Mainline's frame groups
+    private var walking = false
+    private var animationSeconds = 0.0
     private val clock = FixedStepClock()
     private lateinit var bombSimulation: NativeBombSimulation
     private lateinit var vitality: NativeVitality
@@ -48,6 +58,15 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         bombSimulation = NativeBombSimulation(stage)
         vitality = NativeVitality()
         arena = Texture(Gdx.files.internal(stage.image))
+        fun loadFrames(group: String, count: Int): Array<Texture> =
+            Array(count) { index ->
+                Texture(Gdx.files.internal("assets/sprites/${group}_${index.toString().padStart(3, '0')}.png"))
+            }
+        playerFrames = loadFrames("g000", NativeSpriteFrames.PLAYER_FRAME_COUNT)
+        bombSprite = Texture(Gdx.files.internal("assets/sprites/g042_000.png"))
+        blastCenter = loadFrames("g047", NativeSpriteFrames.BLAST_FRAME_COUNT)
+        blastVertical = loadFrames("g048", NativeSpriteFrames.BLAST_FRAME_COUNT)
+        blastHorizontal = loadFrames("g051", NativeSpriteFrames.BLAST_FRAME_COUNT)
         camera = OrthographicCamera()
         viewport = FitViewport(stage.width.toFloat(), stage.height.toFloat(), camera)
         batch = SpriteBatch()
@@ -82,6 +101,10 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         actor = Actor(safe.x, safe.y)
         bombSimulation = NativeBombSimulation(next)
         vitality = NativeVitality()
+        facing = 2
+        walking = false
+        animationSeconds = 0.0
+        clock.clearPending()
         viewport = FitViewport(next.width.toFloat(), next.height.toFloat(), camera)
         viewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
     }
@@ -93,6 +116,10 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         actor = Actor(safe.x, safe.y)
         bombSimulation = NativeBombSimulation(stage)
         vitality = NativeVitality()
+        facing = 2
+        walking = false
+        animationSeconds = 0.0
+        clock.clearPending()
     }
 
     override fun render() {
@@ -125,42 +152,64 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
             (if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)) 1 else 0)
         val dx = (keyX + touch.dx).coerceIn(-1f, 1f).toDouble()
         val dy = (keyY + touch.dy).coerceIn(-1f, 1f).toDouble()
+        if (dx != 0.0 || dy != 0.0) {
+            facing = if (kotlin.math.abs(dx) > kotlin.math.abs(dy)) {
+                if (dx > 0.0) 3 else 1
+            } else if (dy > 0.0) 2 else 0
+        }
         clock.advance(Gdx.graphics.deltaTime.toDouble()) {
+            animationSeconds += FixedStepClock.STEP_SECONDS
             if (!vitality.defeated) {
+                val oldX = actor.x
+                val oldY = actor.y
                 StageCollision.move(
                     stage, actor, dx, dy, 77.0,
                     FixedStepClock.STEP_SECONDS, bombSimulation.bombs,
                 )
+                walking = actor.x != oldX || actor.y != oldY
                 if (bombSimulation.tick() > 0) explosionSound.play(0.75f)
                 // Use the actor's actual provisional 5px collision radius, not a
                 // point sample that misses flame hits along the sprite edge.
                 vitality.tick(bombSimulation.isBurning(actor.x, actor.y, radius = StageCollision.ACTOR_RADIUS))
-            }
+            } else walking = false
         }
         ScreenUtils.clear(0f, 0f, 0f, 1f)
         viewport.apply()
         batch.projectionMatrix = camera.combined
         batch.begin()
         batch.draw(arena, 0f, 0f, stage.width.toFloat(), stage.height.toFloat())
+        // Match the original Mainline sprite families and orientation; native
+        // renderer uses y-up coordinates, while simulation stays y-down.
+        for (bomb in bombSimulation.bombs) {
+            batch.draw(bombSprite, (bomb.x - 8).toFloat(),
+                (stage.height - bomb.y - 8).toFloat(), 16f, 16f)
+        }
+        for (flame in bombSimulation.flames) {
+            val frame = NativeSpriteFrames.flame(flame.remaining, 0.45)
+            val alpha = (flame.remaining / 0.12).coerceIn(0.0, 1.0).toFloat()
+            batch.setColor(1f, 1f, 1f, alpha)
+            val center = flame.cells.firstOrNull()
+            for (cell in flame.cells) {
+                val sprite = when {
+                    cell == center -> blastCenter[frame]
+                    cell.x == center?.x -> blastVertical[frame]
+                    else -> blastHorizontal[frame]
+                }
+                batch.draw(sprite, (cell.x - 8).toFloat(),
+                    (stage.height - cell.y - 8).toFloat(), 16f, 16f)
+            }
+        }
+        batch.setColor(1f, 1f, 1f, 1f)
+        val sprite = playerFrames[NativeSpriteFrames.player(facing, walking, animationSeconds)]
+        if (!vitality.defeated &&
+            (vitality.invulnerableSeconds <= 0.0 ||
+                kotlin.math.floor(animationSeconds * 13).toInt() % 2 != 0)) {
+            batch.draw(sprite, (actor.x - sprite.width / 2.0).toFloat(),
+                (stage.height - actor.y - 7).toFloat())
+        }
         batch.end()
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
-        shapes.projectionMatrix = camera.combined
-        shapes.begin(ShapeRenderer.ShapeType.Filled)
-        if (vitality.defeated) shapes.setColor(0.96f, 0.24f, 0.26f, 1f)
-        else shapes.setColor(0.12f, 0.92f, 0.78f, 1f)
-        shapes.circle(actor.x.toFloat(), (stage.height - actor.y).toFloat(), 5f, 16)
-        // Native provisional bomb/flame overlays. Real original NPS sprites
-        // and their timing will replace these placeholders after parity review.
-        shapes.setColor(0.16f, 0.18f, 0.24f, 1f)
-        for (bomb in bombSimulation.bombs) {
-            shapes.circle(bomb.x.toFloat(), (stage.height - bomb.y).toFloat(), 7f, 16)
-        }
-        shapes.setColor(1f, 0.64f, 0.22f, 0.75f)
-        for (flame in bombSimulation.flames) for (cell in flame.cells) {
-            shapes.rect((cell.x - 8).toFloat(), (stage.height - cell.y - 8).toFloat(), 16f, 16f)
-        }
-        shapes.end()
 
         // Overlay uses screen pixels, not arena pixels; stays reachable on
         // tablets/phones with different aspect ratios and letterboxing.
@@ -195,12 +244,19 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
 
     override fun pause() {
         touchControls.reset()
+        clock.clearPending()
+        walking = false
         if (::placeSound.isInitialized) placeSound.stop()
         if (::explosionSound.isInitialized) explosionSound.stop()
     }
 
     override fun dispose() {
         if (::arena.isInitialized) arena.dispose()
+        if (::playerFrames.isInitialized) playerFrames.forEach(Texture::dispose)
+        if (::bombSprite.isInitialized) bombSprite.dispose()
+        if (::blastCenter.isInitialized) blastCenter.forEach(Texture::dispose)
+        if (::blastVertical.isInitialized) blastVertical.forEach(Texture::dispose)
+        if (::blastHorizontal.isInitialized) blastHorizontal.forEach(Texture::dispose)
         if (::batch.isInitialized) batch.dispose()
         if (::shapes.isInitialized) shapes.dispose()
         if (::font.isInitialized) font.dispose()
