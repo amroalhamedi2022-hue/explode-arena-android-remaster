@@ -14,13 +14,14 @@ class NativeTouchControls {
         val dx: Float = 0f,
         val dy: Float = 0f,
         val placeBomb: Boolean = false,
+        val pauseToggle: Boolean = false,
         val previousStage: Boolean = false,
         val nextStage: Boolean = false,
     )
     data class Layout(
         val padX: Float, val padY: Float,
         val bombX: Float, val bombY: Float,
-        val previousX: Float, val nextX: Float, val stageY: Float,
+        val previousX: Float, val nextX: Float, val pauseX: Float, val stageY: Float,
         val radius: Float,
     )
 
@@ -35,6 +36,7 @@ class NativeTouchControls {
             padX = width * 0.20f, padY = height * 0.79f,
             bombX = width * 0.82f, bombY = height * 0.79f,
             previousX = width * 0.12f, nextX = width * 0.88f,
+            pauseX = width * 0.50f,
             stageY = height * 0.11f, radius = radius,
         )
     }
@@ -70,6 +72,7 @@ class NativeTouchControls {
             dx = dx,
             dy = dy,
             placeBomb = justPressed(l.bombX, l.bombY),
+            pauseToggle = justPressed(l.pauseX, l.stageY),
             previousStage = justPressed(l.previousX, l.stageY),
             nextStage = justPressed(l.nextX, l.stageY),
         )
