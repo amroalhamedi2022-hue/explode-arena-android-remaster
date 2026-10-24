@@ -322,7 +322,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         font.draw(batch, "<", controls.previousX - 4f, height - controls.stageY + 6f)
         font.draw(batch, ">", controls.nextX - 4f, height - controls.stageY + 6f)
         font.draw(batch, if (pauseGate.isPaused) ">" else "II", controls.pauseX - 6f, height - controls.stageY + 6f)
-        if (pauseGate.isPaused) font.draw(batch, "PAUSED - TAP > TO RESUME", width * 0.33f, height * 0.57f)
+        if (pauseGate.isPaused) font.draw(batch, "PAUSED - TAP CENTER TO RESUME", width * 0.33f, height * 0.57f)
         font.draw(batch, if (roundFlow.canRetry) "R" else "B", controls.bombX - 5f, height - controls.bombY + 6f)
         batch.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
