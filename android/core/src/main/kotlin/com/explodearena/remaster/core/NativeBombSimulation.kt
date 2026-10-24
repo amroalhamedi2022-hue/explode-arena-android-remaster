@@ -114,6 +114,21 @@ class NativeBombSimulation(
         return activeFlames.any { flame -> flame.cells.any { blastHits(it, x, y, radius) } }
     }
 
+    /**
+     * Predict the current provisional bomb footprint without placing a bomb.
+     * Used by the native bot to look for a reachable refuge before planting.
+     * This does not predict chain reactions or establish Symbian blast parity.
+     */
+    fun wouldBlastHitFrom(
+        bombX: Double, bombY: Double, x: Double, y: Double,
+        radius: Double = StageCollision.ACTOR_RADIUS,
+    ): Boolean {
+        require(bombX.isFinite() && bombY.isFinite() && x.isFinite() && y.isFinite())
+        require(radius.isFinite() && radius >= 0.0)
+        return explosionCells(cellCenter(bombX), cellCenter(bombY))
+            .any { blastHits(it, x, y, radius) }
+    }
+
     private fun explosionCells(x: Double, y: Double): List<Spawn> {
         val cx = floor(x / BOMB_CELL).toInt()
         val cy = floor(y / BOMB_CELL).toInt()
