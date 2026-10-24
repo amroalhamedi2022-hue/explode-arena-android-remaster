@@ -104,4 +104,38 @@ class NativeBombSimulationTest {
         assertFalse(sim.isBurning(85.0, 24.0, radius = StageCollision.ACTOR_RADIUS))
     }
 
+    @Test fun bombPlacedIntoExistingFlameChainsOnNextTick() {
+        val sim = NativeBombSimulation(stage())
+        assertTrue(sim.place(Actor(24.0, 24.0)))
+        repeat(96) { sim.tick() }
+        assertTrue(sim.isBurning(56.0, 24.0))
+        assertTrue(sim.place(Actor(56.0, 24.0), "player2"))
+        assertEquals(1, sim.tick())
+        assertTrue(sim.bombs.isEmpty())
+        assertEquals(2, sim.flames.size)
+    }
+
+    @Test fun remoteBombCannotSurviveActiveFlameEvenWithoutFuse() {
+        val sim = NativeBombSimulation(stage())
+        assertTrue(sim.place(Actor(24.0, 24.0)))
+        repeat(96) { sim.tick() }
+        assertTrue(sim.setRemoteDetonator("player2", true))
+        assertTrue(sim.place(Actor(56.0, 24.0), "player2"))
+        assertTrue(sim.bombs.single().remote)
+        assertNull(sim.bombs.single().remaining)
+        assertEquals(1, sim.tick())
+        assertTrue(sim.bombs.isEmpty())
+    }
+
+    @Test fun flameInItsFinalTickStillIgnitesNewlyPlacedBomb() {
+        val sim = NativeBombSimulation(stage())
+        assertTrue(sim.place(Actor(24.0, 24.0)))
+        repeat(96) { sim.tick() }
+        repeat(26) { sim.tick() }
+        assertTrue(sim.isBurning(56.0, 24.0))
+        assertTrue(sim.place(Actor(56.0, 24.0), "player2"))
+        assertEquals(1, sim.tick())
+        assertTrue(sim.bombs.isEmpty())
+    }
+
 }
