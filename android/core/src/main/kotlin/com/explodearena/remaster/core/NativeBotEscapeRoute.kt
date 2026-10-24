@@ -41,14 +41,18 @@ internal object NativeBotEscapeRoute {
         // bomb's ray. Snapshot all active footprints once to avoid recomputing
         // obstacle-ray traversal for every visited BFS cell.
         val activeThreats = simulation.predictedActiveBlastCells()
-        // A refuge is not useful when the currently ticking bomb will explode
-        // before the bot can physically reach it. Remote bombs have no fuse;
-        // a newly proposed bomb is not present yet and uses the step cap.
-        val activeSource = simulation.bombs.firstOrNull {
-            it.x == NativeBombSimulation.cellCenter(bombX) &&
-                it.y == NativeBombSimulation.cellCenter(bombY)
-        }
-        val travelBudget = activeSource?.remaining?.let { remaining ->
+        // An opponent's timed bomb can explode sooner than the proposed or
+        // owned bomb. When its ray already covers the bot, use the EARLIEST
+        // relevant fuse as the travel deadline; otherwise BFS may claim a
+        // refuge reachable only after the opponent's explosion. Distant timed
+        // bombs do not constrain this escape, and remote bombs have no fuse.
+        // This is conservative provisional AI, not Symbian timing evidence.
+        val earliestThreatFuse = simulation.bombs.asSequence()
+            .filter { it.remaining != null &&
+                simulation.wouldBlastHitFrom(it.x, it.y, bot.x, bot.y) }
+            .mapNotNull { it.remaining }
+            .minOrNull()
+        val travelBudget = earliestThreatFuse?.let { remaining ->
             (remaining - FUSE_MARGIN_SECONDS).coerceAtLeast(0.0) * NativeBotController.SPEED
         }
         val threatenedByOtherBomb = { x: Double, y: Double ->
