@@ -76,4 +76,27 @@ class NativeReplayTraceValidationTest {
         fields[9] = "flames=1;3ff0000000000000:not-hex,3ff0000000000000/"
         assertEquals("expected-flames", issue(fields.joinToString("|")))
     }
+    @Test fun rejectsFutureBombIdsAndExpiredActiveBombTimers() {
+        val valid = sample().split('|').toMutableList()
+        // The allocator has already issued bomb #1, so nextBombId must be > 1.
+        valid[7] = "nextBombId=1"
+        assertEquals("expected-bombs", issue(valid.joinToString("|")))
+        valid[7] = "nextBombId=2"
+
+        val originalBomb = valid[8].substringAfter(';').split(',').toMutableList()
+        for (timer in listOf("0", "8000000000000000", "bff0000000000000")) {
+            val alteredBomb = originalBomb.toMutableList().also { it[4] = timer }
+            valid[8] = "bombs=1;" + alteredBomb.joinToString(",")
+            assertEquals("timer $timer", "expected-bombs", issue(valid.joinToString("|")))
+        }
+    }
+
+    @Test fun rejectsExpiredFlamesEvenWhenBothTracesMatch() {
+        val fields = sample().split('|').toMutableList()
+        fields[9] = "flames=1;0:4038000000000000,4038000000000000/"
+        assertEquals("expected-flames", issue(fields.joinToString("|")))
+        fields[9] = "flames=1;bff0000000000000:4038000000000000,4038000000000000/"
+        assertEquals("expected-flames", issue(fields.joinToString("|")))
+    }
+
 }
