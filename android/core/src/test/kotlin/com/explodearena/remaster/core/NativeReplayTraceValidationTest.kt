@@ -73,7 +73,7 @@ class NativeReplayTraceValidationTest {
         fields[8] = "bombs=2;$bomb;$bomb"
         assertEquals("expected-bombs", issue(fields.joinToString("|")))
         fields[8] = "bombs=0"
-        fields[9] = "flames=1;3ff0000000000000:bad,3ff0000000000000/"
+        fields[9] = "flames=1;3ff0000000000000:not-hex,3ff0000000000000/"
         assertEquals("expected-flames", issue(fields.joinToString("|")))
     }
 }
