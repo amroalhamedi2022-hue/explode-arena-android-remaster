@@ -44,6 +44,29 @@ class NativeRoundFlowTest {
         repeat(180) { assertFalse(flow.tick(false, true, true, true)) }
     }
 
+    @Test fun fixedStepClockAndVitalityDriveActualRoundTransition() {
+        val clock = FixedStepClock()
+        val player = NativeVitality(initialHealth = 1, initialInvulnerabilitySeconds = 0.0)
+        val bot = NativeVitality(
+            initialHealth = 1, initialInvulnerabilitySeconds = 0.0,
+            hitInvulnerabilitySeconds = 0.0,
+        )
+        val flow = NativeRoundFlow(victoryHoldTicks = 3)
+        var transitions = 0
+        repeat(5) { frame ->
+            clock.advance(FixedStepClock.STEP_SECONDS) {
+                player.tick(burning = false)
+                bot.tick(burning = frame == 0)
+                if (flow.tick(player.defeated, bot.defeated, true, true)) transitions++
+            }
+        }
+        assertEquals(5L, clock.ticks)
+        assertFalse(player.defeated)
+        assertTrue(bot.defeated)
+        assertEquals(1, transitions)
+        assertEquals(NativeRoundFlow.State.ADVANCING, flow.state)
+    }
+
     @Test fun invalidHoldIsRejectedAndNewRoundIsIndependent() {
         assertThrows(IllegalArgumentException::class.java) { NativeRoundFlow(0) }
         val previous = NativeRoundFlow(1)
