@@ -33,7 +33,17 @@ internal object NativeBotEscapeRoute {
         if (cellCount <= 0 || cellCount > MAX_CELLS ||
             !bot.x.isFinite() || !bot.y.isFinite() ||
             !bombX.isFinite() || !bombY.isFinite()) return null
-        if (!simulation.wouldBlastHitFrom(bombX, bombY, bot.x, bot.y)) return 0
+        // A refuge outside our own blast can still be inside another active
+        // bomb's ray. Snapshot all active footprints once to avoid recomputing
+        // obstacle-ray traversal for every visited BFS cell.
+        val activeThreats = simulation.predictedActiveBlastCells()
+        val threatenedByOtherBomb = { x: Double, y: Double ->
+            activeThreats.any { cell ->
+                NativeBombSimulation.blastHits(cell, x, y, StageCollision.ACTOR_RADIUS)
+            }
+        }
+        if (!simulation.wouldBlastHitFrom(bombX, bombY, bot.x, bot.y) &&
+            !threatenedByOtherBomb(bot.x, bot.y)) return 0
 
         val startCol = floor((bot.x - stage.obstacleX) / StageCollision.CELL).toInt()
         val startRow = floor((bot.y - stage.obstacleY) / StageCollision.CELL).toInt()
@@ -77,7 +87,8 @@ internal object NativeBotEscapeRoute {
                 seen[next] = true
                 first[next] = if (cell == start) direction + 1 else first[cell]
                 depth[next] = depth[cell] + 1
-                if (!simulation.wouldBlastHitFrom(bombX, bombY, x, y)) {
+                if (!simulation.wouldBlastHitFrom(bombX, bombY, x, y) &&
+                    !threatenedByOtherBomb(x, y)) {
                     return first[next]
                 }
                 queue[tail++] = next
