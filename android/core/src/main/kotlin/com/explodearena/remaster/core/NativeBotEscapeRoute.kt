@@ -57,7 +57,8 @@ internal object NativeBotEscapeRoute {
             }
         }
         if (!simulation.wouldBlastHitFrom(bombX, bombY, bot.x, bot.y) &&
-            !threatenedByOtherBomb(bot.x, bot.y)) return 0
+            !threatenedByOtherBomb(bot.x, bot.y) &&
+            !simulation.isBurning(bot.x, bot.y, StageCollision.ACTOR_RADIUS)) return 0
 
         val startCol = floor((bot.x - stage.obstacleX) / StageCollision.CELL).toInt()
         val startRow = floor((bot.y - stage.obstacleY) / StageCollision.CELL).toInt()
