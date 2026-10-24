@@ -47,6 +47,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     private val clock = FixedStepClock()
     private lateinit var bombSimulation: NativeBombSimulation
     private lateinit var vitality: NativeVitality
+    private var roundFlow = NativeRoundFlow()
     // First provisional opponent on arenas with at least two spawn slots.
     // Original Symbian bot AI, character palette and match rules are unverified.
     private var botActor: Actor? = null
@@ -65,6 +66,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         bombSimulation = NativeBombSimulation(stage)
         vitality = NativeVitality()
         resetBot(stage)
+        roundFlow = NativeRoundFlow()
         arena = Texture(Gdx.files.internal(stage.image))
         fun loadFrames(group: String, count: Int): Array<Texture> =
             Array(count) { index ->
@@ -110,6 +112,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         bombSimulation = NativeBombSimulation(next)
         vitality = NativeVitality()
         resetBot(next)
+        roundFlow = NativeRoundFlow()
         facing = 2
         walking = false
         animationSeconds = 0.0
@@ -126,6 +129,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         bombSimulation = NativeBombSimulation(stage)
         vitality = NativeVitality()
         resetBot(stage)
+        roundFlow = NativeRoundFlow()
         facing = 2
         walking = false
         animationSeconds = 0.0
@@ -160,10 +164,10 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         // its actual pickup mapping is established; Space/touch are modern aids.
         if (touch.placeBomb || Gdx.input.isKeyJustPressed(Input.Keys.SPACE) ||
             Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
-            if (vitality.defeated) retryStage()
-            else if (bombSimulation.place(actor)) placeSound.play(0.65f)
+            if (roundFlow.canRetry) retryStage()
+            else if (roundFlow.isPlaying && bombSimulation.place(actor)) placeSound.play(0.65f)
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_8) && !vitality.defeated) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_8) && roundFlow.isPlaying) {
             if (bombSimulation.detonateRemote()) explosionSound.play(0.75f)
         }
         val keyX = (if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) 1 else 0) -
@@ -177,9 +181,10 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
                 if (dx > 0.0) 3 else 1
             } else if (dy > 0.0) 2 else 0
         }
+        var advanceAfterTick = false
         clock.advance(Gdx.graphics.deltaTime.toDouble()) {
             animationSeconds += FixedStepClock.STEP_SECONDS
-            if (!vitality.defeated) {
+            if (roundFlow.isPlaying) {
                 val oldX = actor.x
                 val oldY = actor.y
                 StageCollision.move(
@@ -213,7 +218,14 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
                 walking = false
                 botWalking = false
             }
+            if (roundFlow.tick(
+                    vitality.defeated, botVitality?.defeated == true,
+                    botActor != null, stageIndex < stages.lastIndex,
+                )) advanceAfterTick = true
         }
+        // Swap textures/stage only after all catch-up ticks, never inside the
+        // FixedStepClock callback (which owns the current accumulator).
+        if (advanceAfterTick) selectStage(stageIndex + 1)
         ScreenUtils.clear(0f, 0f, 0f, 1f)
         viewport.apply()
         batch.projectionMatrix = camera.combined
@@ -286,12 +298,17 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         batch.begin()
         val botHp = botVitality?.let { "  BOT HP ${it.health}" }.orEmpty()
         font.draw(batch, "ARENA ${stageIndex + 1}/${stages.size}  HP ${vitality.health}" + botHp, width * 0.30f, height - controls.stageY + 6f)
-        if (vitality.defeated) {
-            font.draw(batch, "DEFEAT - PRESS B TO RETRY", width * 0.32f, height * 0.53f)
+        val roundMessage = when (roundFlow.state) {
+            NativeRoundFlow.State.WON, NativeRoundFlow.State.ADVANCING -> "VICTORY - NEXT ARENA"
+            NativeRoundFlow.State.COMPLETE -> "FINAL ARENA WON"
+            NativeRoundFlow.State.LOST -> "DEFEAT - PRESS B TO RETRY"
+            NativeRoundFlow.State.DRAW -> "DRAW - PRESS B TO RETRY"
+            NativeRoundFlow.State.PLAYING -> null
         }
+        if (roundMessage != null) font.draw(batch, roundMessage, width * 0.32f, height * 0.53f)
         font.draw(batch, "<", controls.previousX - 4f, height - controls.stageY + 6f)
         font.draw(batch, ">", controls.nextX - 4f, height - controls.stageY + 6f)
-        font.draw(batch, if (vitality.defeated) "R" else "B", controls.bombX - 5f, height - controls.bombY + 6f)
+        font.draw(batch, if (roundFlow.canRetry) "R" else "B", controls.bombX - 5f, height - controls.bombY + 6f)
         batch.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
     }
