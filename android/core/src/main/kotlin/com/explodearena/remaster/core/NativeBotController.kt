@@ -57,9 +57,13 @@ class NativeBotController {
             NativeBotEscapeRoute.firstDirection(stage, bot, simulation, bot.x, bot.y)
         } else null
         val place = near && refuge != null && refuge != 0 && bot.passBomb == null &&
-            ownBomb == null &&
+            ownBomb == null && canStep(refuge) &&
             !simulation.isBurning(bot.x, bot.y, StageCollision.ACTOR_RADIUS)
-        return Decision(dx[cachedDirection], dy[cachedDirection], place)
+        // A bomb must be followed by the escape plan immediately. Returning
+        // the cached chase direction here spent the first fuse tick moving
+        // toward the target, despite having just verified a different refuge.
+        val movement = if (place) requireNotNull(refuge) else cachedDirection
+        return Decision(dx[movement], dy[movement], place)
     }
 
     private fun plan(
