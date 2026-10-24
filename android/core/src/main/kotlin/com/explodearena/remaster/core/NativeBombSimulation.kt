@@ -146,6 +146,14 @@ class NativeBombSimulation(
             .any { blastHits(it, x, y, radius) }
     }
 
+    /**
+     * Snapshot the predicted blast footprint of currently placed bombs for
+     * bounded AI searches. Compute the rays once per plan, not once for every
+     * BFS cell. This is conservative provisional behavior, not Symbian timing.
+     */
+    fun predictedActiveBlastCells(): List<Spawn> =
+        activeBombs.flatMap { explosionCells(it.x, it.y) }
+
     private fun explosionCells(x: Double, y: Double): List<Spawn> {
         val cx = floor(x / BOMB_CELL).toInt()
         val cy = floor(y / BOMB_CELL).toInt()
