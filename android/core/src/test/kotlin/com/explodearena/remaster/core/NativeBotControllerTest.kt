@@ -142,6 +142,29 @@ class NativeBotControllerTest {
         assertNull(NativeBotEscapeRoute.firstDirection(arena, bot, sim, 40.0, 40.0))
     }
 
+    @Test fun alreadySafeCheckMustNotIgnoreAnActiveFlame() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena)
+        assertTrue(sim.place(Actor(40.0, 40.0)))
+        repeat(96) { sim.tick() }
+        val bot = Actor(56.0, 40.0)
+        assertTrue(sim.isBurning(bot.x, bot.y, StageCollision.ACTOR_RADIUS))
+        // Diagonal to the proposed bomb, with no other active bomb left:
+        // the previous early-return incorrectly said "already safe".
+        assertFalse(sim.wouldBlastHitFrom(104.0, 104.0, bot.x, bot.y))
+        assertTrue(sim.bombs.isEmpty())
+        val direction = NativeBotEscapeRoute.firstDirection(arena, bot, sim, 104.0, 104.0)
+        assertNotEquals("Standing in active fire cannot be a safe refuge", 0, direction ?: -1)
+    }
+
+    @Test fun alreadySafeAndNotBurningStillReturnsZero() {
+        val arena = stage()
+        val direction = NativeBotEscapeRoute.firstDirection(
+            arena, Actor(24.0, 24.0), NativeBombSimulation(arena), 104.0, 104.0,
+        )
+        assertEquals(0, direction)
+    }
+
     @Test fun remoteBombWithoutFuseDoesNotInheritTimedEscapeDeadline() {
         val arena = stage()
         val sim = NativeBombSimulation(arena)
