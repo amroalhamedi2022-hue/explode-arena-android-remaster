@@ -47,6 +47,13 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     private val clock = FixedStepClock()
     private lateinit var bombSimulation: NativeBombSimulation
     private lateinit var vitality: NativeVitality
+    // First provisional opponent on arenas with at least two spawn slots.
+    // Original Symbian bot AI, character palette and match rules are unverified.
+    private var botActor: Actor? = null
+    private var botVitality: NativeVitality? = null
+    private var botController = NativeBotController()
+    private var botFacing = 2
+    private var botWalking = false
 
     override fun create() {
         stages = StageCatalog.parse(Gdx.files.internal("assets/stages.js").readString("UTF-8"))
@@ -57,6 +64,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         actor = Actor(safe.x, safe.y)
         bombSimulation = NativeBombSimulation(stage)
         vitality = NativeVitality()
+        resetBot(stage)
         arena = Texture(Gdx.files.internal(stage.image))
         fun loadFrames(group: String, count: Int): Array<Texture> =
             Array(count) { index ->
@@ -101,6 +109,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         actor = Actor(safe.x, safe.y)
         bombSimulation = NativeBombSimulation(next)
         vitality = NativeVitality()
+        resetBot(next)
         facing = 2
         walking = false
         animationSeconds = 0.0
@@ -116,10 +125,21 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         actor = Actor(safe.x, safe.y)
         bombSimulation = NativeBombSimulation(stage)
         vitality = NativeVitality()
+        resetBot(stage)
         facing = 2
         walking = false
         animationSeconds = 0.0
         clock.clearPending()
+    }
+
+    private fun resetBot(current: StageData) {
+        val spawn = current.spawns.getOrNull(1)
+        val safe = spawn?.let { StageCollision.nearestFree(current, it.x, it.y) }
+        botActor = safe?.let { Actor(it.x, it.y) }
+        botVitality = if (safe == null) null else NativeVitality()
+        botController = NativeBotController()
+        botFacing = 2
+        botWalking = false
     }
 
     override fun render() {
@@ -171,7 +191,32 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
                 // Use the actor's actual provisional 5px collision radius, not a
                 // point sample that misses flame hits along the sprite edge.
                 vitality.tick(bombSimulation.isBurning(actor.x, actor.y, radius = StageCollision.ACTOR_RADIUS))
-            } else walking = false
+                val bot = botActor
+                val botLife = botVitality
+                if (bot != null && botLife != null && !botLife.defeated) {
+                    val decision = botController.decide(stage, bot, actor, bombSimulation, clock.ticks)
+                    val oldBotX = bot.x
+                    val oldBotY = bot.y
+                    StageCollision.move(
+                        stage, bot, decision.dx, decision.dy, NativeBotController.SPEED,
+                        FixedStepClock.STEP_SECONDS, bombSimulation.bombs,
+                    )
+                    botWalking = bot.x != oldBotX || bot.y != oldBotY
+                    if (botWalking) {
+                        botFacing = when {
+                            decision.dx > 0 -> 3
+                            decision.dx < 0 -> 1
+                            decision.dy > 0 -> 2
+                            else -> 0
+                        }
+                    }
+                    if (decision.placeBomb && bombSimulation.place(bot, "bot")) placeSound.play(0.45f)
+                    botLife.tick(bombSimulation.isBurning(bot.x, bot.y, StageCollision.ACTOR_RADIUS))
+                } else botWalking = false
+            } else {
+                walking = false
+                botWalking = false
+            }
         }
         ScreenUtils.clear(0f, 0f, 0f, 1f)
         viewport.apply()
@@ -207,6 +252,18 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
             batch.draw(sprite, (actor.x - sprite.width / 2.0).toFloat(),
                 (stage.height - actor.y - 7).toFloat())
         }
+        val bot = botActor
+        val botLife = botVitality
+        if (bot != null && botLife != null && !botLife.defeated &&
+            (botLife.invulnerableSeconds <= 0.0 ||
+                kotlin.math.floor(animationSeconds * 13).toInt() % 2 != 0)) {
+            // Temporary tinted Mainline character until verified opponent art.
+            batch.setColor(1f, 0.55f, 0.55f, 1f)
+            val botSprite = playerFrames[NativeSpriteFrames.player(botFacing, botWalking, animationSeconds)]
+            batch.draw(botSprite, (bot.x - botSprite.width / 2.0).toFloat(),
+                (stage.height - bot.y - 7).toFloat())
+            batch.setColor(1f, 1f, 1f, 1f)
+        }
         batch.end()
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
@@ -231,7 +288,8 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         shapes.end()
         batch.projectionMatrix = overlay
         batch.begin()
-        font.draw(batch, "ARENA ${stageIndex + 1}/${stages.size}  HP ${vitality.health}", width * 0.39f, height - controls.stageY + 6f)
+        val botHp = botVitality?.let { "  BOT HP ${it.health}" }.orEmpty()
+        font.draw(batch, "ARENA ${stageIndex + 1}/${stages.size}  HP ${vitality.health}" + botHp, width * 0.30f, height - controls.stageY + 6f)
         if (vitality.defeated) {
             font.draw(batch, "DEFEAT - PRESS B TO RETRY", width * 0.32f, height * 0.53f)
         }
