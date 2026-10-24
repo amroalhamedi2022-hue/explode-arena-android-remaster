@@ -127,4 +127,31 @@ class NativeBotControllerTest {
         assertTrue(sim.wouldBlastHitFrom(40.0, 40.0, 56.0, 40.0))
         assertFalse(sim.wouldBlastHitFrom(40.0, 40.0, 64.0, 64.0))
     }
+
+    @Test fun lateEscapeCannotClaimRefugeBeyondRemainingFuseTravel() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena)
+        val bot = Actor(40.0, 40.0)
+        assertTrue(sim.place(bot, "bot"))
+        // At placement there is time to escape an open arena.
+        assertNotNull(NativeBotEscapeRoute.firstDirection(arena, bot, sim, 40.0, 40.0))
+        // The provisional 1.6s fuse is 96 ticks. After 92 ticks, less
+        // than five movement pixels remain; a distant refuge is impossible.
+        repeat(92) { sim.tick() }
+        assertTrue(sim.bombs.single().remaining!! > 0.0)
+        assertNull(NativeBotEscapeRoute.firstDirection(arena, bot, sim, 40.0, 40.0))
+    }
+
+    @Test fun remoteBombWithoutFuseDoesNotInheritTimedEscapeDeadline() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena)
+        val bot = Actor(40.0, 40.0)
+        // Remote owners are intentionally limited to players; use the same
+        // escape planner directly for a player-owned remote bomb.
+        assertTrue(sim.setRemoteDetonator("player", true))
+        assertTrue(sim.place(bot, "player"))
+        repeat(200) { sim.tick() }
+        assertNull(sim.bombs.single().remaining)
+        assertNotNull(NativeBotEscapeRoute.firstDirection(arena, bot, sim, 40.0, 40.0))
+    }
 }
