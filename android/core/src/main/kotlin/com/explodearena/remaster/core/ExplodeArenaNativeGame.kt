@@ -48,6 +48,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     private lateinit var bombSimulation: NativeBombSimulation
     private lateinit var vitality: NativeVitality
     private var roundFlow = NativeRoundFlow()
+    private val pauseGate = NativePauseGate()
     // First provisional opponent on arenas with at least two spawn slots.
     // Original Symbian bot AI, character palette and match rules are unverified.
     private var botActor: Actor? = null
@@ -67,6 +68,8 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         vitality = NativeVitality()
         resetBot(stage)
         roundFlow = NativeRoundFlow()
+        // Keep Android Back inside the native game to open/close pause.
+        Gdx.input.setCatchKey(Input.Keys.BACK, true)
         arena = Texture(Gdx.files.internal(stage.image))
         fun loadFrames(group: String, count: Int): Array<Texture> =
             Array(count) { index ->
@@ -157,17 +160,26 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
             } else null
         }
         val touch = touchControls.update(contacts, width, height)
-        if (touch.nextStage || Gdx.input.isKeyJustPressed(Input.Keys.PAGE_DOWN)) selectStage(stageIndex + 1)
-        else if (touch.previousStage || Gdx.input.isKeyJustPressed(Input.Keys.PAGE_UP)) selectStage(stageIndex - 1)
+        val pauseToggled = touch.pauseToggle ||
+            Gdx.input.isKeyJustPressed(Input.Keys.BACK) ||
+            Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) ||
+            Gdx.input.isKeyJustPressed(Input.Keys.P)
+        if (pauseToggled) pauseGate.toggle(clock)
+        if (!pauseGate.isPaused && !pauseToggled) {
+            if (touch.nextStage || Gdx.input.isKeyJustPressed(Input.Keys.PAGE_DOWN)) selectStage(stageIndex + 1)
+            else if (touch.previousStage || Gdx.input.isKeyJustPressed(Input.Keys.PAGE_UP)) selectStage(stageIndex - 1)
+        }
         // Original Symbian first-hand input evidence: keypad 5 plants and 8
         // requests remote detonation. Remote power remains unavailable until
         // its actual pickup mapping is established; Space/touch are modern aids.
-        if (touch.placeBomb || Gdx.input.isKeyJustPressed(Input.Keys.SPACE) ||
-            Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
+        if (!pauseGate.isPaused && !pauseToggled &&
+            (touch.placeBomb || Gdx.input.isKeyJustPressed(Input.Keys.SPACE) ||
+                Gdx.input.isKeyJustPressed(Input.Keys.NUM_5))) {
             if (roundFlow.canRetry) retryStage()
             else if (roundFlow.isPlaying && bombSimulation.place(actor)) placeSound.play(0.65f)
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_8) && roundFlow.isPlaying) {
+        if (!pauseGate.isPaused && !pauseToggled &&
+            Gdx.input.isKeyJustPressed(Input.Keys.NUM_8) && roundFlow.isPlaying) {
             if (bombSimulation.detonateRemote()) explosionSound.play(0.75f)
         }
         val keyX = (if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) 1 else 0) -
@@ -182,7 +194,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
             } else if (dy > 0.0) 2 else 0
         }
         var advanceAfterTick = false
-        clock.advance(Gdx.graphics.deltaTime.toDouble()) {
+        pauseGate.advance(clock, Gdx.graphics.deltaTime.toDouble()) {
             animationSeconds += FixedStepClock.STEP_SECONDS
             if (roundFlow.isPlaying) {
                 val oldX = actor.x
@@ -287,6 +299,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         shapes.circle(controls.bombX, height - controls.bombY, controls.radius * 1.2f, 32)
         shapes.circle(controls.previousX, height - controls.stageY, controls.radius * 0.70f, 24)
         shapes.circle(controls.nextX, height - controls.stageY, controls.radius * 0.70f, 24)
+        shapes.circle(controls.pauseX, height - controls.stageY, controls.radius * 0.70f, 24)
         shapes.setColor(0.16f, 0.90f, 0.82f, 0.82f)
         shapes.circle(
             controls.padX + touch.dx * controls.radius,
@@ -308,6 +321,8 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         if (roundMessage != null) font.draw(batch, roundMessage, width * 0.32f, height * 0.53f)
         font.draw(batch, "<", controls.previousX - 4f, height - controls.stageY + 6f)
         font.draw(batch, ">", controls.nextX - 4f, height - controls.stageY + 6f)
+        font.draw(batch, if (pauseGate.isPaused) ">" else "II", controls.pauseX - 6f, height - controls.stageY + 6f)
+        if (pauseGate.isPaused) font.draw(batch, "PAUSED - TAP > TO RESUME", width * 0.33f, height * 0.57f)
         font.draw(batch, if (roundFlow.canRetry) "R" else "B", controls.bombX - 5f, height - controls.bombY + 6f)
         batch.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
@@ -322,6 +337,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     }
 
     override fun dispose() {
+        Gdx.input.setCatchKey(Input.Keys.BACK, false)
         if (::arena.isInitialized) arena.dispose()
         if (::playerFrames.isInitialized) playerFrames.forEach(Texture::dispose)
         if (::bombSprite.isInitialized) bombSprite.dispose()
