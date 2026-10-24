@@ -46,6 +46,33 @@ class NativeReplayComparisonTest {
         assertNull(diff.actual)
     }
 
+    @Test fun rejectsTwoEmptyTracesInsteadOfClaimingParity() {
+        val diff = NativeReplayComparison.firstDivergence(emptyList(), emptyList())!!
+        assertEquals("empty-trace", diff.field)
+    }
+
+    @Test fun rejectsIdenticalMalformedStageAndTickFields() {
+        val trace = run().first()
+        val invalidStage = trace.replaceFirst("|5|1|", "|not-a-stage|1|")
+        val stageDiff = NativeReplayComparison.firstDivergence(
+            listOf(invalidStage), listOf(invalidStage),
+        )!!
+        assertEquals("expected-stage", stageDiff.field)
+        val invalidTick = trace.replaceFirst("|5|1|", "|5|-1|")
+        val tickDiff = NativeReplayComparison.firstDivergence(
+            listOf(invalidTick), listOf(invalidTick),
+        )!!
+        assertEquals("expected-tick", tickDiff.field)
+    }
+
+    @Test fun rejectsRepeatedTicksEvenWhenBothTracesAreIdentical() {
+        val trace = run()
+        val repeated = listOf(trace[0], trace[0])
+        val diff = NativeReplayComparison.firstDivergence(repeated, repeated)!!
+        assertEquals(1, diff.frameIndex)
+        assertEquals("expected-tick-sequence", diff.field)
+    }
+
     @Test fun rejectsUnversionedOrUnrelatedTraceSchemas() {
         val trace = run().first()
         val diff = NativeReplayComparison.firstDivergence(
