@@ -33,9 +33,7 @@ object NativeReplayComparison {
             val b = right.next()
             val lhs = a.split('|')
             val rhs = b.split('|')
-            if (lhs.firstOrNull()?.substringBefore('|')?.substringBeforeLast('|') != SCHEMA &&
-                lhs.firstOrNull()?.substringBefore('|') != SCHEMA
-            ) {
+            if (lhs.firstOrNull() != SCHEMA) {
                 return Divergence(frame, "expected-schema", SCHEMA, lhs.firstOrNull())
             }
             if (rhs.firstOrNull() != SCHEMA) {
