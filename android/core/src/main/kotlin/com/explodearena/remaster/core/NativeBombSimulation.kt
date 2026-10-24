@@ -67,6 +67,17 @@ class NativeBombSimulation(
 
     /** Advance fuses/flames one simulation tick and detonate chain reactions. */
     fun tick(): Int {
+        // A bomb placed into an already burning cell must join the chain
+        // reaction on the next simulation tick, even if it is a remote bomb
+        // with no fuse. Sample BEFORE expiring flames: a flame still active
+        // when the bomb was placed must not silently miss its final tick.
+        // This is a native chain-reaction consistency rule; the exact
+        // original Symbian timing still needs EKA2L1 verification.
+        val ignitedIds = activeBombs.filter { bomb ->
+            activeFlames.any { flame ->
+                flame.cells.any { cell -> blastHits(cell, bomb.x, bomb.y, 0.0) }
+            }
+        }.map { it.id }
         val dt = FixedStepClock.STEP_SECONDS
         val flamesRemaining = activeFlames.map { it.copy(remaining = it.remaining - dt) }
             .filter { it.remaining > 1e-10 }
@@ -77,7 +88,7 @@ class NativeBombSimulation(
         }
         activeBombs.clear()
         activeBombs.addAll(updated)
-        return detonate(updated.filter { it.remaining != null && it.remaining <= 1e-10 }.map { it.id })
+        return detonate(ignitedIds + updated.filter { it.remaining != null && it.remaining <= 1e-10 }.map { it.id })
     }
 
     /**
