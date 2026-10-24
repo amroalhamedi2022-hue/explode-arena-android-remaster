@@ -22,9 +22,10 @@ internal object NativeBotTurn {
         simulation: NativeBombSimulation,
         controller: NativeBotController,
         tick: Long,
+        owner: String = "bot",
     ): Result {
         val decision = controller.decide(stage, bot, target, simulation, tick)
-        val placed = decision.placeBomb && simulation.place(bot, "bot")
+        val placed = decision.placeBomb && simulation.place(bot, owner)
         val oldX = bot.x
         val oldY = bot.y
         StageCollision.move(

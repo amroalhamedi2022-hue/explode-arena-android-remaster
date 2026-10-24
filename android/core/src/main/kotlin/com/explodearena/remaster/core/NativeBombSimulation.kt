@@ -50,7 +50,7 @@ class NativeBombSimulation(
 
     /** Return false if owner has reached the limit or the bomb tile is blocked/occupied. */
     fun place(actor: Actor, owner: String = "player"): Boolean {
-        require(owner == "player" || owner == "player2" || owner == "bot")
+        require(owner in setOf("player", "player2", "bot", "bot2", "bot3"))
         require(actor.x.isFinite() && actor.y.isFinite())
         if (activeBombs.count { it.owner == owner } >= bombLimit) return false
         val x = cellCenter(actor.x)
