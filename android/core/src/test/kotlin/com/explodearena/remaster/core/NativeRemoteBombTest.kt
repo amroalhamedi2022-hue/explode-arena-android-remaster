@@ -36,17 +36,52 @@ class NativeRemoteBombTest {
         assertEquals(1, sim.tick())
     }
 
-    @Test fun ambiguousMultipleRemoteBombsAreNeverDetonatedByGuesswork() {
-        val sim = NativeBombSimulation(stage(), bombLimit = 2)
+    @Test fun oneKeyDetonatesEveryOwnedRemoteBombWithoutAffectingDistantOtherOwner() {
+        val sim = NativeBombSimulation(stage(), bombLimit = 3)
         assertTrue(sim.setRemoteDetonator("player", true))
-        assertTrue(sim.place(Actor(24.0, 24.0)))
-        assertTrue(sim.place(Actor(120.0, 24.0)))
-        assertEquals(2, sim.bombs.size)
+        assertTrue(sim.setRemoteDetonator("player2", true))
+        assertTrue(sim.place(Actor(24.0, 24.0), "player"))
+        assertTrue(sim.place(Actor(120.0, 24.0), "player"))
+        assertTrue(sim.place(Actor(168.0, 72.0), "player2"))
+        repeat(600) { assertEquals(0, sim.tick()) }
+        assertEquals(3, sim.bombs.size)
+        assertTrue(sim.detonateRemote("player"))
+        assertEquals(1, sim.bombs.size)
+        assertEquals("player2", sim.bombs.single().owner)
+        assertTrue(sim.bombs.single().remote)
+        assertTrue(sim.isBurning(24.0, 24.0))
+        assertTrue(sim.isBurning(120.0, 24.0))
         assertFalse(sim.detonateRemote("player"))
-        assertEquals(2, sim.bombs.size)
+        assertTrue(sim.detonateRemote("player2"))
+        assertTrue(sim.bombs.isEmpty())
+    }
+
+    @Test fun timedBombPlacedBeforePickupKeepsFuseAndIsNotDirectlyRemoteDetonated() {
+        val sim = NativeBombSimulation(stage(), bombLimit = 3)
+        assertTrue(sim.place(Actor(24.0, 24.0), "player"))
+        assertTrue(sim.setRemoteDetonator("player", true))
+        assertTrue(sim.place(Actor(120.0, 24.0), "player"))
+        assertTrue(sim.place(Actor(168.0, 72.0), "player"))
+        assertEquals(1, sim.bombs.count { !it.remote })
+        assertEquals(2, sim.bombs.count { it.remote })
         assertTrue(sim.setRemoteDetonator("player", false))
         assertFalse(sim.hasRemoteDetonator("player"))
-        // Existing remote bombs keep their mode when the power is disabled.
-        assertTrue(sim.bombs.all { it.remote && it.remaining == null })
+        // Removing the power does not retroactively change placed remote bombs.
+        assertTrue(sim.detonateRemote("player"))
+        assertEquals(1, sim.bombs.size)
+        assertFalse(sim.bombs.single().remote)
+        assertEquals(24.0, sim.bombs.single().x, 0.0)
+        repeat(95) { assertEquals(0, sim.tick()) }
+        assertEquals(1, sim.tick())
+    }
+
+    @Test fun remoteBlastCanChainReactIntoTimedBomb() {
+        val sim = NativeBombSimulation(stage(), bombLimit = 2)
+        assertTrue(sim.place(Actor(24.0, 24.0), "player"))
+        assertTrue(sim.setRemoteDetonator("player2", true))
+        assertTrue(sim.place(Actor(56.0, 24.0), "player2"))
+        assertTrue(sim.detonateRemote("player2"))
+        assertTrue(sim.bombs.isEmpty())
+        assertEquals(2, sim.flames.size)
     }
 }
