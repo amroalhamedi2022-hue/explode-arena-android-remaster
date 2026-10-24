@@ -15,7 +15,8 @@ class NativeReplayTraceValidationTest {
     private fun sample(): String = session().step(NativeReplayInput(placeBomb = true)).traceLine()
 
     private fun issue(line: String): String =
-        NativeReplayComparison.firstDivergence(listOf(line), listOf(line))!!.field
+        NativeReplayComparison.firstDivergence(listOf(line), listOf(line))?.field
+            ?: "accepted-invalid-trace: $line"
 
     @Test fun rejectsIdenticalCorruptPayloadsInsteadOfClaimingParity() {
         val good = sample()
