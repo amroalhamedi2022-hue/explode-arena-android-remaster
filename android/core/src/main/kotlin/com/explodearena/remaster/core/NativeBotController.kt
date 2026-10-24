@@ -12,6 +12,7 @@ class NativeBotController {
 
     private var cachedDirection = 0
     private var lastPlanTick = Long.MIN_VALUE
+    private var wasEscaping = false
 
     fun decide(
         stage: StageData,
@@ -32,17 +33,31 @@ class NativeBotController {
                 simulation.bombs, bot.passBomb) &&
                 !simulation.isBurning(nx, ny, StageCollision.ACTOR_RADIUS)
         }
-        if (lastPlanTick == Long.MIN_VALUE || tick < lastPlanTick ||
+        val ownBomb = simulation.bombs.firstOrNull { it.owner == "bot" }
+        val escaping = ownBomb != null
+        if (escaping || escaping != wasEscaping ||
+            lastPlanTick == Long.MIN_VALUE || tick < lastPlanTick ||
             tick - lastPlanTick >= REPLAN_TICKS || !canStep(cachedDirection)) {
-            cachedDirection = plan(stage, bot, target, simulation)
+            // While our bomb is live, seek a refuge outside its predicted
+            // blast instead of continuing to chase the player into the flame.
+            cachedDirection = if (ownBomb != null) {
+                NativeBotEscapeRoute.firstDirection(
+                    stage, bot, simulation, ownBomb.x, ownBomb.y,
+                ) ?: 0
+            } else plan(stage, bot, target, simulation)
             lastPlanTick = tick
+            wasEscaping = escaping
         }
         if (!canStep(cachedDirection)) cachedDirection = 0
         val near = kotlin.math.abs(bot.x - target.x) <= 20.0 &&
             kotlin.math.abs(bot.y - target.y) <= 20.0
-        val canEscape = (1..4).any { canStep(it) }
-        val place = near && canEscape && bot.passBomb == null &&
-            simulation.bombs.none { it.owner == "bot" } &&
+        // An immediate open neighbor is NOT proof of a viable escape: a
+        // corridor can have no refuge outside the bomb's actual ray footprint.
+        val refuge = if (near && ownBomb == null && bot.passBomb == null) {
+            NativeBotEscapeRoute.firstDirection(stage, bot, simulation, bot.x, bot.y)
+        } else null
+        val place = near && refuge != null && refuge != 0 && bot.passBomb == null &&
+            ownBomb == null &&
             !simulation.isBurning(bot.x, bot.y, StageCollision.ACTOR_RADIUS)
         return Decision(dx[cachedDirection], dy[cachedDirection], place)
     }
