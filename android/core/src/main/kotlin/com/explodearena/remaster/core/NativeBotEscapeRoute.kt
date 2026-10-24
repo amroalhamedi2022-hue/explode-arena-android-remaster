@@ -1,7 +1,7 @@
 package com.explodearena.remaster.core
 
 import kotlin.math.floor
-import kotlin.math.hypot
+import kotlin.math.abs
 
 /**
  * Bounded deterministic escape search for the PROVISIONAL native bot.
@@ -87,8 +87,10 @@ internal object NativeBotEscapeRoute {
                 if (seen[next]) continue
                 val x = stage.obstacleX + nc * StageCollision.CELL + StageCollision.CELL / 2.0
                 val y = stage.obstacleY + nr * StageCollision.CELL + StageCollision.CELL / 2.0
+                // The bot moves on cardinal axes; Manhattan distance is a
+                // conservative travel-time bound for its sub-cell offset.
                 val distance = travelDistance[cell] + if (cell == start) {
-                    hypot(x - bot.x, y - bot.y)
+                    abs(x - bot.x) + abs(y - bot.y)
                 } else StageCollision.CELL.toDouble()
                 if (travelBudget != null && distance > travelBudget) continue
                 if (StageCollision.blocked(stage, x, y, StageCollision.ACTOR_RADIUS,
