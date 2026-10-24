@@ -80,12 +80,18 @@ class NativeBombSimulation(
         return detonate(updated.filter { it.remaining != null && it.remaining <= 1e-10 }.map { it.id })
     }
 
-    /** Keypad 8 requests the one owned remote bomb; ambiguous multi-bomb order is NOT guessed. */
+    /**
+     * Keypad 8 detonates ALL currently active remote bombs owned by this player.
+     * This follows the user's original Symbian gameplay observation: remote
+     * bombs detonate together, not one-by-one. Timed bombs placed before the
+     * pickup remain timed, but may still explode via a normal chain reaction.
+     * Exact explosion timing and range still require EKA2L1 verification.
+     */
     fun detonateRemote(owner: String = "player"): Boolean {
         if (owner != "player" && owner != "player2") return false
-        val candidates = activeBombs.filter { it.owner == owner && it.remote }
-        if (candidates.size != 1) return false
-        return detonate(listOf(candidates.single().id)) >= 1
+        val ids = activeBombs.filter { it.owner == owner && it.remote }.map { it.id }
+        if (ids.isEmpty()) return false
+        return detonate(ids) >= 1
     }
 
     private fun detonate(ids: Collection<Long>): Int {
