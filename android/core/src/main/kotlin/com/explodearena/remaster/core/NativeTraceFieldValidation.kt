@@ -41,6 +41,7 @@ internal object NativeTraceFieldValidation {
         if (remote !in setOf("", "player", "player2", "player,player2")) return "remote-owners"
         if (!fields[7].startsWith("nextBombId=") ||
             !positiveId(fields[7].removePrefix("nextBombId="))) return "next-bomb-id"
+        val nextBombId = fields[7].removePrefix("nextBombId=").toLong()
 
         val bombParts = fields[8].split(';')
         val bombCount = bombParts[0].removePrefix("bombs=").toIntOrNull()
@@ -49,11 +50,15 @@ internal object NativeTraceFieldValidation {
         val ids = HashSet<Long>()
         for (i in 1 until bombParts.size) {
             val b = bombParts[i].split(',')
-            if (b.size != 6 || !positiveId(b[0]) || !ids.add(b[0].toLong()) ||
-                b[1] !in validOwners || !finiteBits(b[2]) || !finiteBits(b[3]) ||
+            if (b.size != 6 || !positiveId(b[0]) || b[0].toLong() >= nextBombId ||
+                !ids.add(b[0].toLong()) || b[1] !in validOwners ||
+                !finiteBits(b[2]) || !finiteBits(b[3]) ||
                 b[5] !in setOf("true", "false") ||
                 (b[5] == "true" && b[4] != "remote") ||
-                (b[5] == "false" && !finiteBits(b[4]))) return "bombs"
+                (b[5] == "false" && (!finiteBits(b[4]) ||
+                    java.lang.Double.longBitsToDouble(
+                        java.lang.Long.parseUnsignedLong(b[4], 16)
+                    ) <= 0.0))) return "bombs"
         }
 
         val flameParts = fields[9].split(';')
@@ -64,6 +69,10 @@ internal object NativeTraceFieldValidation {
         for (i in 1 until flameParts.size) {
             val separator = flameParts[i].indexOf(':')
             if (separator <= 0 || !finiteBits(flameParts[i].substring(0, separator))) return "flames"
+            val remaining = java.lang.Double.longBitsToDouble(
+                java.lang.Long.parseUnsignedLong(flameParts[i].substring(0, separator), 16)
+            )
+            if (remaining <= 0.0) return "flames"
             val cellText = flameParts[i].substring(separator + 1)
             if (!cellText.endsWith('/')) return "flames"
             val cells = cellText.dropLast(1).split('/')
