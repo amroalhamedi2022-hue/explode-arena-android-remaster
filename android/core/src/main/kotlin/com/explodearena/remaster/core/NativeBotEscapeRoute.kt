@@ -1,6 +1,7 @@
 package com.explodearena.remaster.core
 
 import kotlin.math.floor
+import kotlin.math.hypot
 
 /**
  * Bounded deterministic escape search for the PROVISIONAL native bot.
@@ -12,6 +13,9 @@ internal object NativeBotEscapeRoute {
     // 8 cells at 8px each take about 1.19s at 54px/s, leaving a conservative
     // margin before the provisional 1.6s fuse (not a guarantee under obstacles).
     private const val MAX_STEPS = 8
+    // Reserve nine ticks for turning, sub-cell alignment and tick ordering.
+    // This is a conservative provisional safety margin, not Symbian timing.
+    private const val FUSE_MARGIN_SECONDS = 0.15
     private val dc = intArrayOf(1, 0, -1, 0)
     private val dr = intArrayOf(0, 1, 0, -1)
 
@@ -37,6 +41,16 @@ internal object NativeBotEscapeRoute {
         // bomb's ray. Snapshot all active footprints once to avoid recomputing
         // obstacle-ray traversal for every visited BFS cell.
         val activeThreats = simulation.predictedActiveBlastCells()
+        // A refuge is not useful when the currently ticking bomb will explode
+        // before the bot can physically reach it. Remote bombs have no fuse;
+        // a newly proposed bomb is not present yet and uses the step cap.
+        val activeSource = simulation.bombs.firstOrNull {
+            it.x == NativeBombSimulation.cellCenter(bombX) &&
+                it.y == NativeBombSimulation.cellCenter(bombY)
+        }
+        val travelBudget = activeSource?.remaining?.let { remaining ->
+            (remaining - FUSE_MARGIN_SECONDS).coerceAtLeast(0.0) * NativeBotController.SPEED
+        }
         val threatenedByOtherBomb = { x: Double, y: Double ->
             activeThreats.any { cell ->
                 NativeBombSimulation.blastHits(cell, x, y, StageCollision.ACTOR_RADIUS)
@@ -52,6 +66,7 @@ internal object NativeBotEscapeRoute {
         val seen = BooleanArray(cellCount.toInt())
         val first = IntArray(cellCount.toInt())
         val depth = IntArray(cellCount.toInt())
+        val travelDistance = DoubleArray(cellCount.toInt())
         val queue = IntArray(cellCount.toInt())
         val start = startRow * width + startCol
         var head = 0
@@ -72,6 +87,10 @@ internal object NativeBotEscapeRoute {
                 if (seen[next]) continue
                 val x = stage.obstacleX + nc * StageCollision.CELL + StageCollision.CELL / 2.0
                 val y = stage.obstacleY + nr * StageCollision.CELL + StageCollision.CELL / 2.0
+                val distance = travelDistance[cell] + if (cell == start) {
+                    hypot(x - bot.x, y - bot.y)
+                } else StageCollision.CELL.toDouble()
+                if (travelBudget != null && distance > travelBudget) continue
                 if (StageCollision.blocked(stage, x, y, StageCollision.ACTOR_RADIUS,
                         simulation.bombs, bot.passBomb) ||
                     simulation.isBurning(x, y, StageCollision.ACTOR_RADIUS)) continue
@@ -87,6 +106,7 @@ internal object NativeBotEscapeRoute {
                 seen[next] = true
                 first[next] = if (cell == start) direction + 1 else first[cell]
                 depth[next] = depth[cell] + 1
+                travelDistance[next] = distance
                 if (!simulation.wouldBlastHitFrom(bombX, bombY, x, y) &&
                     !threatenedByOtherBomb(x, y)) {
                     return first[next]
