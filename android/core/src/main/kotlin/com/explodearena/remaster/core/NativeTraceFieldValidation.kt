@@ -42,9 +42,6 @@ internal object NativeTraceFieldValidation {
         if (!fields[7].startsWith("nextBombId=") ||
             !positiveId(fields[7].removePrefix("nextBombId="))) return "next-bomb-id"
         val nextBombId = fields[7].removePrefix("nextBombId=").toLong()
-        // Exit grace may only refer to a bomb ID already allocated by this replay.
-        // Otherwise a forged future ID could bypass bomb collision validation.
-        if (pass != "none" && pass.toLong() >= nextBombId) return "pass-bomb"
 
         val bombParts = fields[8].split(';')
         val bombCount = bombParts[0].removePrefix("bombs=").toIntOrNull()
@@ -63,6 +60,10 @@ internal object NativeTraceFieldValidation {
                         java.lang.Long.parseUnsignedLong(b[4], 16)
                     ) <= 0.0))) return "bombs"
         }
+
+        // Exit grace may only refer to a bomb ID already allocated by this replay.
+        // Otherwise a forged future ID could bypass bomb collision validation.
+        if (pass != "none" && pass.toLong() >= nextBombId) return "pass-bomb"
 
         val flameParts = fields[9].split(';')
         val flameCount = flameParts[0].removePrefix("flames=").toIntOrNull()
