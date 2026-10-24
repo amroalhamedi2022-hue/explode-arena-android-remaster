@@ -13,6 +13,25 @@ class NativeBotControllerTest {
         spawns = listOf(Spawn(20.0, 20.0), Spawn(76.0, 20.0)),
     )
 
+    @Test fun bombPlacementUsesRefugeDirectionImmediatelyInsteadOfChasing() {
+        val arena = stage()
+        val bot = Actor(40.0, 40.0)
+        // Chase would head down toward this close target, but the predicted
+        // bomb blast requires a perpendicular escape first.
+        val target = Actor(40.0, 56.0)
+        val sim = NativeBombSimulation(arena)
+        val refuge = NativeBotEscapeRoute.firstDirection(arena, bot, sim, bot.x, bot.y)
+        assertNotNull("A valid pre-placement escape must exist", refuge)
+        val choice = NativeBotController().decide(arena, bot, target, sim, 0)
+        assertTrue(choice.placeBomb)
+        val expectedDx = when (refuge) { 1 -> 1.0; 3 -> -1.0; else -> 0.0 }
+        val expectedDy = when (refuge) { 2 -> 1.0; 4 -> -1.0; else -> 0.0 }
+        assertEquals(expectedDx, choice.dx, 0.0)
+        assertEquals(expectedDy, choice.dy, 0.0)
+        assertFalse("Do not take the chase step on a planting tick",
+            choice.dx == 0.0 && choice.dy == 1.0)
+    }
+
     @Test fun approachesPlayerOnOpenArena() {
         val arena = stage()
         val choice = NativeBotController().decide(
