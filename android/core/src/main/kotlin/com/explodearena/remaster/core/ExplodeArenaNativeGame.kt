@@ -194,23 +194,19 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
                 val bot = botActor
                 val botLife = botVitality
                 if (bot != null && botLife != null && !botLife.defeated) {
-                    val decision = botController.decide(stage, bot, actor, bombSimulation, clock.ticks)
-                    val oldBotX = bot.x
-                    val oldBotY = bot.y
-                    StageCollision.move(
-                        stage, bot, decision.dx, decision.dy, NativeBotController.SPEED,
-                        FixedStepClock.STEP_SECONDS, bombSimulation.bombs,
+                    val turn = NativeBotTurn.advance(
+                        stage, bot, actor, bombSimulation, botController, clock.ticks,
                     )
-                    botWalking = bot.x != oldBotX || bot.y != oldBotY
+                    botWalking = turn.moved
                     if (botWalking) {
                         botFacing = when {
-                            decision.dx > 0 -> 3
-                            decision.dx < 0 -> 1
-                            decision.dy > 0 -> 2
+                            turn.decision.dx > 0 -> 3
+                            turn.decision.dx < 0 -> 1
+                            turn.decision.dy > 0 -> 2
                             else -> 0
                         }
                     }
-                    if (decision.placeBomb && bombSimulation.place(bot, "bot")) placeSound.play(0.45f)
+                    if (turn.bombPlaced) placeSound.play(0.45f)
                     botLife.tick(bombSimulation.isBurning(bot.x, bot.y, StageCollision.ACTOR_RADIUS))
                 } else botWalking = false
             } else {
