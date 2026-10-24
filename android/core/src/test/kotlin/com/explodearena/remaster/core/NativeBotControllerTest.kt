@@ -56,4 +56,50 @@ class NativeBotControllerTest {
         val nextY = bot.y + choice.dy * NativeBotController.SPEED * FixedStepClock.STEP_SECONDS
         assertFalse(sim.isBurning(nextX, nextY, StageCollision.ACTOR_RADIUS))
     }
+
+    @Test fun refusesBombInCorridorWithNoReachableBlastRefuge() {
+        val arena = StageData(
+            id = 0, image = "corridor.png", width = 128, height = 128,
+            obstacleX = 0, obstacleY = 0,
+            grid = List(16) { row ->
+                IntArray(16) { col ->
+                    if (row in 4..6 && col in 3..10) 0 else 751
+                }
+            },
+            spawns = listOf(Spawn(40.0, 44.0), Spawn(56.0, 44.0)),
+        )
+        val sim = NativeBombSimulation(arena)
+        val decision = NativeBotController().decide(
+            arena, Actor(40.0, 44.0), Actor(56.0, 44.0), sim, 0,
+        )
+        assertFalse(decision.placeBomb)
+    }
+
+    @Test fun botFleesOwnBombBeforeItsProvisionalFuseExpires() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena)
+        val bot = Actor(40.0, 40.0)
+        val target = Actor(56.0, 40.0)
+        val controller = NativeBotController()
+        assertTrue(sim.place(bot, "bot"))
+        repeat(75) { tick ->
+            val choice = controller.decide(arena, bot, target, sim, tick.toLong())
+            assertFalse(choice.placeBomb)
+            StageCollision.move(
+                arena, bot, choice.dx, choice.dy,
+                NativeBotController.SPEED, FixedStepClock.STEP_SECONDS, sim.bombs,
+            )
+            sim.tick()
+        }
+        assertFalse(
+            "Bot must reach a refuge before the 96-tick fuse",
+            sim.wouldBlastHitFrom(40.0, 40.0, bot.x, bot.y),
+        )
+    }
+
+    @Test fun provisionalBlastPredictionDistinguishesRayFromDiagonalRefuge() {
+        val sim = NativeBombSimulation(stage())
+        assertTrue(sim.wouldBlastHitFrom(40.0, 40.0, 56.0, 40.0))
+        assertFalse(sim.wouldBlastHitFrom(40.0, 40.0, 64.0, 64.0))
+    }
 }
