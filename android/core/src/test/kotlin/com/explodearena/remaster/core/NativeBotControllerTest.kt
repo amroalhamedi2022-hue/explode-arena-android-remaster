@@ -97,6 +97,31 @@ class NativeBotControllerTest {
         )
     }
 
+    @Test fun escapeRefugeMustAvoidEveryActiveBombFootprint() {
+        // The only potential refuge from the first bomb is the bottom
+        // corridor row; a second bomb covers it. No speculative escape.
+        val corridor = StageData(
+            id = 0, image = "test.png", width = 128, height = 128,
+            obstacleX = 0, obstacleY = 0,
+            grid = List(16) { row ->
+                IntArray(16) { col ->
+                    if (row in 4..7 && col in 3..10) 0 else 751
+                }
+            },
+            spawns = listOf(Spawn(40.0, 44.0), Spawn(56.0, 60.0)),
+        )
+        val sim = NativeBombSimulation(corridor)
+        val bot = Actor(40.0, 44.0)
+        assertTrue(sim.place(bot, "bot"))
+        assertTrue(sim.place(Actor(56.0, 60.0), "player"))
+        val threats = sim.predictedActiveBlastCells()
+        assertTrue(threats.isNotEmpty())
+        assertTrue(threats.any {
+            NativeBombSimulation.blastHits(it, 44.0, 60.0, StageCollision.ACTOR_RADIUS)
+        })
+        assertNull(NativeBotEscapeRoute.firstDirection(corridor, bot, sim, 40.0, 40.0))
+    }
+
     @Test fun provisionalBlastPredictionDistinguishesRayFromDiagonalRefuge() {
         val sim = NativeBombSimulation(stage())
         assertTrue(sim.wouldBlastHitFrom(40.0, 40.0, 56.0, 40.0))
