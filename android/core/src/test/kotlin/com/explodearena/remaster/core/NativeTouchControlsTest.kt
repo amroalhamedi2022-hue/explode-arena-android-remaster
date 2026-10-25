@@ -53,4 +53,53 @@ class NativeTouchControlsTest {
             )
         }
     }
+
+    @Test fun backgroundHeldFingerCannotResumeOrPlantBombUntilFullyReleased() {
+        val controls = NativeTouchControls()
+        val l = controls.layout(1200, 800)
+        val pause = NativeTouchControls.Contact(0, l.pauseX, l.stageY)
+        val bomb = NativeTouchControls.Contact(1, l.bombX, l.bombY)
+        controls.update(listOf(pause), 1200, 800)
+        controls.suppressUntilRelease()
+        repeat(3) {
+            val stale = controls.update(listOf(pause, bomb), 1200, 800)
+            assertEquals(NativeTouchControls.Frame(), stale)
+        }
+        // Lifting only one finger is insufficient: both must be up.
+        assertEquals(NativeTouchControls.Frame(), controls.update(listOf(bomb), 1200, 800))
+        assertEquals(NativeTouchControls.Frame(), controls.update(emptyList(), 1200, 800))
+        val fresh = controls.update(listOf(pause), 1200, 800)
+        assertTrue(fresh.pauseToggle)
+        assertFalse(fresh.placeBomb)
+        assertFalse(controls.update(listOf(pause), 1200, 800).pauseToggle)
+    }
+
+    @Test fun remoteKeyEightTouchIsIndependentDebouncedAndAllowsMovement() {
+        val controls = NativeTouchControls()
+        val l = controls.layout(1200, 800)
+        val moving = NativeTouchControls.Contact(0, l.padX + l.radius, l.padY)
+        val remote = NativeTouchControls.Contact(1, l.remoteX, l.remoteY)
+        val bomb = NativeTouchControls.Contact(2, l.bombX, l.bombY)
+        val first = controls.update(listOf(moving, remote), 1200, 800)
+        assertTrue(first.detonateRemote)
+        assertFalse(first.placeBomb)
+        assertTrue(first.dx > 0f)
+        assertFalse(controls.update(listOf(moving, remote), 1200, 800).detonateRemote)
+        val second = controls.update(listOf(moving, remote, bomb), 1200, 800)
+        assertTrue(second.placeBomb)
+        assertFalse(second.detonateRemote)
+        controls.update(listOf(moving, bomb), 1200, 800)
+        assertTrue(controls.update(listOf(moving, remote, bomb), 1200, 800).detonateRemote)
+    }
+
+    @Test fun remoteAndBombHitAreasDoNotOverlapAtPhoneAndTabletSizes() {
+        val controls = NativeTouchControls()
+        for ((width, height) in listOf(320 to 800, 800 to 1200, 1200 to 800)) {
+            val l = controls.layout(width, height)
+            val separation = kotlin.math.hypot(
+                (l.bombX - l.remoteX).toDouble(), (l.bombY - l.remoteY).toDouble(),
+            )
+            assertTrue("overlap on ${width}x${height}", separation > l.radius * 2.5f)
+        }
+    }
 }
