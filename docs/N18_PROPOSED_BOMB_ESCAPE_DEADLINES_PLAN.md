@@ -22,8 +22,16 @@ Reviewed libGDX and libgdx/gdx-ai repository metadata: Apache-2.0. gdx-ai provid
 - Physical Xiaomi Pad 5, full gameplay, original Symbian/EKA2L1 timing parity remain NOT TESTED.
 - Google Drive LIVE sync has been unavailable in this runtime; no Drive sync will be claimed without read-back verification.
 
-## Result
-Pending source changes and exact-SHA CI verification.
+## Result — N18 SOURCE ACCEPTANCE PASS (2026-10-26)
+- Production simulation commit: 02c8b04f23ce23ed26176b8ca08fccaf3c49ca91. It factors deadline propagation into a non-mutating predictor and adds a hypothetical timed-placement API that includes chain reactions with active bombs.
+- Escape-route commit: e7b1d88487a37621804d5afe76caff8826226e2f. The planner now uses the hypothetical deadline before placement, while already-placed bombs keep their actual fuse and flame-only escape does not invent a bomb.
+- Regression/source+test SHA: 336d1ffcd8b6a3bc791b0fb89f2c8b9c0ccbd4d1.
+- **PASS:** Native Kotlin/JUnit actual Gradle step "Test native Kotlin core without Android packaging" in [run 40246895575](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40246895575).
+- **PASS:** Mainline source checks in [run 40246895576](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40246895576).
+- Three new regressions cover short-fuse route rejection, normal-fuse refuge, and proposed-bomb-to-remote chain deadline while asserting prediction does not mutate bombs, next ID or remote ownership.
+- Native workflow artifacts: [] (zero). No APK packaging/upload, no main write or merge.
+- Xiaomi Pad 5 native runtime, full gameplay, and Symbian/EKA2L1 timing parity remain **NOT TESTED**.
+- Google Drive LIVE handoff/index remain **SYNC FAILED** in this runtime because Google Drive/Docs connector tools are not available; no Drive sync is claimed.
 
 ## Next
 Continue from the latest PR #2 head. Do not merge PRs or write to main.
