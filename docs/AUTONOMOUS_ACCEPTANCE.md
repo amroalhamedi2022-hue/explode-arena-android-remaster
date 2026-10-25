@@ -203,3 +203,10 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Regression:** six JUnit tests for timed-to-remote blast extension and actual tick detonation, multi-hop remote chain, wall blocking, standalone remote exclusion, bot escape from chained ray, and near-expiry travel deadline.
 - **Acceptance gates:** [██░░░] 2/5 (production code and regressions committed; Kotlin CI and Mainline CI pending; Android/Xiaomi Pad 5/EKA2L1 NOT TESTED). No APK build: pure deterministic simulation and pathfinding can be tested in JUnit; device launch/GL/audio remains separate.
 - **Next:** verify exact code+test SHA on Native Kotlin :core:test and Mainline source CI; fix regressions if needed. No main write, PR merge or new copyrighted assets.
+
+
+### N12 exact-SHA source CI RESOLVED — 2026-10-25
+- **PASS:** Native Kotlin/JUnit :core:test (actual Gradle step and native-source-check job) on code+6-test SHA `08dc77c9ad07cc2e83f6d2dd6526ecc17928e216`: https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40199318723 .
+- **PASS:** Mainline JS/Python source validation on SAME SHA: https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40199318805 . Native artifacts []; no APK assembled.
+- **Progress N12 [████░] 4/5:** production implementation, six regression tests, Native Kotlin CI PASS, Mainline CI PASS; Android/Xiaomi Pad 5/EKA2L1 real-device and independent parity checks NOT TESTED. This is milestone source acceptance, NOT whole-project completion or original Symbian AI fidelity.
+- **Next:** App Commander functional milestone; later purpose-built Android native device acceptance. PR #2 remains Draft, PR #1/main untouched; no merge/release or additional game assets.
