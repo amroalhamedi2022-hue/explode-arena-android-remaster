@@ -175,8 +175,11 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
             (if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) 1 else 0)
         val keyY = (if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)) 1 else 0) -
             (if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)) 1 else 0)
-        val dx = (keyX + touch.dx).coerceIn(-1f, 1f).toDouble()
-        val dy = (keyY + touch.dy).coerceIn(-1f, 1f).toDouble()
+        // Even facing/animation input is ignored on an atomic transition.
+        // Otherwise a held pad could turn the newly spawned actor on the
+        // very frame in which navigation or retry reset its orientation.
+        val dx = if (commands.advanceWorld) (keyX + touch.dx).coerceIn(-1f, 1f).toDouble() else 0.0
+        val dy = if (commands.advanceWorld) (keyY + touch.dy).coerceIn(-1f, 1f).toDouble() else 0.0
         if (dx != 0.0 || dy != 0.0) {
             facing = if (kotlin.math.abs(dx) > kotlin.math.abs(dy)) {
                 if (dx > 0.0) 3 else 1
