@@ -196,4 +196,75 @@ class NativeBotControllerTest {
         assertNull(sim.bombs.single().remaining)
         assertNotNull(NativeBotEscapeRoute.firstDirection(arena, bot, sim, 40.0, 40.0))
     }
+
+    @Test fun imminentOpponentBombOverridesChaseWithAReachableEscape() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena)
+        val bot = Actor(40.0, 40.0)
+        assertTrue(sim.place(Actor(56.0, 40.0), "player"))
+        repeat(60) { sim.tick() } // 0.6s left; inside the provisional ray.
+        val escape = NativeBotEscapeRoute.firstDirection(arena, bot, sim, 56.0, 40.0)
+        assertNotNull("The threat must have a reachable refuge", escape)
+        val choice = NativeBotController().decide(arena, bot, Actor(76.0, 40.0), sim, 60)
+        val direction = when {
+            choice.dx > 0 -> 1
+            choice.dy > 0 -> 2
+            choice.dx < 0 -> 3
+            choice.dy < 0 -> 4
+            else -> 0
+        }
+        assertEquals(escape, direction)
+        assertFalse("Do not plant a second bomb while escaping", choice.placeBomb)
+    }
+
+    @Test fun safeBotDoesNotStepIntoAnImminentBlastWhileChasing() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena)
+        assertTrue(sim.place(Actor(56.0, 24.0), "player"))
+        repeat(60) { sim.tick() }
+        val bot = Actor(42.5, 40.0)
+        assertFalse(sim.wouldBlastHitFrom(56.0, 24.0, bot.x, bot.y))
+        val choice = NativeBotController().decide(arena, bot, Actor(80.0, 40.0), sim, 60)
+        val nx = bot.x + choice.dx * NativeBotController.SPEED * FixedStepClock.STEP_SECONDS
+        val ny = bot.y + choice.dy * NativeBotController.SPEED * FixedStepClock.STEP_SECONDS
+        assertFalse("Chase must not enter the imminent ray",
+            sim.wouldBlastHitFrom(56.0, 24.0, nx, ny))
+        assertFalse(choice.placeBomb)
+    }
+
+    @Test fun remoteBombWithoutFuseDoesNotCausePrematureEscape() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena)
+        assertTrue(sim.setRemoteDetonator("player", true))
+        assertTrue(sim.place(Actor(56.0, 40.0), "player"))
+        repeat(120) { sim.tick() }
+        assertNull(sim.bombs.single().remaining)
+        val choice = NativeBotController().decide(
+            arena, Actor(40.0, 40.0), Actor(80.0, 40.0), sim, 120,
+        )
+        assertEquals(1.0, choice.dx, 0.0)
+        assertFalse(choice.placeBomb)
+    }
+
+    @Test fun fullFuseBombDoesNotTriggerPrematureRetreat() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena)
+        assertTrue(sim.place(Actor(56.0, 40.0), "player"))
+        val choice = NativeBotController().decide(
+            arena, Actor(40.0, 40.0), Actor(80.0, 40.0), sim, 0,
+        )
+        assertEquals(1.0, choice.dx, 0.0)
+        assertFalse(choice.placeBomb)
+    }
+
+    @Test fun imminentOpponentBlastSuppressesBotBombPlanting() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena)
+        assertTrue(sim.place(Actor(72.0, 40.0), "player"))
+        repeat(60) { sim.tick() }
+        val bot = Actor(40.0, 40.0)
+        assertTrue(sim.wouldBlastHitFrom(72.0, 40.0, bot.x, bot.y))
+        val choice = NativeBotController().decide(arena, bot, Actor(56.0, 40.0), sim, 60)
+        assertFalse(choice.placeBomb)
+    }
 }
