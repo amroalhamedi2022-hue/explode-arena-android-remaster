@@ -26,3 +26,10 @@ Reviewed upstream libGDX Apache-2.0 LICENSE at https://github.com/libgdx/libgdx/
 - No APK or artifact, no main write, no PR merge, no new game assets.
 - Google Drive LIVE Handoff/Index: **SYNC FAILED** in this execution environment because Google Drive connector functions are not available in the connected tool registry (and the installed skill list is empty). No claim of a successful Drive write or verification. Preserve this GitHub checkpoint for later Drive recovery.
 - NEXT: resolve exact-SHA CI results and any failing test, sync LIVE Google Docs once connector returns, then alternate to App Commander.
+
+## Exact-SHA verification resolved — 2026-10-25
+- **PASS:** source+regression+41-arena sweep SHA `ce46a8bc1d285bb654eeb92e3bcad9f3f9738039`; native Kotlin/JUnit `:core:test` run [40232581270](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40232581270), job `native-source-check`, step `Test native Kotlin core without Android packaging` **SUCCESS**.
+- **PASS:** Mainline JS/Python source run [40232581282](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40232581282), **same exact SHA**.
+- Native workflow artifacts `[]`; **no APK built or uploaded**. No SHA-256 of APK exists. Physical Xiaomi Pad 5, Android rendering/audio, EKA2L1 parity and full 41-stage matches remain **NOT TESTED**.
+- N16 acceptance: 4/5 gates (production parser, new regressions, Kotlin integration/CI, Mainline CI PASS; fifth device/original parity NOT TESTED). This is milestone progress, not overall completion.
+- **SYNC FAILED:** Google Drive LIVE docs and index could not be read or written because the Google Drive connector is unavailable in this automation runtime. Do not claim a Drive sync; this GitHub doc is the recovery checkpoint. NEXT restore connector and append this result to both LIVE documents without overwriting their history, then alternate to App Commander.
