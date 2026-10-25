@@ -39,7 +39,10 @@ class NativeBotController(private val owner: String = "bot") {
             .minByOrNull { it.secondsUntilBlast }?.bomb
         val ownBomb = simulation.bombs.firstOrNull { it.owner == owner }
         val escapeBomb = ownBomb ?: imminentBomb
-        val escaping = escapeBomb != null
+        // Standing in an active flame is an escape emergency even after the
+        // detonating bomb has disappeared. Do not freeze until flame expiry.
+        val escapingFlame = simulation.isBurning(bot.x, bot.y, StageCollision.ACTOR_RADIUS)
+        val escaping = escapeBomb != null || escapingFlame
         val isImminent = { x: Double, y: Double ->
             imminentCells.any { NativeBombSimulation.blastHits(
                 it, x, y, StageCollision.ACTOR_RADIUS,
@@ -51,7 +54,7 @@ class NativeBotController(private val owner: String = "bot") {
             !StageCollision.blocked(stage, nx, ny, StageCollision.ACTOR_RADIUS,
                 simulation.bombs, bot.passBomb) &&
                 !StageCollision.blockedByActors(nx, ny, otherActors) &&
-                !simulation.isBurning(nx, ny, StageCollision.ACTOR_RADIUS) &&
+                (escapingFlame || !simulation.isBurning(nx, ny, StageCollision.ACTOR_RADIUS)) &&
                 (escaping || !isImminent(nx, ny))
         }
         if (escaping || escaping != wasEscaping ||
@@ -59,9 +62,11 @@ class NativeBotController(private val owner: String = "bot") {
             tick - lastPlanTick >= REPLAN_TICKS || !canStep(cachedDirection)) {
             // While our bomb is live, seek a refuge outside its predicted
             // blast instead of continuing to chase the player into the flame.
-            cachedDirection = if (escapeBomb != null) {
+            cachedDirection = if (escaping) {
                 NativeBotEscapeRoute.firstDirection(
-                    stage, bot, simulation, escapeBomb.x, escapeBomb.y, otherActors,
+                    stage, bot, simulation, escapeBomb?.x ?: bot.x, escapeBomb?.y ?: bot.y,
+                    otherActors, allowBurningTransit = escapingFlame,
+                    ignoreProposedBomb = escapeBomb == null,
                 ) ?: 0
             } else plan(stage, bot, target, simulation, otherActors, imminentCells)
             lastPlanTick = tick
