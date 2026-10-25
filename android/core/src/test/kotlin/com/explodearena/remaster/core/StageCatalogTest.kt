@@ -36,4 +36,43 @@ class StageCatalogTest {
         assertTrue(stages.all { it.image.matches(Regex("assets/maps/map_[0-9]{3}\\.png")) })
     }
 
+
+    @Test fun rejectsOversizedCatalogBeforeJsonAllocation() {
+        val huge = catalog(41) + " ".repeat(1_000_000)
+        assertThrows(IllegalArgumentException::class.java) { StageCatalog.parse(huge) }
+    }
+
+    @Test fun rejectsInvalidMapPathAndOutOfOrderStageIds() {
+        val original = catalog(41)
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCatalog.parse(original.replace("assets/maps/map_000.png", "../outside.png"))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCatalog.parse(original.replace("\"id\":0", "\"id\":40"))
+        }
+    }
+
+    @Test fun rejectsOversizedDimensionsAndGridBeforeAllocatingRows() {
+        val original = catalog(41)
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCatalog.parse(original.replace("\"w\":16", "\"w\":5000"))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCatalog.parse(original.replace("\"w\":2", "\"w\":1000000"))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCatalog.parse(original.replace("[[0,0],[0,751]]", "[[0,0],[0]]"))
+        }
+    }
+
+    @Test fun rejectsUnsupportedOrNonfiniteNativeSpawns() {
+        val original = catalog(41)
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCatalog.parse(original.replace("\"spawns\":[{\"x\":4,\"y\":4}]", "\"spawns\":[]"))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCatalog.parse(original.replace("\"x\":4", "\"x\":\"NaN\""))
+        }
+    }
+
 }
