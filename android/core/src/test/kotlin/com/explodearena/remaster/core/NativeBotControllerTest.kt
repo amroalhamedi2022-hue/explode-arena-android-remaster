@@ -200,9 +200,12 @@ class NativeBotControllerTest {
     @Test fun imminentOpponentBombOverridesChaseWithAReachableEscape() {
         val arena = stage()
         val sim = NativeBombSimulation(arena)
-        val bot = Actor(40.0, 40.0)
+        // Near the edge of the ray, the bot has a feasible short escape
+        // even though the bomb has only 0.6s left.
+        val bot = Actor(40.0, 52.0)
         assertTrue(sim.place(Actor(56.0, 40.0), "player"))
         repeat(60) { sim.tick() } // 0.6s left; inside the provisional ray.
+        assertTrue(sim.wouldBlastHitFrom(56.0, 40.0, bot.x, bot.y))
         val escape = NativeBotEscapeRoute.firstDirection(arena, bot, sim, 56.0, 40.0)
         assertNotNull("The threat must have a reachable refuge", escape)
         val choice = NativeBotController().decide(arena, bot, Actor(76.0, 40.0), sim, 60)
@@ -242,7 +245,13 @@ class NativeBotControllerTest {
         val choice = NativeBotController().decide(
             arena, Actor(40.0, 40.0), Actor(80.0, 40.0), sim, 120,
         )
-        assertEquals(1.0, choice.dx, 0.0)
+        val timed = NativeBombSimulation(arena)
+        assertTrue(timed.place(Actor(56.0, 40.0), "player"))
+        val timedChoice = NativeBotController().decide(
+            arena, Actor(40.0, 40.0), Actor(80.0, 40.0), timed, 0,
+        )
+        assertEquals("Remote no-fuse should follow the same route as a non-urgent timed bomb",
+            timedChoice, choice)
         assertFalse(choice.placeBomb)
     }
 
@@ -253,7 +262,14 @@ class NativeBotControllerTest {
         val choice = NativeBotController().decide(
             arena, Actor(40.0, 40.0), Actor(80.0, 40.0), sim, 0,
         )
-        assertEquals(1.0, choice.dx, 0.0)
+        val remote = NativeBombSimulation(arena)
+        assertTrue(remote.setRemoteDetonator("player", true))
+        assertTrue(remote.place(Actor(56.0, 40.0), "player"))
+        val remoteChoice = NativeBotController().decide(
+            arena, Actor(40.0, 40.0), Actor(80.0, 40.0), remote, 0,
+        )
+        assertEquals("Long-fuse bomb must not trigger the imminent-threat mode",
+            remoteChoice, choice)
         assertFalse(choice.placeBomb)
     }
 
