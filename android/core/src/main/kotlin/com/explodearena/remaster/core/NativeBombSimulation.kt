@@ -155,11 +155,15 @@ class NativeBombSimulation(
         activeBombs.flatMap { explosionCells(it.x, it.y) }
 
     /**
-     * A timed fuse can ignite another bomb (including a remote one), which can
-     * in turn ignite further bombs. Track the EARLIEST timed ignition deadline
-     * for each active bomb using the same blast/chain geometry as detonate().
-     * Untriggered remote bombs have no automatic deadline. This cannot predict
-     * a player's manual remote detonation or establish original Symbian parity.
+     * Predict automatic ignition deadlines from BOTH timed fuses and already
+     * burning cells. tick() samples active flames before expiring them, so a
+     * bomb placed into fire will ignite on the NEXT fixed tick even if the
+     * flame has less than one tick of lifetime left. The same deadline then
+     * propagates through transitive bomb-to-bomb chain reactions.
+     *
+     * Remote bombs without a fuse or flame contact remain unscheduled. Manual
+     * remote detonation cannot be predicted. These are native provisional
+     * rules, not verified Symbian EKA2L1 timings.
      */
     data class TimedChainThreat(val bomb: Bomb, val secondsUntilBlast: Double)
 
@@ -167,22 +171,30 @@ class NativeBombSimulation(
         require(withinSeconds.isFinite() && withinSeconds >= 0.0)
         val earliest = mutableMapOf<Long, Double>()
         val pending = java.util.ArrayDeque<Bomb>()
-        activeBombs.filter { it.remaining != null && it.remaining <= withinSeconds }
-            .sortedWith(compareBy<Bomb> { requireNotNull(it.remaining) }.thenBy { it.id })
-            .forEach { bomb ->
-                earliest[bomb.id] = requireNotNull(bomb.remaining)
+        fun schedule(bomb: Bomb, deadline: Double) {
+            if (deadline > withinSeconds) return
+            val previous = earliest[bomb.id]
+            if (previous == null || deadline < previous) {
+                earliest[bomb.id] = deadline
                 pending.addLast(bomb)
             }
+        }
+        for (bomb in activeBombs) {
+            bomb.remaining?.let { schedule(bomb, it) }
+            if (activeFlames.any { flame ->
+                    flame.cells.any { cell -> blastHits(cell, bomb.x, bomb.y, 0.0) }
+                }) {
+                schedule(bomb, FixedStepClock.STEP_SECONDS)
+            }
+        }
         while (pending.isNotEmpty()) {
             val bomb = pending.removeFirst()
             val deadline = earliest.getValue(bomb.id)
             val footprint = explosionCells(bomb.x, bomb.y)
             for (other in activeBombs) {
                 if (other.id == bomb.id) continue
-                if (footprint.any { blastHits(it, other.x, other.y, 0.0) } &&
-                    (earliest[other.id] == null || deadline < earliest.getValue(other.id))) {
-                    earliest[other.id] = deadline
-                    pending.addLast(other)
+                if (footprint.any { blastHits(it, other.x, other.y, 0.0) }) {
+                    schedule(other, deadline)
                 }
             }
         }
@@ -192,9 +204,9 @@ class NativeBombSimulation(
     }
 
     /**
-     * Imminent timed explosions INCLUDING bombs ignited by their chain
-     * reaction. A remote bomb by itself has no countdown, but a timed bomb's
-     * flame can ignite it. Active flames are checked separately by the caller.
+     * Imminent automatic explosions INCLUDING active-flame ignition and
+     * transitive bomb chains. An isolated remote bomb has no countdown.
+     * Active flames themselves are checked separately by the caller.
      */
     fun predictedImminentTimedBlastCells(withinSeconds: Double): List<Spawn> =
         predictedTimedChainThreats(withinSeconds)
