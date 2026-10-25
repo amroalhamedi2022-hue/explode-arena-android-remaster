@@ -302,11 +302,20 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     }
 
     override fun pause() {
+        // Android Home, lock screen and incoming calls must freeze the entire
+        // native simulation. Returning requires a deliberate pause-button tap.
+        pauseGate.onBackground(clock)
         touchControls.reset()
-        clock.clearPending()
         walking = false
         if (::placeSound.isInitialized) placeSound.stop()
         if (::explosionSound.isInitialized) explosionSound.stop()
+    }
+
+    override fun resume() {
+        // Do not synthesize touches or run catch-up ticks from time spent away.
+        // The user resumes play with the on-screen pause control or Back/P.
+        touchControls.reset()
+        pauseGate.onForeground(clock)
     }
 
     override fun dispose() {
