@@ -138,3 +138,8 @@ Updated: 2026-10-23 (native migration first code slice)
 ### 2026-10-25 — N08 initial CI status check
 - **PASS** Mainline JS/Python source checks for exact production+test SHA `521e33c8e66c8a8874011af3c3095a27d39ccec1`: [CI 40166723568](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40166723568), completed success.
 - **PENDING** native Kotlin/JUnit source checks on same SHA: [CI 40166723567](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40166723567); no job allocated yet when checked. Kotlin tests are **NOT YET VERIFIED**. No APK/artifact, device and EKA2L1 NOT TESTED.
+
+### 2026-10-25 — N08 exact-SHA CI resolution
+- **PASS:** Native Kotlin/JUnit `:core:test` source integration on code+test SHA `521e33c8e66c8a8874011af3c3095a27d39ccec1`, [run 40166723567](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40166723567), `native-source-check` and `Test native Kotlin core without Android packaging` both completed success.
+- **PASS:** Mainline JS/Python source validation on the same SHA, [run 40166723568](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40166723568). Native workflow has **zero artifacts** and did not build an APK.
+- **NOT TESTED:** Android background/foreground device callback delivery, real pause UI, GL/audio recovery, Xiaomi Pad 5, original Symbian EKA2L1 parity and independent double recheck. This is **source acceptance only**, not full native milestone acceptance. PR #2 remains Draft; PR #1 and main untouched.
