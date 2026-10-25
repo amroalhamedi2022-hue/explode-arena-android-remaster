@@ -167,7 +167,41 @@ class NativeBombSimulation(
      */
     data class TimedChainThreat(val bomb: Bomb, val secondsUntilBlast: Double)
 
-    fun predictedTimedChainThreats(withinSeconds: Double): List<TimedChainThreat> {
+    fun predictedTimedChainThreats(withinSeconds: Double): List<TimedChainThreat> =
+        predictTimedChainThreats(activeBombs, withinSeconds)
+
+    /**
+     * Predict a hypothetical timed placement without mutating simulation state.
+     * This includes chain reactions between the proposed bomb and already
+     * active bombs, including remote bombs ignited by a timed blast or flame.
+     * It is a planning aid for the provisional native AI, not Symbian parity.
+     */
+    fun predictedPlacementTimedBlastCells(
+        bombX: Double,
+        bombY: Double,
+        withinSeconds: Double,
+    ): List<TimedBlastCell> {
+        require(bombX.isFinite() && bombY.isFinite())
+        require(withinSeconds.isFinite() && withinSeconds >= 0.0)
+        val proposed = Bomb(
+            id = Long.MIN_VALUE,
+            owner = "bot",
+            x = cellCenter(bombX),
+            y = cellCenter(bombY),
+            remaining = bombFuseSeconds,
+            remote = false,
+        )
+        return predictTimedChainThreats(activeBombs + proposed, withinSeconds).flatMap { threat ->
+            explosionCells(threat.bomb.x, threat.bomb.y).map { cell ->
+                TimedBlastCell(cell, threat.secondsUntilBlast)
+            }
+        }
+    }
+
+    private fun predictTimedChainThreats(
+        bombsToPredict: List<Bomb>,
+        withinSeconds: Double,
+    ): List<TimedChainThreat> {
         require(withinSeconds.isFinite() && withinSeconds >= 0.0)
         val earliest = mutableMapOf<Long, Double>()
         val pending = java.util.ArrayDeque<Bomb>()
@@ -179,7 +213,7 @@ class NativeBombSimulation(
                 pending.addLast(bomb)
             }
         }
-        for (bomb in activeBombs) {
+        for (bomb in bombsToPredict) {
             bomb.remaining?.let { schedule(bomb, it) }
             if (activeFlames.any { flame ->
                     flame.cells.any { cell -> blastHits(cell, bomb.x, bomb.y, 0.0) }
@@ -191,14 +225,14 @@ class NativeBombSimulation(
             val bomb = pending.removeFirst()
             val deadline = earliest.getValue(bomb.id)
             val footprint = explosionCells(bomb.x, bomb.y)
-            for (other in activeBombs) {
+            for (other in bombsToPredict) {
                 if (other.id == bomb.id) continue
                 if (footprint.any { blastHits(it, other.x, other.y, 0.0) }) {
                     schedule(other, deadline)
                 }
             }
         }
-        return activeBombs.mapNotNull { bomb ->
+        return bombsToPredict.mapNotNull { bomb ->
             earliest[bomb.id]?.let { TimedChainThreat(bomb, it) }
         }
     }
