@@ -82,4 +82,57 @@ class NativeBotTimedRouteTest {
             sim.predictedTimedBlastCells(Double.NaN)
         }
     }
+
+    private fun openArena() = StageData(
+        id = 0, image = "assets/maps/map_000.png", width = 160, height = 96,
+        obstacleX = 0, obstacleY = 0,
+        grid = List(12) { IntArray(20) },
+        spawns = listOf(Spawn(24.0, 24.0), Spawn(56.0, 24.0)),
+    )
+
+    @Test fun hypotheticalShortFuseRejectsRouteThatCrossesItsOwnBlastAfterDeadline() {
+        val arena = openArena()
+        val bot = Actor(24.0, 24.0)
+        val sim = NativeBombSimulation(arena, bombFuseSeconds = 0.2)
+
+        assertNull(
+            "No safe route fits before the hypothetical bomb's 0.2s deadline",
+            NativeBotEscapeRoute.firstDirection(arena, bot, sim, bot.x, bot.y),
+        )
+        assertTrue("Planning must not place a real bomb", sim.bombs.isEmpty())
+        assertEquals("Planning must not consume a bomb ID", 1L, sim.nextBombId)
+    }
+
+    @Test fun hypotheticalNormalFuseKeepsAReachableRefuge() {
+        val arena = openArena()
+        val bot = Actor(24.0, 24.0)
+        val sim = NativeBombSimulation(arena, bombFuseSeconds = 1.6)
+
+        assertEquals(1, NativeBotEscapeRoute.firstDirection(arena, bot, sim, bot.x, bot.y))
+        assertTrue(sim.bombs.isEmpty())
+        assertEquals(1L, sim.nextBombId)
+    }
+
+    @Test fun hypotheticalTimedBombPropagatesDeadlineToRemoteBombWithoutMutatingState() {
+        val arena = openArena()
+        val sim = NativeBombSimulation(arena, bombFuseSeconds = 0.2)
+        assertTrue(sim.setRemoteDetonator("player", true))
+        assertTrue(sim.place(Actor(56.0, 24.0), "player"))
+        val before = sim.bombs
+        val nextIdBefore = sim.nextBombId
+
+        val predicted = sim.predictedPlacementTimedBlastCells(24.0, 24.0, 0.5)
+
+        assertTrue(
+            "The proposed blast should chain the remote bomb at the same deadline",
+            predicted.any {
+                it.cell == Spawn(56.0, 24.0) &&
+                    kotlin.math.abs(it.secondsUntilBlast - 0.2) < 1e-9
+            },
+        )
+        assertEquals(before, sim.bombs)
+        assertEquals(nextIdBefore, sim.nextBombId)
+        assertTrue(sim.hasRemoteDetonator("player"))
+    }
+
 }
