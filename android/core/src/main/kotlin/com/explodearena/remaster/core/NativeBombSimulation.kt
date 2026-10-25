@@ -204,13 +204,28 @@ class NativeBombSimulation(
     }
 
     /**
+     * Timestamped blast footprint for time-aware path planning. Keep the
+     * deadline attached to each cell: a route may cross a distant future
+     * blast safely, but must not enter one after its ignition deadline.
+     * Ray geometry is computed once per bomb, never inside the BFS loop.
+     * These are provisional native timings, not Symbian parity evidence.
+     */
+    data class TimedBlastCell(val cell: Spawn, val secondsUntilBlast: Double)
+
+    fun predictedTimedBlastCells(withinSeconds: Double): List<TimedBlastCell> =
+        predictedTimedChainThreats(withinSeconds).flatMap { threat ->
+            explosionCells(threat.bomb.x, threat.bomb.y).map { cell ->
+                TimedBlastCell(cell, threat.secondsUntilBlast)
+            }
+        }
+
+    /**
      * Imminent automatic explosions INCLUDING active-flame ignition and
      * transitive bomb chains. An isolated remote bomb has no countdown.
      * Active flames themselves are checked separately by the caller.
      */
     fun predictedImminentTimedBlastCells(withinSeconds: Double): List<Spawn> =
-        predictedTimedChainThreats(withinSeconds)
-            .flatMap { explosionCells(it.bomb.x, it.bomb.y) }
+        predictedTimedBlastCells(withinSeconds).map { it.cell }
 
     private fun explosionCells(x: Double, y: Double): List<Spawn> {
         val cx = floor(x / BOMB_CELL).toInt()
