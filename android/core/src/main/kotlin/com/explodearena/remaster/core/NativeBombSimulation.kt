@@ -154,6 +154,18 @@ class NativeBombSimulation(
     fun predictedActiveBlastCells(): List<Spawn> =
         activeBombs.flatMap { explosionCells(it.x, it.y) }
 
+    /**
+     * Snapshot imminent TIMED-bomb rays for provisional bot pathfinding.
+     * Remote bombs have no fuse and cannot be treated as an automatic
+     * countdown. A caller must still handle already burning flames separately.
+     * Symbian AI timing remains unverified.
+     */
+    fun predictedImminentTimedBlastCells(withinSeconds: Double): List<Spawn> {
+        require(withinSeconds.isFinite() && withinSeconds >= 0.0)
+        return activeBombs.filter { it.remaining != null && it.remaining <= withinSeconds }
+            .flatMap { explosionCells(it.x, it.y) }
+    }
+
     private fun explosionCells(x: Double, y: Double): List<Spawn> {
         val cx = floor(x / BOMB_CELL).toInt()
         val cy = floor(y / BOMB_CELL).toInt()
