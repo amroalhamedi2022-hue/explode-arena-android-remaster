@@ -56,7 +56,19 @@ internal object NativeBotEscapeRoute {
         // Cache deadlines AND footprints. Checking only whether the bot
         // starts inside a ray misses routes that cross a different, soon-to-
         // explode ray on the way to an otherwise safe endpoint.
-        val timedCells = simulation.predictedTimedBlastCells(20.0)
+        val proposedCellX = NativeBombSimulation.cellCenter(bombX)
+        val proposedCellY = NativeBombSimulation.cellCenter(bombY)
+        val alreadyPlacedAtProposal = simulation.bombs.any {
+            it.x == proposedCellX && it.y == proposedCellY
+        }
+        // Before a bot places a bomb, include that hypothetical bomb's own
+        // fuse and any chain it would trigger. During escape from an already
+        // placed bomb, keep its real remaining fuse instead of resetting it.
+        val timedCells = if (!ignoreProposedBomb && !alreadyPlacedAtProposal) {
+            simulation.predictedPlacementTimedBlastCells(bombX, bombY, 20.0)
+        } else {
+            simulation.predictedTimedBlastCells(20.0)
+        }
         val earliestThreatFuse = timedCells.asSequence()
             .filter { NativeBombSimulation.blastHits(
                 it.cell, bot.x, bot.y, StageCollision.ACTOR_RADIUS,
