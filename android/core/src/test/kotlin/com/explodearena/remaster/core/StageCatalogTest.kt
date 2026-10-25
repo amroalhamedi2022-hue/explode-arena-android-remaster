@@ -6,7 +6,7 @@ import org.junit.Test
 class StageCatalogTest {
     private fun catalog(count: Int): String {
         val entries = (0 until count).joinToString(",") { id ->
-            """{"id":$id,"image":"assets/maps/map_000.png","w":16,"h":16,"obstacle":{"x":0,"y":0,"w":2,"h":2,"grid":[[0,0],[0,751]]},"spawns":[{"x":4,"y":4}]}"""
+            """{"id":$id,"image":"assets/maps/map_${id.toString().padStart(3, '0')}.png","w":16,"h":16,"obstacle":{"x":0,"y":0,"w":2,"h":2,"grid":[[0,0],[0,751]]},"spawns":[{"x":4,"y":4}]}"""
         }
         return "window.EXPLODE_STAGES=[$entries];"
     }
@@ -24,6 +24,7 @@ class StageCatalogTest {
         val bad = catalog(41).replace("\"w\":2", "\"w\":3")
         assertThrows(IllegalArgumentException::class.java) { StageCatalog.parse(bad) }
     }
+
     @Test fun originalMainlineStageFileHas41ValidGeometryRecords() {
         // Gradle :core:test runs from android/core; never substitute mock arenas
         // for the original stage inventory when checking the native port.
@@ -31,11 +32,13 @@ class StageCatalogTest {
         assertTrue("Original stage catalog missing: ${file.absolutePath}", file.isFile)
         val stages = StageCatalog.parse(file.readText(Charsets.UTF_8))
         assertEquals(41, stages.size)
+        assertEquals((0..40).toList(), stages.map { it.id })
+        assertEquals(mapOf(1 to 18, 2 to 2, 4 to 21),
+            stages.groupingBy { it.spawns.size }.eachCount())
         assertTrue(stages.all { it.gridWidth * 8 == it.width && it.gridHeight * 8 == it.height })
         assertTrue(stages.all { it.spawns.isNotEmpty() })
-        assertTrue(stages.all { it.image.matches(Regex("assets/maps/map_[0-9]{3}\\.png")) })
+        assertTrue(stages.all { it.image == "assets/maps/map_${it.id.toString().padStart(3, '0')}.png" })
     }
-
 
     @Test fun rejectsOversizedCatalogBeforeJsonAllocation() {
         val huge = catalog(41) + " ".repeat(1_000_000)
@@ -49,6 +52,38 @@ class StageCatalogTest {
         }
         assertThrows(IllegalArgumentException::class.java) {
             StageCatalog.parse(original.replace("\"id\":0", "\"id\":40"))
+        }
+    }
+
+    @Test fun rejectsMismatchedMapIdentityShiftedGridAndOutOfBoundsSpawn() {
+        val original = catalog(41)
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCatalog.parse(original.replace(
+                "\"id\":1,\"image\":\"assets/maps/map_001.png\"",
+                "\"id\":1,\"image\":\"assets/maps/map_000.png\"",
+            ))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCatalog.parse(original.replace(
+                "\"obstacle\":{\"x\":0,\"y\":0",
+                "\"obstacle\":{\"x\":1,\"y\":0",
+            ))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            StageCatalog.parse(original.replace("\"x\":4,\"y\":4", "\"x\":16,\"y\":4"))
+        }
+    }
+
+    @Test fun rejectsNonIntegerNegativeAndNonNumericCollisionCells() {
+        val original = catalog(41)
+        for (badGrid in listOf(
+            "[[0,-1],[0,751]]",
+            "[[0,0],[0,751.5]]",
+            """[[0,0],[0,"bad"]]""",
+        )) {
+            assertThrows(IllegalArgumentException::class.java) {
+                StageCatalog.parse(original.replace("[[0,0],[0,751]]", badGrid))
+            }
         }
     }
 
@@ -74,5 +109,4 @@ class StageCatalogTest {
             StageCatalog.parse(original.replace("\"x\":4", "\"x\":\"NaN\""))
         }
     }
-
 }
