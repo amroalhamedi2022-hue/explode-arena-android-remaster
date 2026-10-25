@@ -24,6 +24,9 @@ internal object NativeBotEscapeRoute {
      * toward a reachable cell outside the predicted blast, 0 if already safe,
      * or null when no bounded refuge is found. A null result forbids planting.
      */
+    // While escaping a flame already underfoot, the bot must be allowed to
+    // traverse burning intermediate points; only the destination is a refuge.
+    // ignoreProposedBomb is for flame-only escapes with no hypothetical bomb.
     fun firstDirection(
         stage: StageData,
         bot: Actor,
@@ -31,6 +34,8 @@ internal object NativeBotEscapeRoute {
         bombX: Double,
         bombY: Double,
         otherActors: List<Actor> = emptyList(),
+        allowBurningTransit: Boolean = false,
+        ignoreProposedBomb: Boolean = false,
     ): Int? {
         val width = stage.gridWidth
         val height = stage.gridHeight
@@ -74,7 +79,7 @@ internal object NativeBotEscapeRoute {
                 NativeBombSimulation.blastHits(cell, x, y, StageCollision.ACTOR_RADIUS)
             }
         }
-        if (!simulation.wouldBlastHitFrom(bombX, bombY, bot.x, bot.y) &&
+        if ((ignoreProposedBomb || !simulation.wouldBlastHitFrom(bombX, bombY, bot.x, bot.y)) &&
             !threatenedByOtherBomb(bot.x, bot.y) &&
             !simulation.isBurning(bot.x, bot.y, StageCollision.ACTOR_RADIUS)) return 0
 
@@ -118,7 +123,7 @@ internal object NativeBotEscapeRoute {
                 if (StageCollision.blocked(stage, x, y, StageCollision.ACTOR_RADIUS,
                         simulation.bombs, bot.passBomb) ||
                     StageCollision.blockedByActors(x, y, otherActors) ||
-                    simulation.isBurning(x, y, StageCollision.ACTOR_RADIUS)) continue
+                    (!allowBurningTransit && simulation.isBurning(x, y, StageCollision.ACTOR_RADIUS))) continue
                 // Cell-center BFS can otherwise propose a first step that is
                 // physically blocked from the bot's current sub-cell position.
                 if (cell == start) {
@@ -128,14 +133,15 @@ internal object NativeBotEscapeRoute {
                     if (StageCollision.blocked(stage, stepX, stepY, StageCollision.ACTOR_RADIUS,
                             simulation.bombs, bot.passBomb) ||
                         StageCollision.blockedByActors(stepX, stepY, otherActors) ||
-                        simulation.isBurning(stepX, stepY, StageCollision.ACTOR_RADIUS)) continue
+                        (!allowBurningTransit && simulation.isBurning(stepX, stepY, StageCollision.ACTOR_RADIUS))) continue
                 }
                 seen[next] = true
                 first[next] = if (cell == start) direction + 1 else first[cell]
                 depth[next] = depth[cell] + 1
                 travelDistance[next] = distance
-                if (!simulation.wouldBlastHitFrom(bombX, bombY, x, y) &&
-                    !threatenedByOtherBomb(x, y)) {
+                if ((ignoreProposedBomb || !simulation.wouldBlastHitFrom(bombX, bombY, x, y)) &&
+                    !threatenedByOtherBomb(x, y) &&
+                    !simulation.isBurning(x, y, StageCollision.ACTOR_RADIUS)) {
                     return first[next]
                 }
                 queue[tail++] = next
