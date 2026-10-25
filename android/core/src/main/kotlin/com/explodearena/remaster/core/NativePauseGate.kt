@@ -1,19 +1,35 @@
 package com.explodearena.remaster.core
 
 /**
- * Native pause gate for the 60 Hz simulation. Pausing must freeze movement,
- * bomb fuses, flames, bot decisions and round-result hold timers together.
- * This is a control/lifecycle feature, NOT proof of original Symbian menu art.
+ * Single gate for manual pause AND Android/libGDX background lifecycle.
+ * Backgrounding always requires an explicit resume tap on return, preventing
+ * an unseen bomb fuse or bot action immediately after switching applications.
+ * This is native lifecycle safety, not evidence of original Symbian menus.
  */
 class NativePauseGate {
-    var isPaused: Boolean = false
-        private set
+    private var manuallyPaused = false
+    private var backgrounded = false
 
-    /** Clear fractional time on BOTH edges so a paused interval never catches up. */
+    val isPaused: Boolean get() = manuallyPaused || backgrounded
+
+    /** Manual pause button. Background callbacks cannot accidentally unpause. */
     fun toggle(clock: FixedStepClock): Boolean {
-        isPaused = !isPaused
+        if (!backgrounded) manuallyPaused = !manuallyPaused
         clock.clearPending()
         return isPaused
+    }
+
+    /** Idempotent: discard fractional time and require a deliberate user resume. */
+    fun onBackground(clock: FixedStepClock) {
+        backgrounded = true
+        manuallyPaused = true
+        clock.clearPending()
+    }
+
+    /** Return to foreground without restarting the simulation or its timers. */
+    fun onForeground(clock: FixedStepClock) {
+        backgrounded = false
+        clock.clearPending()
     }
 
     fun advance(clock: FixedStepClock, deltaSeconds: Double, tick: () -> Unit): Int {
