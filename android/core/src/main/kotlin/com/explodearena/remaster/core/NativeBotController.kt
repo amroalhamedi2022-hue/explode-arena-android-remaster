@@ -28,26 +28,42 @@ class NativeBotController(private val owner: String = "bot") {
         // Replan at 10Hz, immediately if the cached move becomes unsafe.
         val dx = doubleArrayOf(0.0, 1.0, 0.0, -1.0, 0.0)
         val dy = doubleArrayOf(0.0, 0.0, 1.0, 0.0, -1.0)
+        // A bot that is already inside an imminent timed ray must seek a
+        // refuge; a bot outside it must not chase the player INTO that ray.
+        // Snapshot rays once per decision, not for every BFS candidate.
+        // Remote bombs are excluded: they have no countdown.
+        val imminentCells = simulation.predictedImminentTimedBlastCells(IMMINENT_FUSE_SECONDS)
+        val imminentBomb = simulation.bombs
+            .filter { it.remaining != null && it.remaining <= IMMINENT_FUSE_SECONDS &&
+                simulation.wouldBlastHitFrom(it.x, it.y, bot.x, bot.y) }
+            .minByOrNull { requireNotNull(it.remaining) }
+        val ownBomb = simulation.bombs.firstOrNull { it.owner == owner }
+        val escapeBomb = ownBomb ?: imminentBomb
+        val escaping = escapeBomb != null
+        val isImminent = { x: Double, y: Double ->
+            imminentCells.any { NativeBombSimulation.blastHits(
+                it, x, y, StageCollision.ACTOR_RADIUS,
+            ) }
+        }
         val canStep = { direction: Int ->
             val nx = bot.x + dx[direction] * SPEED * FixedStepClock.STEP_SECONDS
             val ny = bot.y + dy[direction] * SPEED * FixedStepClock.STEP_SECONDS
             !StageCollision.blocked(stage, nx, ny, StageCollision.ACTOR_RADIUS,
                 simulation.bombs, bot.passBomb) &&
                 !StageCollision.blockedByActors(nx, ny, otherActors) &&
-                !simulation.isBurning(nx, ny, StageCollision.ACTOR_RADIUS)
+                !simulation.isBurning(nx, ny, StageCollision.ACTOR_RADIUS) &&
+                (escaping || !isImminent(nx, ny))
         }
-        val ownBomb = simulation.bombs.firstOrNull { it.owner == owner }
-        val escaping = ownBomb != null
         if (escaping || escaping != wasEscaping ||
             lastPlanTick == Long.MIN_VALUE || tick < lastPlanTick ||
             tick - lastPlanTick >= REPLAN_TICKS || !canStep(cachedDirection)) {
             // While our bomb is live, seek a refuge outside its predicted
             // blast instead of continuing to chase the player into the flame.
-            cachedDirection = if (ownBomb != null) {
+            cachedDirection = if (escapeBomb != null) {
                 NativeBotEscapeRoute.firstDirection(
-                    stage, bot, simulation, ownBomb.x, ownBomb.y, otherActors,
+                    stage, bot, simulation, escapeBomb.x, escapeBomb.y, otherActors,
                 ) ?: 0
-            } else plan(stage, bot, target, simulation, otherActors)
+            } else plan(stage, bot, target, simulation, otherActors, imminentCells)
             lastPlanTick = tick
             wasEscaping = escaping
         }
@@ -56,11 +72,11 @@ class NativeBotController(private val owner: String = "bot") {
             kotlin.math.abs(bot.y - target.y) <= 20.0
         // An immediate open neighbor is NOT proof of a viable escape: a
         // corridor can have no refuge outside the bomb's actual ray footprint.
-        val refuge = if (near && ownBomb == null && bot.passBomb == null) {
+        val refuge = if (near && !escaping && bot.passBomb == null) {
             NativeBotEscapeRoute.firstDirection(stage, bot, simulation, bot.x, bot.y, otherActors)
         } else null
         val place = near && refuge != null && refuge != 0 && bot.passBomb == null &&
-            ownBomb == null && canStep(refuge) &&
+            !escaping && canStep(refuge) &&
             !simulation.isBurning(bot.x, bot.y, StageCollision.ACTOR_RADIUS)
         // A bomb must be followed by the escape plan immediately. Returning
         // the cached chase direction here spent the first fuse tick moving
@@ -75,6 +91,7 @@ class NativeBotController(private val owner: String = "bot") {
         target: Actor,
         simulation: NativeBombSimulation,
         otherActors: List<Actor>,
+        imminentCells: List<Spawn>,
     ): Int {
         val w = stage.gridWidth
         val h = stage.gridHeight
@@ -112,7 +129,10 @@ class NativeBotController(private val owner: String = "bot") {
                 if (StageCollision.blocked(stage, x, y, StageCollision.ACTOR_RADIUS,
                         simulation.bombs, bot.passBomb) ||
                     StageCollision.blockedByActors(x, y, otherActors) ||
-                    simulation.isBurning(x, y, StageCollision.ACTOR_RADIUS)) continue
+                    simulation.isBurning(x, y, StageCollision.ACTOR_RADIUS) ||
+                    imminentCells.any { NativeBombSimulation.blastHits(
+                        it, x, y, StageCollision.ACTOR_RADIUS,
+                    ) }) continue
                 seen[index] = true
                 first[index] = if (cell == start) i + 1 else first[cell]
                 queue[tail++] = index
@@ -132,6 +152,9 @@ class NativeBotController(private val owner: String = "bot") {
     companion object {
         const val SPEED = 54.0
         private const val REPLAN_TICKS = 6L
+        // Conservative native AI heuristic: evaluate danger within 45 ticks.
+        // Not a measured Symbian AI reaction window.
+        private const val IMMINENT_FUSE_SECONDS = 0.75
         private const val MAX_GRID_CELLS = 20_000L
     }
 }
