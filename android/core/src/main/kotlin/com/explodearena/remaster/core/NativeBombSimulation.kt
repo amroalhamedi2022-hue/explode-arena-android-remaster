@@ -155,16 +155,50 @@ class NativeBombSimulation(
         activeBombs.flatMap { explosionCells(it.x, it.y) }
 
     /**
-     * Snapshot imminent TIMED-bomb rays for provisional bot pathfinding.
-     * Remote bombs have no fuse and cannot be treated as an automatic
-     * countdown. A caller must still handle already burning flames separately.
-     * Symbian AI timing remains unverified.
+     * A timed fuse can ignite another bomb (including a remote one), which can
+     * in turn ignite further bombs. Track the EARLIEST timed ignition deadline
+     * for each active bomb using the same blast/chain geometry as detonate().
+     * Untriggered remote bombs have no automatic deadline. This cannot predict
+     * a player's manual remote detonation or establish original Symbian parity.
      */
-    fun predictedImminentTimedBlastCells(withinSeconds: Double): List<Spawn> {
+    data class TimedChainThreat(val bomb: Bomb, val secondsUntilBlast: Double)
+
+    fun predictedTimedChainThreats(withinSeconds: Double): List<TimedChainThreat> {
         require(withinSeconds.isFinite() && withinSeconds >= 0.0)
-        return activeBombs.filter { it.remaining != null && it.remaining <= withinSeconds }
-            .flatMap { explosionCells(it.x, it.y) }
+        val earliest = mutableMapOf<Long, Double>()
+        val pending = java.util.ArrayDeque<Bomb>()
+        activeBombs.filter { it.remaining != null && it.remaining <= withinSeconds }
+            .sortedWith(compareBy<Bomb> { requireNotNull(it.remaining) }.thenBy { it.id })
+            .forEach { bomb ->
+                earliest[bomb.id] = requireNotNull(bomb.remaining)
+                pending.addLast(bomb)
+            }
+        while (pending.isNotEmpty()) {
+            val bomb = pending.removeFirst()
+            val deadline = earliest.getValue(bomb.id)
+            val footprint = explosionCells(bomb.x, bomb.y)
+            for (other in activeBombs) {
+                if (other.id == bomb.id) continue
+                if (footprint.any { blastHits(it, other.x, other.y, 0.0) } &&
+                    (earliest[other.id] == null || deadline < earliest.getValue(other.id))) {
+                    earliest[other.id] = deadline
+                    pending.addLast(other)
+                }
+            }
+        }
+        return activeBombs.mapNotNull { bomb ->
+            earliest[bomb.id]?.let { TimedChainThreat(bomb, it) }
+        }
     }
+
+    /**
+     * Imminent timed explosions INCLUDING bombs ignited by their chain
+     * reaction. A remote bomb by itself has no countdown, but a timed bomb's
+     * flame can ignite it. Active flames are checked separately by the caller.
+     */
+    fun predictedImminentTimedBlastCells(withinSeconds: Double): List<Spawn> =
+        predictedTimedChainThreats(withinSeconds)
+            .flatMap { explosionCells(it.bomb.x, it.bomb.y) }
 
     private fun explosionCells(x: Double, y: Double): List<Spawn> {
         val cx = floor(x / BOMB_CELL).toInt()

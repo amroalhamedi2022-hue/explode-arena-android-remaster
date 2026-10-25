@@ -48,10 +48,11 @@ internal object NativeBotEscapeRoute {
         // refuge reachable only after the opponent's explosion. Distant timed
         // bombs do not constrain this escape, and remote bombs have no fuse.
         // This is conservative provisional AI, not Symbian timing evidence.
-        val earliestThreatFuse = simulation.bombs.asSequence()
-            .filter { it.remaining != null &&
-                simulation.wouldBlastHitFrom(it.x, it.y, bot.x, bot.y) }
-            .mapNotNull { it.remaining }
+        val earliestThreatFuse = simulation.predictedTimedChainThreats(20.0).asSequence()
+            .filter { simulation.wouldBlastHitFrom(
+                it.bomb.x, it.bomb.y, bot.x, bot.y,
+            ) }
+            .map { it.secondsUntilBlast }
             .minOrNull()
         val travelBudget = earliestThreatFuse?.let { remaining ->
             (remaining - FUSE_MARGIN_SECONDS).coerceAtLeast(0.0) * NativeBotController.SPEED
