@@ -40,14 +40,23 @@ object StageCatalog {
                 "Stage $id has unsupported dimensions"
             }
             require(mapPath.matches(image)) { "Stage $id has invalid map asset path" }
+            val expectedImage = "assets/maps/map_${id.toString().padStart(3, '0')}.png"
+            require(image == expectedImage) {
+                "Stage $id must reference its matching map asset"
+            }
 
             val obstacle = entry.get("obstacle")
+            val obstacleX = obstacle.getInt("x")
+            val obstacleY = obstacle.getInt("y")
             val gridWidth = obstacle.getInt("w")
             val gridHeight = obstacle.getInt("h")
             require(gridWidth > 0 && gridHeight > 0 &&
                 gridWidth.toLong() * gridHeight <= MAX_GRID_CELLS &&
                 gridWidth.toLong() * StageCollision.CELL == width.toLong() &&
-                gridHeight.toLong() * StageCollision.CELL == height.toLong()) {
+                gridHeight.toLong() * StageCollision.CELL == height.toLong() &&
+                obstacleX >= 0 && obstacleY >= 0 &&
+                obstacleX.toLong() + gridWidth.toLong() * StageCollision.CELL <= width.toLong() &&
+                obstacleY.toLong() + gridHeight.toLong() * StageCollision.CELL <= height.toLong()) {
                 "Stage $id has invalid native collision geometry"
             }
             val sourceGrid = obstacle.get("grid")
@@ -61,7 +70,15 @@ object StageCatalog {
                 }
                 val values = IntArray(gridWidth)
                 var index = 0
-                for (cell in row) values[index++] = cell.asInt()
+                for (cell in row) {
+                    require(cell.isNumber) { "Stage $id has a non-numeric collision cell" }
+                    val value = cell.asDouble()
+                    require(value.isFinite() && value >= 0.0 &&
+                        value <= Int.MAX_VALUE.toDouble() && value == kotlin.math.floor(value)) {
+                        "Stage $id has an invalid collision cell value"
+                    }
+                    values[index++] = value.toInt()
+                }
                 grid.add(values)
             }
 
@@ -73,14 +90,16 @@ object StageCatalog {
             for (point in sourceSpawns) {
                 val x = point.getDouble("x")
                 val y = point.getDouble("y")
-                require(x.isFinite() && y.isFinite()) {
-                    "Stage $id has non-finite spawn coordinates"
+                require(x.isFinite() && y.isFinite() &&
+                    x >= 0.0 && x < width.toDouble() &&
+                    y >= 0.0 && y < height.toDouble()) {
+                    "Stage $id has invalid or out-of-bounds spawn coordinates"
                 }
                 spawns.add(Spawn(x, y))
             }
             stages.add(StageData(
                 id = id, image = image, width = width, height = height,
-                obstacleX = obstacle.getInt("x"), obstacleY = obstacle.getInt("y"),
+                obstacleX = obstacleX, obstacleY = obstacleY,
                 grid = grid, spawns = spawns,
             ))
         }
