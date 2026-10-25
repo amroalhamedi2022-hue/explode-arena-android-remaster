@@ -107,3 +107,8 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Regression:** `NativeSpawnLayoutTest` checks all 41 real stage records and player/opponent resolved positions, fixed 3-spawn edge cases, deterministic resolution and rejection of malformed/overlapping layouts.
 - **Validation:** independent source-data audit PASS; GitHub Kotlin/JUnit CI PENDING at source commit. Android device and original EKA2L1 spawn parity NOT TESTED. The 5px collision radius remains **PROVISIONAL**.
 - **Build policy:** no Android APK build for this data/geometry question; real catalog Kotlin/JUnit test is sufficient for source acceptance. A future targeted device build should test native startup, arena 26/35/40 stage transitions and real touch collision.
+
+### 2026-10-25 — N06 spawn geometry CI resolution
+- **PASS**: Native Kotlin/JUnit `:core:test` on exact source+test SHA `b0a7b80416b5c80282156fe5252ebe09c24b8a6e`, [run 40152171147](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40152171147), job `native-source-check`, step `Test native Kotlin core without Android packaging` success.
+- **PASS**: Mainline JS/Python validation on the **same SHA**, [run 40152171148](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40152171148). No APK was built or uploaded.
+- **NOT TESTED**: Android native runtime/device, Symbian EKA2L1 parity, original modes, double recheck. PR #2 Draft, PR #1 unchanged, main untouched.
