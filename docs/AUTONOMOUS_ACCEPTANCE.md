@@ -248,3 +248,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - **No APK:** native workflow artifacts `[]`; no Android package build/upload. Xiaomi Pad 5 rendering/audio, full 41-stage playthrough, Symbian EKA2L1 parity and independent device recheck remain **NOT TESTED**. PR #2 remains Draft; PR #1 and main unchanged; no auto-merge.
 - **Drive SYNC FAILED:** Google Drive/Docs connector functions are unavailable in this runtime, so LIVE Handoff and INDEX were not written/read back. GitHub plan `docs/N17_STAGE_CATALOG_IDENTITY_PLAN.md` is the recovery record; do not claim Drive sync.
 - **Next:** alternate to App Commander and continue from its latest PR #1 source/CI checkpoint.
+
+
+## 2026-10-26 — N18 proposed-bomb escape deadlines and chain prediction
+- **Engineering question:** before placement, the bot's route checked the hypothetical bomb only at the final refuge and omitted its fuse from time-aware route constraints; a route could cross its own future ray after ignition. Proposed placement could also chain an active/remote bomb without propagating that earlier deadline into the escape plan.
+- **Production:** NativeBombSimulation now predicts hypothetical placement without mutating simulation state, includes the proposed fuse, active flames, active timed bombs and transitive chain propagation. NativeBotEscapeRoute uses that snapshot only when the proposed bomb is not already active at that cell; existing bombs retain their real remaining fuse.
+- **Regressions:** three new NativeBotTimedRouteTest cases: short fuse rejects a route whose safe endpoint is too late; normal fuse keeps a reachable refuge; proposed timed bomb transfers its deadline to a remote bomb and prediction leaves bombs/next ID/remote-owner state unchanged.
+- **PASS exact source+test SHA 336d1ffcd8b6a3bc791b0fb89f2c8b9c0ccbd4d1:** Native Kotlin/JUnit actual Gradle step PASS, [run 40246895575](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40246895575); Mainline source checks PASS, [run 40246895576](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40246895576).
+- **NOT TESTED:** Android/Xiaomi Pad 5 launch/render/audio, full 41-arena gameplay, and Symbian/EKA2L1 timing/AI parity. Native artifacts [] and no APK was built.
+- **Drive SYNC FAILED:** Google Drive/Docs connector tools are unavailable in this runtime; LIVE handoff/index were not written/read back. No Drive sync is claimed.
+- PR #2 remains open Draft; PR #1 and main unchanged. Next: continue App Commander N19 process-pipe cleanup acceptance.
