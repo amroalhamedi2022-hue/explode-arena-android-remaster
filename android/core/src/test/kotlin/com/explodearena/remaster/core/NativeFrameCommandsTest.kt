@@ -88,4 +88,36 @@ class NativeFrameCommandsTest {
         assertTrue(NativeFrameCommands.resolve(
             fresh, NativeFrameCommands.Keys(), false, false, true).placeBomb)
     }
+    @Test fun transitionFramesCannotAgeBombFuseEvenAfterLongRenderDelay() {
+        val stage = StageData(0, "test.png", 128, 128, 0, 0,
+            List(16) { IntArray(16) }, listOf(Spawn(40.0, 40.0)))
+        val bombs = NativeBombSimulation(stage)
+        assertTrue(bombs.place(Actor(40.0, 40.0)))
+        val initialFuse = bombs.bombs.single().remaining!!
+        val clock = FixedStepClock()
+        val gate = NativePauseGate()
+        val stageChange = NativeFrameCommands.resolve(
+            NativeTouchControls.Frame(nextStage = true, placeBomb = true),
+            NativeFrameCommands.Keys(), false, false, true,
+        )
+        val retry = NativeFrameCommands.resolve(
+            NativeTouchControls.Frame(placeBomb = true),
+            NativeFrameCommands.Keys(), false, true, false,
+        )
+        repeat(20) { index ->
+            val decision = if (index % 2 == 0) stageChange else retry
+            assertFalse(decision.advanceWorld)
+            assertEquals(0, gate.advance(clock,
+                if (decision.advanceWorld) 0.25 else 0.0) { bombs.tick() })
+        }
+        assertEquals(0L, clock.ticks)
+        assertEquals(initialFuse, bombs.bombs.single().remaining!!, 0.0)
+        val play = NativeFrameCommands.resolve(
+            none, NativeFrameCommands.Keys(), false, false, true,
+        )
+        assertTrue(play.advanceWorld)
+        assertEquals(1, gate.advance(clock, FixedStepClock.STEP_SECONDS) { bombs.tick() })
+        assertTrue(bombs.bombs.single().remaining!! < initialFuse)
+    }
+
 }
