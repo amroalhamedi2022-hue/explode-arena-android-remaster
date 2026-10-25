@@ -138,4 +138,25 @@ class NativeBombSimulationTest {
         assertTrue(sim.bombs.isEmpty())
     }
 
+
+    @Test fun imminentTimedFootprintExcludesRemoteAndValidatesWindow() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena)
+        assertTrue(sim.setRemoteDetonator("player", true))
+        assertTrue(sim.place(Actor(24.0, 24.0), "player"))
+        repeat(120) { sim.tick() }
+        assertNull(sim.bombs.single().remaining)
+        assertTrue(sim.predictedImminentTimedBlastCells(20.0).isEmpty())
+        assertTrue(sim.place(Actor(56.0, 24.0), "player2"))
+        assertTrue(sim.predictedImminentTimedBlastCells(0.75).isEmpty())
+        repeat(60) { sim.tick() }
+        val threat = sim.predictedImminentTimedBlastCells(0.75)
+        assertTrue(threat.any { NativeBombSimulation.blastHits(it, 56.0, 24.0) })
+        assertThrows(IllegalArgumentException::class.java) {
+            sim.predictedImminentTimedBlastCells(Double.NaN)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            sim.predictedImminentTimedBlastCells(-1.0)
+        }
+    }
 }
