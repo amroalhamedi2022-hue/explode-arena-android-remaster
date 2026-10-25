@@ -112,6 +112,8 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         walking = false
         animationSeconds = 0.0
         clock.clearPending()
+        // A held finger from the previous arena cannot control the new round.
+        touchControls.suppressUntilRelease()
         viewport = FitViewport(next.width.toFloat(), next.height.toFloat(), camera)
         viewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
     }
@@ -127,6 +129,8 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         walking = false
         animationSeconds = 0.0
         clock.clearPending()
+        // A held finger from the previous arena cannot control the new round.
+        touchControls.suppressUntilRelease()
     }
 
     private fun resetOpponents(current: StageData) {
@@ -144,27 +148,28 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
             } else null
         }
         val touch = touchControls.update(contacts, width, height)
-        val pauseToggled = touch.pauseToggle ||
-            Gdx.input.isKeyJustPressed(Input.Keys.BACK) ||
-            Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) ||
-            Gdx.input.isKeyJustPressed(Input.Keys.P)
-        if (pauseToggled) pauseGate.toggle(clock)
-        if (!pauseGate.isPaused && !pauseToggled) {
-            if (touch.nextStage || Gdx.input.isKeyJustPressed(Input.Keys.PAGE_DOWN)) selectStage(stageIndex + 1)
-            else if (touch.previousStage || Gdx.input.isKeyJustPressed(Input.Keys.PAGE_UP)) selectStage(stageIndex - 1)
-        }
-        // Original Symbian first-hand input evidence: keypad 5 plants and 8
-        // requests remote detonation. Remote power remains unavailable until
-        // its actual pickup mapping is established; Space/touch are modern aids.
-        if (!pauseGate.isPaused && !pauseToggled &&
-            (touch.placeBomb || Gdx.input.isKeyJustPressed(Input.Keys.SPACE) ||
-                Gdx.input.isKeyJustPressed(Input.Keys.NUM_5))) {
-            if (roundFlow.canRetry) retryStage()
-            else if (roundFlow.isPlaying && bombSimulation.place(actor)) placeSound.play(0.65f)
-        }
-        if (!pauseGate.isPaused && !pauseToggled &&
-            (touch.detonateRemote || Gdx.input.isKeyJustPressed(Input.Keys.NUM_8)) && roundFlow.isPlaying) {
-            if (bombSimulation.detonateRemote()) explosionSound.play(0.75f)
+        val commands = NativeFrameCommands.resolve(
+            touch = touch,
+            keys = NativeFrameCommands.Keys(
+                pause = Gdx.input.isKeyJustPressed(Input.Keys.BACK) ||
+                    Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) ||
+                    Gdx.input.isKeyJustPressed(Input.Keys.P),
+                nextStage = Gdx.input.isKeyJustPressed(Input.Keys.PAGE_DOWN),
+                previousStage = Gdx.input.isKeyJustPressed(Input.Keys.PAGE_UP),
+                placeBomb = Gdx.input.isKeyJustPressed(Input.Keys.SPACE) ||
+                    Gdx.input.isKeyJustPressed(Input.Keys.NUM_5),
+                detonateRemote = Gdx.input.isKeyJustPressed(Input.Keys.NUM_8),
+            ),
+            paused = pauseGate.isPaused,
+            canRetry = roundFlow.canRetry,
+            isPlaying = roundFlow.isPlaying,
+        )
+        if (commands.togglePause) pauseGate.toggle(clock)
+        if (commands.stageDelta != 0) selectStage(stageIndex + commands.stageDelta)
+        if (commands.retry) retryStage()
+        if (commands.placeBomb && bombSimulation.place(actor)) placeSound.play(0.65f)
+        if (commands.detonateRemote && bombSimulation.detonateRemote()) {
+            explosionSound.play(0.75f)
         }
         val keyX = (if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) 1 else 0) -
             (if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) 1 else 0)
@@ -178,7 +183,9 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
             } else if (dy > 0.0) 2 else 0
         }
         var advanceAfterTick = false
-        pauseGate.advance(clock, Gdx.graphics.deltaTime.toDouble()) {
+        // Navigation, retry and pause consume the frame: never simulate a
+        // fractional tick in an arena that was just replaced or resumed.
+        pauseGate.advance(clock, if (commands.advanceWorld) Gdx.graphics.deltaTime.toDouble() else 0.0) {
             animationSeconds += FixedStepClock.STEP_SECONDS
             if (roundFlow.isPlaying) {
                 val oldX = actor.x
