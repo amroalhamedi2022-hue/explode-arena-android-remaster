@@ -120,3 +120,8 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Validation at commit time:** CI **PENDING**; do not mark PASS until native :core:test and Mainline source checks complete on the exact SHA. No Android APK build: this is deterministic Kotlin movement/pathfinding; physical touchscreen/rendering/Symbian comparison still **NOT TESTED**.
 - **Reference review:** libGDX Intersector/Rectangle AABB overlap API was examined, but core keeps a zero-allocation Kotlin 5px AABB helper for JVM tests; no third-party code copied.
 - **Next:** confirm CI, resolve failures if any, then targeted native Android build/launch for touch controls and arena 26/35/40 if device testing is available. EKA2L1 collision parity and bot-vs-bot behavior remain provisional.
+
+### 2026-10-25 — N07 exact-SHA CI resolution
+- **PASS:** Native Kotlin/JUnit `:core:test` on source+tests SHA `2e019a47d09d04a64b03d7e9a285e010d15b7020`, [CI 40159571749](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40159571749), `native-source-check` and its `Test native Kotlin core without Android packaging` step both success.
+- **PASS:** Mainline source checks on same SHA, [CI 40159571743](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40159571743); duplicate push Mainline run 40159569550 also success. Native CI had **0 artifacts** and did not assemble an APK.
+- **NOT TESTED:** Xiaomi Pad 5 native activity, original EKA2L1 actor-to-actor collision, 41-stage playthrough, performance, independent double recheck. Provisional actor AABB is a native correctness rule, not an original-game parity claim. Next: device-gated native launch/controls; App Commander next automation round.
