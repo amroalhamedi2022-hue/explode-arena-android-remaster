@@ -18,5 +18,11 @@ Does the new native Kotlin escape planner + controller integration typecheck, pa
 ## Open source/license review
 Checked https://github.com/libgdx/gdx-ai (Apache-2.0, maintained libGDX ecosystem, general A*/steering). This defect needs the project's already integrated deterministic, time-aware bomb/flame BFS and 60Hz collision model; importing gdx-ai adds dependency and behavior mismatch without fixing flame transit. Adapt existing code; no third-party code copied and no new dependencies/assets.
 
-## Pending
-Production changes, tests and CI result must be recorded separately. No PASS claimed in this pre-implementation plan.
+## Verified outcome (2026-10-25)
+- Production commits: escape route 55eca1394eef5cca1c0e89264cf6eb5855359a73 ; controller 5abe6fd719adb8a51abccc273e572c8ed032b8f8.
+- Five Kotlin JUnit regression cases including repeated fixed-step movement to an unlit refuge: exact tested code SHA 4b1d0a11a388ce016f73ed6da6dfd6cfd974b6fd.
+- PASS Native Kotlin :core:test (job native-source-check, actual Gradle test step SUCCESS): https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40223095067
+- PASS Mainline JS/Python source CI on same SHA: https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40223095023
+- Native artifacts: zero. Workflow is core source check WITHOUT Android packaging; no APK was built or delivered in this run. Android module compatibility from an assembled APK is NOT TESTED, despite the pre-recorded engineering question; do not overstate coverage.
+- Gate count 4/5: code, five regressions, Native JUnit CI, Mainline CI PASS; fifth gate physical Android/EKA2L1 parity NOT TESTED. Whole-project % unknown. No public asset uploads, main changes or merge.
+- NEXT: alternate to App Commander; then independently validate flame escape with real Android device and original EKA2L1 evidence.
