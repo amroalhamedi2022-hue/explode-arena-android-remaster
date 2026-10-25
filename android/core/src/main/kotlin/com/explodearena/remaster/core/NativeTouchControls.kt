@@ -14,6 +14,7 @@ class NativeTouchControls {
         val dx: Float = 0f,
         val dy: Float = 0f,
         val placeBomb: Boolean = false,
+        val detonateRemote: Boolean = false,
         val pauseToggle: Boolean = false,
         val previousStage: Boolean = false,
         val nextStage: Boolean = false,
@@ -21,13 +22,27 @@ class NativeTouchControls {
     data class Layout(
         val padX: Float, val padY: Float,
         val bombX: Float, val bombY: Float,
+        val remoteX: Float, val remoteY: Float,
         val previousX: Float, val nextX: Float, val pauseX: Float, val stageY: Float,
         val radius: Float,
     )
 
     private var downPointers = emptySet<Int>()
+    private var suppressUntilReleased = false
 
-    fun reset() { downPointers = emptySet() }
+    fun reset() {
+        downPointers = emptySet()
+        suppressUntilReleased = false
+    }
+
+    /** Android may preserve or recycle a held pointer across pause/resume.
+     * Do not interpret it as a new bomb, stage, or resume tap. Require a
+     * completely released touch frame before accepting any fresh gesture.
+     */
+    fun suppressUntilRelease() {
+        downPointers = emptySet()
+        suppressUntilReleased = true
+    }
 
     fun layout(width: Int, height: Int): Layout {
         require(width > 0 && height > 0)
@@ -35,6 +50,7 @@ class NativeTouchControls {
         return Layout(
             padX = width * 0.20f, padY = height * 0.79f,
             bombX = width * 0.82f, bombY = height * 0.79f,
+            remoteX = width * 0.82f, remoteY = height * 0.56f,
             previousX = width * 0.12f, nextX = width * 0.88f,
             pauseX = width * 0.50f,
             stageY = height * 0.11f, radius = radius,
@@ -45,6 +61,10 @@ class NativeTouchControls {
         val l = layout(width, height)
         require(contacts.all { it.x.isFinite() && it.y.isFinite() && it.pointer >= 0 })
         require(contacts.map { it.pointer }.distinct().size == contacts.size)
+        if (suppressUntilReleased) {
+            if (contacts.isEmpty()) suppressUntilReleased = false
+            return Frame()
+        }
         val newContacts = contacts.filter { it.pointer !in downPointers }
         downPointers = contacts.map { it.pointer }.toSet()
 
@@ -72,6 +92,7 @@ class NativeTouchControls {
             dx = dx,
             dy = dy,
             placeBomb = justPressed(l.bombX, l.bombY),
+            detonateRemote = justPressed(l.remoteX, l.remoteY),
             pauseToggle = justPressed(l.pauseX, l.stageY),
             previousStage = justPressed(l.previousX, l.stageY),
             nextStage = justPressed(l.nextX, l.stageY),
