@@ -53,11 +53,9 @@ internal class NativeOpponentRoster private constructor(val bots: List<BotSlot>)
         private val owners = listOf("bot", "bot2", "bot3")
 
         fun create(stage: StageData, player: Actor): NativeOpponentRoster {
-            require(stage.spawns.size in setOf(1, 2, 4)) { "Unsupported native spawn count" }
+            val resolved = NativeSpawnLayout.resolve(stage)
             val occupied = mutableListOf(Spawn(player.x, player.y))
-            val bots = stage.spawns.drop(1).mapIndexed { index, spawn ->
-                val safe = StageCollision.nearestFree(stage, spawn.x, spawn.y)
-                    ?: error("Arena ${stage.id} has no free opponent spawn ${index + 1}")
+            val bots = resolved.drop(1).mapIndexed { index, safe ->
                 check(occupied.none {
                     kotlin.math.abs(it.x - safe.x) < 2 * StageCollision.ACTOR_RADIUS &&
                         kotlin.math.abs(it.y - safe.y) < 2 * StageCollision.ACTOR_RADIUS

@@ -56,9 +56,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     override fun create() {
         stages = StageCatalog.parse(Gdx.files.internal("assets/stages.js").readString("UTF-8"))
         stage = stages.first()
-        val spawn = stage.spawns.firstOrNull() ?: Spawn(stage.width / 2.0, stage.height / 2.0)
-        val safe = StageCollision.nearestFree(stage, spawn.x, spawn.y)
-            ?: error("Original arena ${stage.id} has no free player spawn")
+        val safe = NativeSpawnLayout.resolve(stage).first()
         actor = Actor(safe.x, safe.y)
         bombSimulation = NativeBombSimulation(stage)
         vitality = NativeVitality()
@@ -99,9 +97,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         val target = (index + stages.size) % stages.size
         if (target == stageIndex) return
         val next = stages[target]
-        val spawn = next.spawns.firstOrNull() ?: Spawn(next.width / 2.0, next.height / 2.0)
-        val safe = StageCollision.nearestFree(next, spawn.x, spawn.y)
-            ?: error("Original arena ${next.id} has no free player spawn")
+        val safe = NativeSpawnLayout.resolve(next).first()
         val texture = Texture(Gdx.files.internal(next.image))
         arena.dispose()
         arena = texture
@@ -121,9 +117,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     }
 
     private fun retryStage() {
-        val spawn = stage.spawns.firstOrNull() ?: Spawn(stage.width / 2.0, stage.height / 2.0)
-        val safe = StageCollision.nearestFree(stage, spawn.x, spawn.y)
-            ?: error("Original arena ${stage.id} has no free player spawn")
+        val safe = NativeSpawnLayout.resolve(stage).first()
         actor = Actor(safe.x, safe.y)
         bombSimulation = NativeBombSimulation(stage)
         vitality = NativeVitality()
