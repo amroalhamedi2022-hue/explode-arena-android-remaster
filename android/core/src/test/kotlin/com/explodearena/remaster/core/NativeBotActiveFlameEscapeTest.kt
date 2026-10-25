@@ -65,6 +65,30 @@ class NativeBotActiveFlameEscapeTest {
             decision.dx == 0.0 && decision.dy == 0.0)
     }
 
+    @Test fun repeatedFixedStepsReachUnlitRefugeBeforeFlameIsRemoved() {
+        val (stage, sim) = burningStage()
+        val bot = Actor(52.0, 52.0)
+        val controller = NativeBotController()
+        val target = Actor(112.0, 112.0)
+        var moved = 0
+        for (tick in 0 until 40) {
+            if (!sim.isBurning(bot.x, bot.y, StageCollision.ACTOR_RADIUS)) break
+            val choice = controller.decide(stage, bot, target, sim, tick.toLong())
+            assertFalse(choice.placeBomb)
+            val oldX = bot.x
+            val oldY = bot.y
+            StageCollision.move(
+                stage, bot, choice.dx, choice.dy,
+                NativeBotController.SPEED, FixedStepClock.STEP_SECONDS, sim.bombs,
+            )
+            if (bot.x != oldX || bot.y != oldY) moved++
+        }
+        assertTrue("Escape must involve actual movement", moved > 0)
+        assertFalse("Without ticking the flame away, the bot must reach an unlit refuge",
+            sim.isBurning(bot.x, bot.y, StageCollision.ACTOR_RADIUS))
+        assertTrue(sim.flames.isNotEmpty())
+    }
+
     @Test fun flameEscapeCannotClaimARefugeStillInsideActiveFire() {
         val (stage, sim) = burningStage()
         val bot = Actor(52.0, 52.0)
