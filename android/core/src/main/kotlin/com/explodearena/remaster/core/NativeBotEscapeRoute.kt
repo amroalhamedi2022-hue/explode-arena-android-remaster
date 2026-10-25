@@ -48,12 +48,24 @@ internal object NativeBotEscapeRoute {
         // refuge reachable only after the opponent's explosion. Distant timed
         // bombs do not constrain this escape, and remote bombs have no fuse.
         // This is conservative provisional AI, not Symbian timing evidence.
-        val earliestThreatFuse = simulation.predictedTimedChainThreats(20.0).asSequence()
-            .filter { simulation.wouldBlastHitFrom(
-                it.bomb.x, it.bomb.y, bot.x, bot.y,
+        // Cache deadlines AND footprints. Checking only whether the bot
+        // starts inside a ray misses routes that cross a different, soon-to-
+        // explode ray on the way to an otherwise safe endpoint.
+        val timedCells = simulation.predictedTimedBlastCells(20.0)
+        val earliestThreatFuse = timedCells.asSequence()
+            .filter { NativeBombSimulation.blastHits(
+                it.cell, bot.x, bot.y, StageCollision.ACTOR_RADIUS,
             ) }
             .map { it.secondsUntilBlast }
             .minOrNull()
+        val entersBlastTooLate = { x: Double, y: Double, travelSeconds: Double ->
+            timedCells.any { threat ->
+                travelSeconds + FUSE_MARGIN_SECONDS >= threat.secondsUntilBlast &&
+                    NativeBombSimulation.blastHits(
+                        threat.cell, x, y, StageCollision.ACTOR_RADIUS,
+                    )
+            }
+        }
         val travelBudget = earliestThreatFuse?.let { remaining ->
             (remaining - FUSE_MARGIN_SECONDS).coerceAtLeast(0.0) * NativeBotController.SPEED
         }
@@ -100,6 +112,9 @@ internal object NativeBotEscapeRoute {
                     abs(x - bot.x) + abs(y - bot.y)
                 } else StageCollision.CELL.toDouble()
                 if (travelBudget != null && distance > travelBudget) continue
+                // Every traversed cell must be reachable before its own
+                // explosion deadline, not merely the final refuge cell.
+                if (entersBlastTooLate(x, y, distance / NativeBotController.SPEED)) continue
                 if (StageCollision.blocked(stage, x, y, StageCollision.ACTOR_RADIUS,
                         simulation.bombs, bot.passBomb) ||
                     StageCollision.blockedByActors(x, y, otherActors) ||
@@ -109,6 +124,7 @@ internal object NativeBotEscapeRoute {
                 if (cell == start) {
                     val stepX = bot.x + dc[direction] * NativeBotController.SPEED * FixedStepClock.STEP_SECONDS
                     val stepY = bot.y + dr[direction] * NativeBotController.SPEED * FixedStepClock.STEP_SECONDS
+                    if (entersBlastTooLate(stepX, stepY, FixedStepClock.STEP_SECONDS)) continue
                     if (StageCollision.blocked(stage, stepX, stepY, StageCollision.ACTOR_RADIUS,
                             simulation.bombs, bot.passBomb) ||
                         StageCollision.blockedByActors(stepX, stepY, otherActors) ||
