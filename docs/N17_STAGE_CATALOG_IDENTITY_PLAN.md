@@ -22,5 +22,14 @@ This is a parser/data-contract question: whether malformed metadata is rejected 
 - Physical Xiaomi Pad 5, actual rendering/audio, and Symbian EKA2L1 parity remain NOT TESTED.
 - Google Drive LIVE sync remains blocked in this runtime because Google Drive/Docs connector tools are unavailable; do not claim sync until read-back verification is possible.
 
-## Result
-PENDING source implementation and exact-SHA CI.
+## Result — N17 SOURCE ACCEPTANCE PASS (2026-10-26)
+- Production parser commit: `3258cb9f73dde6471c63295032be02eb2fb75e87` (stage-to-map identity, geometry bounds, integral/nonnegative numeric grid cells, and spawn bounds).
+- Regression commit / exact source+test SHA: `230848f38f013b8a12a67b50d37297a1abf57150`.
+- **PASS:** Native Kotlin/JUnit actual Gradle step `gradle --project-dir android :core:test --stacktrace --no-daemon`, run [40242074635](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40242074635), job `native-source-check`, step `Test native Kotlin core without Android packaging` SUCCESS.
+- **PASS:** Mainline validation on the same exact SHA, run [40242074624](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40242074624).
+- Regressions cover wrong map identity, shifted collision origin, out-of-bounds spawn, negative/fractional/non-numeric grid cell, plus the existing 41-real-arena inventory and spawn-layout integration checks.
+- **Artifacts: []** No APK assembled or uploaded. Android/Xiaomi Pad 5 rendering/audio, full gameplay and Symbian EKA2L1 parity remain **NOT TESTED**.
+- Google Drive LIVE Handoff/INDEX: **SYNC FAILED** because Google Drive/Docs connector functions are unavailable in this runtime. GitHub docs are the verified recovery checkpoint; no Drive sync is claimed.
+
+## Next
+Alternate to App Commander for its next functional milestone, then return to Explode Arena for native runtime/device acceptance planning. Do not merge PRs or write to main.
