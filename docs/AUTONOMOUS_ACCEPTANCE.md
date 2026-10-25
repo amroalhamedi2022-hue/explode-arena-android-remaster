@@ -219,3 +219,9 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Build decision:** NO APK; this is a deterministic headless simulation question answerable by `:core:test`. Android touch/GL/audio and physical device remain separate NOT TESTED. Native CI https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40208849022 PENDING; Mainline CI https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40208849023 PENDING at this checkpoint. Do not mark tests PASS before the exact SHA completes.
 - **Progress N13 [██░░░] 2/5:** implementation and regression tests committed; Native CI and Mainline CI pending; Android/Xiaomi Pad 5/EKA2L1 device/parity NOT TESTED. No root, merge, main write, release, new copyrighted assets or external code copy. Reviewed licensed libGDX/gdx-liftoff Apache-2.0 examples; reused existing simulation architecture.
 - **Next:** resolve exact-SHA CI and repair failures if any, then alternate to App Commander.
+
+
+### N13 exact-SHA CI RESOLVED — 2026-10-25
+- **PASS:** Native Kotlin/JUnit `:core:test` source job AND actual Gradle test step on exact source+5-regression SHA `b6e3ce3ba423fdc47ef26781045797a0145436b3`: https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40208849022 .
+- **PASS:** Mainline JS/Python logic/stage and self-contained web checks on SAME source/test SHA: https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40208849023 . Native artifacts [] (zero); NO APK assembled/uploaded. This answers the deterministic flame/chain/bot source question, NOT Android launch or EKA2L1 parity.
+- **Progress N13 [████░] 4/5:** source, five regressions, Kotlin CI and Mainline CI PASS; physical Xiaomi Pad 5 native/GL/audio and original Symbian parity NOT TESTED. PR #2 Draft, PR #1/main unchanged, no merge/release. **NEXT App Commander** functional development, then targeted device acceptance.
