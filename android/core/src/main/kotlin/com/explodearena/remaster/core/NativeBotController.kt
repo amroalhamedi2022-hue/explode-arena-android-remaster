@@ -21,6 +21,7 @@ class NativeBotController(private val owner: String = "bot") {
         target: Actor,
         simulation: NativeBombSimulation,
         tick: Long,
+        otherActors: List<Actor> = emptyList(),
     ): Decision {
         require(bot.x.isFinite() && bot.y.isFinite() && target.x.isFinite() && target.y.isFinite())
         require(tick >= 0)
@@ -32,6 +33,7 @@ class NativeBotController(private val owner: String = "bot") {
             val ny = bot.y + dy[direction] * SPEED * FixedStepClock.STEP_SECONDS
             !StageCollision.blocked(stage, nx, ny, StageCollision.ACTOR_RADIUS,
                 simulation.bombs, bot.passBomb) &&
+                !StageCollision.blockedByActors(nx, ny, otherActors) &&
                 !simulation.isBurning(nx, ny, StageCollision.ACTOR_RADIUS)
         }
         val ownBomb = simulation.bombs.firstOrNull { it.owner == owner }
@@ -43,9 +45,9 @@ class NativeBotController(private val owner: String = "bot") {
             // blast instead of continuing to chase the player into the flame.
             cachedDirection = if (ownBomb != null) {
                 NativeBotEscapeRoute.firstDirection(
-                    stage, bot, simulation, ownBomb.x, ownBomb.y,
+                    stage, bot, simulation, ownBomb.x, ownBomb.y, otherActors,
                 ) ?: 0
-            } else plan(stage, bot, target, simulation)
+            } else plan(stage, bot, target, simulation, otherActors)
             lastPlanTick = tick
             wasEscaping = escaping
         }
@@ -55,7 +57,7 @@ class NativeBotController(private val owner: String = "bot") {
         // An immediate open neighbor is NOT proof of a viable escape: a
         // corridor can have no refuge outside the bomb's actual ray footprint.
         val refuge = if (near && ownBomb == null && bot.passBomb == null) {
-            NativeBotEscapeRoute.firstDirection(stage, bot, simulation, bot.x, bot.y)
+            NativeBotEscapeRoute.firstDirection(stage, bot, simulation, bot.x, bot.y, otherActors)
         } else null
         val place = near && refuge != null && refuge != 0 && bot.passBomb == null &&
             ownBomb == null && canStep(refuge) &&
@@ -72,6 +74,7 @@ class NativeBotController(private val owner: String = "bot") {
         bot: Actor,
         target: Actor,
         simulation: NativeBombSimulation,
+        otherActors: List<Actor>,
     ): Int {
         val w = stage.gridWidth
         val h = stage.gridHeight
@@ -108,6 +111,7 @@ class NativeBotController(private val owner: String = "bot") {
                 val y = stage.obstacleY + nr * StageCollision.CELL + StageCollision.CELL / 2.0
                 if (StageCollision.blocked(stage, x, y, StageCollision.ACTOR_RADIUS,
                         simulation.bombs, bot.passBomb) ||
+                    StageCollision.blockedByActors(x, y, otherActors) ||
                     simulation.isBurning(x, y, StageCollision.ACTOR_RADIUS)) continue
                 seen[index] = true
                 first[index] = if (cell == start) i + 1 else first[cell]

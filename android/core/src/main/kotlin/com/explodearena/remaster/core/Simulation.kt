@@ -75,13 +75,36 @@ object StageCollision {
         kotlin.math.abs(bomb.x - x) < 7.0 + radius &&
             kotlin.math.abs(bomb.y - y) < 7.0 + radius
 
+    /**
+     * Provisional 10px-square actor-to-actor collision. Keep this separate
+     * from terrain/bomb collision so dead opponents can stop blocking paths.
+     * Same strict AABB overlap rule as NativeSpawnLayout; edge contact is legal.
+     * This does not establish original Symbian character-collision semantics.
+     */
+    fun blockedByActors(
+        x: Double, y: Double, otherActors: List<Actor>,
+        radius: Double = ACTOR_RADIUS,
+    ): Boolean {
+        if (!x.isFinite() || !y.isFinite() || !radius.isFinite() || radius < 0.0) return true
+        return otherActors.any { other ->
+            !other.x.isFinite() || !other.y.isFinite() ||
+                (kotlin.math.abs(other.x - x) < 2 * radius &&
+                    kotlin.math.abs(other.y - y) < 2 * radius)
+        }
+    }
+
     /** JS-compatible axis-separated movement and <=3 pixel substeps. */
     fun move(
         stage: StageData, actor: Actor, dx: Double, dy: Double, speed: Double, dt: Double,
         bombs: List<NativeBombSimulation.Bomb> = emptyList(),
+        otherActors: List<Actor> = emptyList(),
     ) {
         require(speed.isFinite() && dt.isFinite() && speed >= 0.0 && dt >= 0.0 && dx.isFinite() && dy.isFinite())
         require(actor.x.isFinite() && actor.y.isFinite()) { "Invalid actor position" }
+        require(otherActors.none { it === actor } &&
+            otherActors.all { it.x.isFinite() && it.y.isFinite() }) {
+            "Invalid actor collision blockers"
+        }
         val length = hypot(dx, dy)
         require(length.isFinite()) { "Movement direction magnitude overflow" }
         // Validate the ENTIRE request before mutating actor position OR bomb
@@ -103,8 +126,10 @@ object StageCollision {
         val sx = dx / length * distance / steps
         val sy = dy / length * distance / steps
         repeat(steps) {
-            if (!blocked(stage, actor.x + sx, actor.y, ACTOR_RADIUS, bombs, actor.passBomb)) actor.x += sx
-            if (!blocked(stage, actor.x, actor.y + sy, ACTOR_RADIUS, bombs, actor.passBomb)) actor.y += sy
+            if (!blocked(stage, actor.x + sx, actor.y, ACTOR_RADIUS, bombs, actor.passBomb) &&
+                !blockedByActors(actor.x + sx, actor.y, otherActors)) actor.x += sx
+            if (!blocked(stage, actor.x, actor.y + sy, ACTOR_RADIUS, bombs, actor.passBomb) &&
+                !blockedByActors(actor.x, actor.y + sy, otherActors)) actor.y += sy
             // Owner may walk OUT of a newly placed bomb, but cannot re-enter.
             val passing = actor.passBomb
             if (passing != null && bombs.none { it.id == passing && touchesBomb(it, actor.x, actor.y) }) {

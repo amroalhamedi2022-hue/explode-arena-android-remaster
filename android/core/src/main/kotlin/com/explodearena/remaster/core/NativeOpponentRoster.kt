@@ -21,6 +21,10 @@ internal class NativeOpponentRoster private constructor(val bots: List<BotSlot>)
 
     fun stopWalking() { bots.forEach { it.walking = false } }
 
+    /** Only living opponents occupy space; dead sprites never trap the player. */
+    fun blockingActors(): List<Actor> =
+        bots.filterNot { it.vitality.defeated }.map { it.actor }
+
     /** Number of bombs successfully placed by all opponents this fixed tick. */
     fun advance(stage: StageData, player: Actor, simulation: NativeBombSimulation, tick: Long): Int {
         var placed = 0
@@ -29,8 +33,12 @@ internal class NativeOpponentRoster private constructor(val bots: List<BotSlot>)
                 slot.walking = false
                 continue
             }
+            val otherActors = listOf(player) + bots
+                .filter { it !== slot && !it.vitality.defeated }
+                .map { it.actor }
             val turn = NativeBotTurn.advance(
                 stage, slot.actor, player, simulation, slot.controller, tick, slot.owner,
+                otherActors,
             )
             slot.walking = turn.moved
             if (turn.moved) {

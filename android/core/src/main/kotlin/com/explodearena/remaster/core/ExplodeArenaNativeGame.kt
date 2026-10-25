@@ -186,6 +186,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
                 StageCollision.move(
                     stage, actor, dx, dy, 77.0,
                     FixedStepClock.STEP_SECONDS, bombSimulation.bombs,
+                    opponents.blockingActors(),
                 )
                 walking = actor.x != oldX || actor.y != oldY
                 if (bombSimulation.tick() > 0) explosionSound.play(0.75f)

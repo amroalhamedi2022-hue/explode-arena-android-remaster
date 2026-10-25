@@ -23,14 +23,16 @@ internal object NativeBotTurn {
         controller: NativeBotController,
         tick: Long,
         owner: String = "bot",
+        otherActors: List<Actor> = emptyList(),
     ): Result {
-        val decision = controller.decide(stage, bot, target, simulation, tick)
+        val decision = controller.decide(stage, bot, target, simulation, tick, otherActors)
         val placed = decision.placeBomb && simulation.place(bot, owner)
         val oldX = bot.x
         val oldY = bot.y
         StageCollision.move(
             stage, bot, decision.dx, decision.dy,
             NativeBotController.SPEED, FixedStepClock.STEP_SECONDS, simulation.bombs,
+            otherActors,
         )
         return Result(decision, placed, bot.x != oldX || bot.y != oldY)
     }

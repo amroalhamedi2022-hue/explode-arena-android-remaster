@@ -30,6 +30,7 @@ internal object NativeBotEscapeRoute {
         simulation: NativeBombSimulation,
         bombX: Double,
         bombY: Double,
+        otherActors: List<Actor> = emptyList(),
     ): Int? {
         val width = stage.gridWidth
         val height = stage.gridHeight
@@ -100,6 +101,7 @@ internal object NativeBotEscapeRoute {
                 if (travelBudget != null && distance > travelBudget) continue
                 if (StageCollision.blocked(stage, x, y, StageCollision.ACTOR_RADIUS,
                         simulation.bombs, bot.passBomb) ||
+                    StageCollision.blockedByActors(x, y, otherActors) ||
                     simulation.isBurning(x, y, StageCollision.ACTOR_RADIUS)) continue
                 // Cell-center BFS can otherwise propose a first step that is
                 // physically blocked from the bot's current sub-cell position.
@@ -108,6 +110,7 @@ internal object NativeBotEscapeRoute {
                     val stepY = bot.y + dr[direction] * NativeBotController.SPEED * FixedStepClock.STEP_SECONDS
                     if (StageCollision.blocked(stage, stepX, stepY, StageCollision.ACTOR_RADIUS,
                             simulation.bombs, bot.passBomb) ||
+                        StageCollision.blockedByActors(stepX, stepY, otherActors) ||
                         simulation.isBurning(stepX, stepY, StageCollision.ACTOR_RADIUS)) continue
                 }
                 seen[next] = true
