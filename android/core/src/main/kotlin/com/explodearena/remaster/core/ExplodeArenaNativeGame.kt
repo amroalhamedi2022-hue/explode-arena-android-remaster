@@ -163,7 +163,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
             else if (roundFlow.isPlaying && bombSimulation.place(actor)) placeSound.play(0.65f)
         }
         if (!pauseGate.isPaused && !pauseToggled &&
-            Gdx.input.isKeyJustPressed(Input.Keys.NUM_8) && roundFlow.isPlaying) {
+            (touch.detonateRemote || Gdx.input.isKeyJustPressed(Input.Keys.NUM_8)) && roundFlow.isPlaying) {
             if (bombSimulation.detonateRemote()) explosionSound.play(0.75f)
         }
         val keyX = (if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) 1 else 0) -
@@ -270,6 +270,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         shapes.setColor(0.10f, 0.19f, 0.26f, 0.48f)
         shapes.circle(controls.padX, height - controls.padY, controls.radius * 1.5f, 32)
         shapes.circle(controls.bombX, height - controls.bombY, controls.radius * 1.2f, 32)
+        shapes.circle(controls.remoteX, height - controls.remoteY, controls.radius * 1.2f, 32)
         shapes.circle(controls.previousX, height - controls.stageY, controls.radius * 0.70f, 24)
         shapes.circle(controls.nextX, height - controls.stageY, controls.radius * 0.70f, 24)
         shapes.circle(controls.pauseX, height - controls.stageY, controls.radius * 0.70f, 24)
@@ -297,6 +298,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         font.draw(batch, if (pauseGate.isPaused) ">" else "II", controls.pauseX - 6f, height - controls.stageY + 6f)
         if (pauseGate.isPaused) font.draw(batch, "PAUSED - TAP CENTER TO RESUME", width * 0.33f, height * 0.57f)
         font.draw(batch, if (roundFlow.canRetry) "R" else "B", controls.bombX - 5f, height - controls.bombY + 6f)
+        font.draw(batch, "8", controls.remoteX - 5f, height - controls.remoteY + 6f)
         batch.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
     }
@@ -305,7 +307,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         // Android Home, lock screen and incoming calls must freeze the entire
         // native simulation. Returning requires a deliberate pause-button tap.
         pauseGate.onBackground(clock)
-        touchControls.reset()
+        touchControls.suppressUntilRelease()
         walking = false
         if (::placeSound.isInitialized) placeSound.stop()
         if (::explosionSound.isInitialized) explosionSound.stop()
@@ -314,7 +316,8 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     override fun resume() {
         // Do not synthesize touches or run catch-up ticks from time spent away.
         // The user resumes play with the on-screen pause control or Back/P.
-        touchControls.reset()
+        // Keep the pause-time touch quarantine until an empty touch frame.
+        // Resetting here would turn an old held pointer into a new button press.
         pauseGate.onForeground(clock)
     }
 
