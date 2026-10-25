@@ -170,3 +170,9 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Additional production fix:** renderer now suppresses directional/facing mutation during atomic pause, stage-switch or retry frames (`8ff8246380025a86cdbaed7cb7b2d643d6ecfd7b`), so a held pad cannot turn a newly reset actor before a new simulation tick.
 - **Integration test:** `NativeFrameCommandsTest` now has **9** regressions, including 20 navigation/retry render frames with a live timed bomb and `FixedStepClock`: the bomb fuse and tick count must remain unchanged until a legitimate gameplay frame. Latest **code+tests SHA** `6824369ca6ea3c227c1cc1056fdbc7e48a9e30f1` supersedes the initial eight-test SHA.
 - **CI on exact final source SHA:** Native Kotlin `https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40182225423` and Mainline `https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40182225418` **PENDING** at this update. Earlier runs on superseded SHA are not final evidence. No APK build, artifact upload, main write or PR merge. Android device and EKA2L1 parity remain **NOT TESTED**.
+
+
+### 2026-10-25 — N10 final exact-SHA CI RESOLVED
+- **PASS:** native Kotlin/JUnit `:core:test` job and `Test native Kotlin core without Android packaging` step succeeded on exact final code+9-test SHA `6824369ca6ea3c227c1cc1056fdbc7e48a9e30f1`: https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40182225423 .
+- **PASS:** Mainline JS/Python source checks on same SHA: https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40182225418 . Native run artifacts `[]`; no APK built.
+- **NOT TESTED:** real Android Native Activity launch, touch gestures, GL/audio, Xiaomi Pad 5, original Symbian EKA2L1 rules, independent device recheck. PR #2 Draft, PR #1/main untouched. NEXT: App Commander project turn; later targeted Android native acceptance.
