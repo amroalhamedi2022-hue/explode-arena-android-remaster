@@ -76,4 +76,81 @@ class NativeOpponentRosterTest {
             NativeOpponentRoster.create(overlap, Actor(24.0, 24.0))
         }
     }
+
+    private data class BotState(
+        val owner: String,
+        val x: Double,
+        val y: Double,
+        val health: Int,
+        val defeated: Boolean,
+        val walking: Boolean,
+        val facing: Int,
+        val passBomb: Long?,
+    )
+
+    private data class BombState(
+        val id: Long,
+        val owner: String,
+        val x: Double,
+        val y: Double,
+        val remaining: Double?,
+        val remote: Boolean,
+    )
+
+    private data class FourSpawnSnapshot(
+        val bots: List<BotState>,
+        val bombs: List<BombState>,
+        val nextBombId: Long,
+    )
+
+    private fun runFourSpawnRoster(reverseOrder: Boolean): FourSpawnSnapshot {
+        val arena = stage(4)
+        val player = Actor(24.0, 24.0)
+        val initial = NativeOpponentRoster.create(arena, player)
+        val slots = initial.bots.map { slot ->
+            NativeOpponentRoster.BotSlot(
+                slot.owner, Actor(slot.actor.x, slot.actor.y, slot.actor.passBomb),
+            )
+        }
+        val roster = NativeOpponentRoster(if (reverseOrder) slots.reversed() else slots)
+        val sim = NativeBombSimulation(arena)
+
+        repeat(180) { tick ->
+            sim.tick()
+            roster.advance(arena, player, sim, tick.toLong())
+            val living = roster.blockingActors()
+            for (slot in roster.bots.filterNot { it.vitality.defeated }) {
+                assertFalse("bot ${slot.owner} entered terrain", StageCollision.blocked(
+                    arena, slot.actor.x, slot.actor.y, StageCollision.ACTOR_RADIUS,
+                    sim.bombs, slot.actor.passBomb,
+                ))
+                assertFalse("bot ${slot.owner} overlapped player or another living bot",
+                    StageCollision.blockedByActors(
+                        slot.actor.x, slot.actor.y,
+                        listOf(player) + living.filterNot { it === slot.actor },
+                    ))
+            }
+        }
+
+        return FourSpawnSnapshot(
+            bots = roster.bots.sortedBy { it.owner }.map {
+                BotState(
+                    it.owner, it.actor.x, it.actor.y, it.vitality.health,
+                    it.vitality.defeated, it.walking, it.facing, it.actor.passBomb,
+                )
+            },
+            bombs = sim.bombs.sortedBy { it.id }.map {
+                BombState(it.id, it.owner, it.x, it.y, it.remaining, it.remote)
+            },
+            nextBombId = sim.nextBombId,
+        )
+    }
+
+    @Test fun fourSpawnBotTicksAreIndependentOfRosterIterationOrder() {
+        assertEquals(
+            "Reordering the roster must not change AI decisions, movement, damage or bomb IDs",
+            runFourSpawnRoster(reverseOrder = false),
+            runFourSpawnRoster(reverseOrder = true),
+        )
+    }
 }

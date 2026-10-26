@@ -336,3 +336,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - **NOT TESTED:** Xiaomi Pad 5 runtime, real-time FPS/allocation profiling, full 41-arena playthrough, native audio playback and original Symbian/EKA2L1 timing/AI parity.
 - PR #2 remains open Draft. Collision PR #1 and `main` are untouched. No auto-merge.
 - **Google Drive LIVE sync: SYNC FAILED** because no Google Drive/Docs connector is available in this runtime; no LIVE document read/write or folder verification is claimed.
+
+
+## 2026-10-26 N24 — order-independent multi-opponent tick (CI pending)
+- Engineering question: can changing the 1/2/4-spawn roster list order change bot decisions, movement, damage or bomb state because each bot previously completed its turn before the next bot planned?
+- Production source changed: NativeOpponentRoster.advance now plans every living bot from the same actor snapshot, commits bomb placements in stable owner order, computes all candidate moves before committing positions, and cancels overlapping candidate moves fail-closed.
+- Regression source changed: a 180-tick four-spawn normal-vs-reversed roster integration test compares actor positions/facing/health, bomb owners/IDs/fuses and validates terrain/actor separation. The 41-arena sweep now compares reversed roster order for every multi-bot arena while retaining same-order determinism and the 18/2/21 spawn distribution.
+- Official libGDX and libgdx/gdx-ai licenses were rechecked as Apache-2.0; no third-party code, dependencies or game assets were copied/added.
+- Exact source/test SHA and Native/Mainline CI results: PENDING; do not mark source acceptance PASS until the actual runs finish.
+- No APK was built because list-order determinism is a source/JUnit question; no artifact upload, release, merge or main write.
+- Xiaomi Pad 5 runtime, full gameplay and Symbian/EKA2L1 AI/timing parity remain NOT TESTED.
+- Google Drive SYNC FAILED: Drive/Docs connector tools are unavailable in this runtime; LIVE HANDOFF/INDEX were not read or written.
