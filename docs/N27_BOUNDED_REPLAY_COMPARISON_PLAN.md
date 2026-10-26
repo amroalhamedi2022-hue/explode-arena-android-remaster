@@ -1,7 +1,7 @@
 # N27 — Bounded native replay comparison input
 
 Date: 2026-10-26  
-Status: acceptance criteria recorded before implementation.
+Status: source acceptance PASS on exact source/test commit 13c7647e2b8473c5ff9c3443e1b76f4d22319a80.
 
 ## Engineering question
 
@@ -29,3 +29,14 @@ Source inspection alone is insufficient: the critical properties are allocation 
 ## Safety and scope
 
 No new dependency, copied implementation, game art/audio, APK packaging, release, merge, auto-merge, or write to `main`. PR #2 remains separate from collision PR #1.
+
+## Verification ledger — 2026-10-26
+
+- **Production + test commit:** `13c7647e2b8473c5ff9c3443e1b76f4d22319a80`.
+- **PASS Native Kotlin/JUnit:** [CI run 40328225806](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40328225806), actual `gradle --project-dir android :core:test --stacktrace --no-daemon`; log: **BUILD SUCCESSFUL in 46s**, 4 actionable tasks executed.
+- **PASS Mainline JS/Python:** [CI run 40328225489](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40328225489) on the same PR head.
+- The added lazy-iterator regression verifies exactly 100,000 frames are consumed from each input and that the comparator reports `frame-limit` without calling `next()` on the remaining tail. Oversized-line regressions cover expected and actual sides and assert the payload is not echoed in the divergence.
+- **Artifacts: zero.** The workflow runs JVM source/tests only; no APK packaging or upload.
+- **NOT TESTED:** Android device playback, Xiaomi Pad 5 performance, full match, and Symbian/EKA2L1 parity.
+- PR #2 remains Draft; collision PR #1 and `main` are untouched.
+- **Google Drive LIVE sync: SYNC FAILED** — Drive/Docs connector unavailable in this runtime; no LIVE document read/write or folder verification is claimed.
