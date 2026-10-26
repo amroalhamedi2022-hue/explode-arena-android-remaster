@@ -9,6 +9,27 @@ class NativeReplayComparisonTest {
         List(8) { IntArray(16) }, listOf(Spawn(24.0, 24.0)),
     )
 
+    private fun minimalTraceLine(tick: Long): String =
+        "EA-NATIVE-PROVISIONAL-v2|5|$tick|4038000000000000,4038000000000000|3,0|pass=none|remoteOwners=|nextBombId=1|bombs=0|flames=0"
+
+    private data class CountedTrace(val lines: Iterable<String>, val consumed: () -> Int)
+
+    private fun countedTrace(count: Int): CountedTrace {
+        var consumed = 0
+        val lines = object : Iterable<String> {
+            override fun iterator(): Iterator<String> = object : Iterator<String> {
+                private var tick = 0L
+                override fun hasNext(): Boolean = tick < count.toLong()
+                override fun next(): String {
+                    if (!hasNext()) throw NoSuchElementException()
+                    consumed++
+                    return minimalTraceLine(tick++)
+                }
+            }
+        }
+        return CountedTrace(lines) { consumed }
+    }
+
     private fun run(dx: Double = 0.0, remote: Boolean = false): List<String> {
         val session = NativeReplaySession(stage(), Spawn(24.0, 24.0))
         if (remote) session.setRemoteDetonator(enabled = true)
@@ -80,4 +101,40 @@ class NativeReplayComparisonTest {
         )!!
         assertEquals("actual-schema", diff.field)
     }
+    @Test fun rejectsOversizedExpectedAndActualLinesBeforeParsing() {
+        val oversized = "x".repeat(NativeReplayComparison.MAX_TRACE_LINE_LENGTH + 1)
+        val valid = minimalTraceLine(0)
+
+        val expected = NativeReplayComparison.firstDivergence(
+            listOf(oversized), listOf(valid),
+        )!!
+        assertEquals("expected-line-length", expected.field)
+        assertEquals(NativeReplayComparison.MAX_TRACE_LINE_LENGTH.toString(), expected.expected)
+        assertEquals((NativeReplayComparison.MAX_TRACE_LINE_LENGTH + 1).toString(), expected.actual)
+        assertNotEquals(oversized, expected.actual)
+
+        val actual = NativeReplayComparison.firstDivergence(
+            listOf(valid), listOf(oversized),
+        )!!
+        assertEquals("actual-line-length", actual.field)
+        assertEquals(NativeReplayComparison.MAX_TRACE_LINE_LENGTH.toString(), actual.expected)
+        assertEquals((NativeReplayComparison.MAX_TRACE_LINE_LENGTH + 1).toString(), actual.actual)
+        assertNotEquals(oversized, actual.actual)
+    }
+
+    @Test fun stopsAtFrameLimitWithoutConsumingTheUnboundedTail() {
+        val count = NativeReplayComparison.MAX_TRACE_FRAMES + 10
+        val expected = countedTrace(count)
+        val actual = countedTrace(count)
+
+        val diff = NativeReplayComparison.firstDivergence(expected.lines, actual.lines)!!
+
+        assertEquals(NativeReplayComparison.MAX_TRACE_FRAMES, diff.frameIndex)
+        assertEquals("frame-limit", diff.field)
+        assertEquals("at-most ${NativeReplayComparison.MAX_TRACE_FRAMES} frames", diff.expected)
+        assertEquals("additional frame(s) in both trace", diff.actual)
+        assertEquals(NativeReplayComparison.MAX_TRACE_FRAMES, expected.consumed())
+        assertEquals(NativeReplayComparison.MAX_TRACE_FRAMES, actual.consumed())
+    }
+
 }
