@@ -35,11 +35,12 @@ Rechecked the official `libgdx/gdx-ai` repository's Apache-2.0 LICENSE. Its gene
 - Regression commit / exact source+test SHA: `2a41a99bc4b40ee689a58899509abf969e425d66`.
 - Test: dense 2px sampling around the flame footprint plus values just inside/on/outside the strict `8 + ACTOR_RADIUS` boundaries; compares every result with the linear reference and rejects NaN/Infinity.
 
-## CI result
+## CI result — SOURCE ACCEPTANCE PASS (2026-10-26)
 
-PENDING at the time this plan was created:
-- Native Kotlin source checks run 40256273436.
-- Mainline source checks run 40256273461.
+- **PASS on exact source+test SHA `2a41a99bc4b40ee689a58899509abf969e425d66`:** Native Kotlin source workflow [run 40256273436](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40256273436) completed successfully after retrying the cancelled test job; the actual Gradle `:core:test` step is PASS.
+- **PASS on the same SHA:** Mainline JS/Python source workflow [run 40256273461](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40256273461) completed successfully.
+- A separate latest-head check on docs-only descendant `32aeb31fa582aa50e02a18801d490721a8b6a3bb` also passed: Native run 40256304673 and Mainline run 40256304692.
+- Native workflow artifacts: none. No APK packaging/build/upload, release, merge or main write.
 
 ## Device / delivery gates
 
