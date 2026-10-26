@@ -268,7 +268,11 @@ class NativeBombSimulation(
     }
 
     fun predictedTimedBlastCells(withinSeconds: Double): List<TimedBlastCell> =
-        predictedTimedThreatSnapshot(withinSeconds).cells
+        predictedTimedChainThreats(withinSeconds).flatMap { threat ->
+            explosionCells(threat.bomb.x, threat.bomb.y).map { cell ->
+                TimedBlastCell(cell, threat.secondsUntilBlast)
+            }
+        }
 
     /**
      * Imminent automatic explosions INCLUDING active-flame ignition and
