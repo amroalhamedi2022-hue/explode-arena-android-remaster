@@ -426,3 +426,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Artifacts: 0.** No APK packaging/build/upload, release, merge, auto-merge or main write. No copyrighted assets or dependencies added.
 - **NOT TESTED:** Symbian/EKA2L1 parity, Android touch/audio/graphics runtime, Xiaomi Pad 5 FPS/RAM, or human-played full match. Fuse, flame and AI values remain provisional.
 - **Google Drive SYNC FAILED:** Drive/Docs connector unavailable; LIVE documents were not read or written. This GitHub update is not a Drive sync.
+
+
+## 2026-10-26 — N30 all-arena blast-ray geometry sweep (CI PENDING)
+
+- **Engineering question:** does each valid 16px bomb placement across all 41 real arena records produce the same provisional flame-cell set as a denser independent one-pixel segment sampler, including offset obstacle grids and stage boundaries?
+- **Test-only source change:** added `android/core/src/test/kotlin/com/explodearena/remaster/core/NativeArenaBlastGeometryIntegrationTest.kt`. It enumerates valid bomb-cell centers, explicitly enables/detonates remote bombs to avoid fuse timing, compares production flame cells to a one-pixel ray reference, and rejects duplicate cells. The reference shares the collision contract but not the production four-substep ray loop.
+- **Test commit:** `f11f52b8c3720966f3b52ff0e0bdf5a6076f714b`; test blob will be recorded after independent reread. **CI result: PENDING at ledger append time**; do not mark N30 PASS until the exact source/test commit and documentation-updated head both pass.
+- **Acceptance:** real stage IDs 0–40 and spawn distribution 18/2/21; more than 1,000 valid placements; exact footprint equality; no duplicate flame cells. Plan: `docs/N30_41_ARENA_BLAST_RAY_SWEEP_PLAN.md`.
+- No production mechanic, dependency, or game asset was changed. No APK/package task, artifact, release, merge, auto-merge, or main write.
+- **NOT TESTED:** original Symbian/EKA2L1 blast parity, device rendering/audio, Xiaomi Pad 5 performance, or human-played full match.
+- **Google Drive SYNC FAILED:** no Google Drive/Docs connector is available in this runtime; LIVE handoff/index were not read or written. GitHub docs are not claimed as Drive sync.
