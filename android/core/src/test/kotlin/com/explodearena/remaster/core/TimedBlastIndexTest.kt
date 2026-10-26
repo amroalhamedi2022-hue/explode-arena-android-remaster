@@ -41,8 +41,8 @@ class TimedBlastIndexTest {
         )
 
         // At the midpoint, both adjacent flame cells overlap a 5px actor.
-        assertEquals(0.75, index.earliestDeadlineAt(16.0, 8.0), 0.0)
-        assertEquals(0.1, index.earliestDeadlineAt(72.0, 72.0), 0.0)
+        assertEquals(0.75, requireNotNull(index.earliestDeadlineAt(16.0, 8.0)), 0.0)
+        assertEquals(0.1, requireNotNull(index.earliestDeadlineAt(72.0, 72.0)), 0.0)
         assertNull(index.earliestDeadlineAt(200.0, 200.0))
     }
 
