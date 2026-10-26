@@ -19,6 +19,57 @@ internal object NativeBotEscapeRoute {
     private val dc = intArrayOf(1, 0, -1, 0)
     private val dr = intArrayOf(0, 1, 0, -1)
 
+    private const val FLAME_CELL_STEP = 16.0
+
+    /**
+     * Active flame transit is limited to the connected footprint containing
+     * the bot at escape start. A blanket burning exemption can otherwise
+     * send a bot through a second, unrelated explosion while fleeing the first.
+     *
+     * Flame cells are aligned to the 16px bomb grid. Actor-hit footprints
+     * overlap for neighboring cells (including diagonals), so a bounded
+     * 8-neighbor flood fill finds the continuous danger region in O(cells).
+     */
+    internal fun connectedBurningEscapeCells(
+        simulation: NativeBombSimulation,
+        startX: Double,
+        startY: Double,
+    ): Set<Spawn> {
+        if (!startX.isFinite() || !startY.isFinite()) return emptySet()
+        val cells = simulation.flames.flatMap { it.cells }.toSet()
+        if (cells.isEmpty()) return emptySet()
+
+        val component = LinkedHashSet<Spawn>()
+        val pending = java.util.ArrayDeque<Spawn>()
+        for (cell in cells) {
+            if (NativeBombSimulation.blastHits(
+                    cell, startX, startY, StageCollision.ACTOR_RADIUS,
+                ) && component.add(cell)
+            ) pending.addLast(cell)
+        }
+        while (pending.isNotEmpty()) {
+            val cell = pending.removeFirst()
+            for (dx in -1..1) for (dy in -1..1) {
+                if (dx == 0 && dy == 0) continue
+                val neighbor = Spawn(
+                    cell.x + dx * FLAME_CELL_STEP,
+                    cell.y + dy * FLAME_CELL_STEP,
+                )
+                if (neighbor in cells && component.add(neighbor)) pending.addLast(neighbor)
+            }
+        }
+        return component
+    }
+
+    internal fun isWithinBurningEscapeComponent(
+        component: Set<Spawn>,
+        x: Double,
+        y: Double,
+    ): Boolean = x.isFinite() && y.isFinite() && component.any {
+        NativeBombSimulation.blastHits(it, x, y, StageCollision.ACTOR_RADIUS)
+    }
+
+
     /**
      * Returns the first movement direction (1=right, 2=down, 3=left, 4=up)
      * toward a reachable cell outside the predicted blast, 0 if already safe,
@@ -47,6 +98,16 @@ internal object NativeBotEscapeRoute {
         // bomb's ray. Snapshot all active footprints once to avoid recomputing
         // obstacle-ray traversal for every visited BFS cell.
         val activeThreats = simulation.predictedActiveBlastCells()
+        // A bot may cross the connected fire region it is already standing in,
+        // but must not treat an unrelated flame as a permissible transit lane.
+        val escapeFlameComponent = if (allowBurningTransit) {
+            connectedBurningEscapeCells(simulation, bot.x, bot.y)
+        } else emptySet()
+        val burningBlocks = { x: Double, y: Double ->
+            simulation.isBurning(x, y, StageCollision.ACTOR_RADIUS) &&
+                !(allowBurningTransit &&
+                    isWithinBurningEscapeComponent(escapeFlameComponent, x, y))
+        }
         // An opponent's timed bomb can explode sooner than the proposed or
         // owned bomb. When its ray already covers the bot, use the EARLIEST
         // relevant fuse as the travel deadline; otherwise BFS may claim a
@@ -135,7 +196,7 @@ internal object NativeBotEscapeRoute {
                 if (StageCollision.blocked(stage, x, y, StageCollision.ACTOR_RADIUS,
                         simulation.bombs, bot.passBomb) ||
                     StageCollision.blockedByActors(x, y, otherActors) ||
-                    (!allowBurningTransit && simulation.isBurning(x, y, StageCollision.ACTOR_RADIUS))) continue
+                    burningBlocks(x, y)) continue
                 // Cell-center BFS can otherwise propose a first step that is
                 // physically blocked from the bot's current sub-cell position.
                 if (cell == start) {
@@ -145,7 +206,7 @@ internal object NativeBotEscapeRoute {
                     if (StageCollision.blocked(stage, stepX, stepY, StageCollision.ACTOR_RADIUS,
                             simulation.bombs, bot.passBomb) ||
                         StageCollision.blockedByActors(stepX, stepY, otherActors) ||
-                        (!allowBurningTransit && simulation.isBurning(stepX, stepY, StageCollision.ACTOR_RADIUS))) continue
+                        burningBlocks(stepX, stepY)) continue
                 }
                 seen[next] = true
                 first[next] = if (cell == start) direction + 1 else first[cell]
