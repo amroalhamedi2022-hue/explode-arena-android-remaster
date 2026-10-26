@@ -465,3 +465,16 @@ Updated: 2026-10-23 (native migration first code slice)
 - **PASS — Mainline JS/Python:** [run #40409513378](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40409513378) on the same head; source/resource checks completed successfully.
 - The N31 raw-grid oracle test blob remains `07dfd6f39237d8626cf0a16f4b2003a7ee6633a2`; no gameplay source or asset changed in this follow-up. This next ledger/plan update creates a new head and needs another CI recheck.
 - Android device, EKA2L1 parity, original graphics/audio, and full human-played match remain **NOT TESTED**. Google Drive LIVE sync remains **SYNC FAILED** because the Drive/Docs connector is unavailable.
+
+
+## 2026-10-27 N32 — final-flame damage window and unified actor tick ordering
+
+- **Production source changed: YES.** Commit: `580261ce1113f378de41f6f0fdfbdec5da5e627d`.
+- `NativeBombSimulation` now keeps a separate snapshot of flame cells that expire at the end of the just-completed 60Hz tick. `isBurningDuringLastTick` lets damage sampling include those cells while `flames`/normal `isBurning` correctly show that the flame has expired.
+- The native game now moves the player and opponents before advancing the bomb/fuse tick, then samples player and bot damage from the same completed tick. The roster has a distinct post-tick damage phase; deterministic replay uses the same damage query.
+- Added `NativeFlameDamageTimingTest.kt`: checks exact shortened-fuse detonation, damage on a newly created flame, expiry/render cleanup and clearing the damage window on the next tick across all 41 stage IDs (spawn distribution 18/2/21). Added a bot-roster final-tick damage regression. No external code or assets were copied or added.
+- **PASS — Native Kotlin/JUnit:** [CI #40422912836](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40422912836) on exact source/test SHA `580261ce1113f378de41f6f0fdfbdec5da5e627d`; `:core:test` passed, **BUILD SUCCESSFUL in 48s**, 0 artifacts.
+- **PASS — Mainline:** [CI #40422907531](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40422907531) on the same source/test SHA.
+- No APK/build artifact, release, merge, auto-merge or main-branch write. Android device and Symbian/EKA2L1 parity remain **NOT TESTED**. This commit is a provisional native timing consistency fix, not proof of original-game timing.
+- The docs-updated PR head will receive a Mainline CI recheck; the native workflow is path-filtered to Android source/workflow changes, so the source/JUnit PASS above is tied to the exact production/test commit.
+- Google Drive LIVE handoff/index sync: **SYNC FAILED** — no Google Drive/Docs connector is exposed in this runtime. No sync is claimed.

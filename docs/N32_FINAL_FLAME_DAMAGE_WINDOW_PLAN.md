@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-27  
 **PR:** #2 Native Kotlin/libGDX  
-**Status before CI:** implementation and regression tests committed; CI pending.  
+**Status:** PASS — source/JUnit CI passed on exact code/test SHA `580261ce1113f378de41f6f0fdfbdec5da5e627d`; docs-head Mainline recheck pending.  
 **Production source changes:** Yes. No assets or third-party implementation code added.
 
 ## Engineering question
@@ -26,7 +26,7 @@ Source inspection showed that `NativeBombSimulation.tick()` removed expired flam
 3. The following tick clears the expired-flame damage window.
 4. The above boundary is tested on all 41 ordered source stages, with the 18/2/21 spawn distribution asserted.
 5. Player, bot roster and replay code use the same post-tick damage semantics; bots move before the bomb tick and apply damage afterward.
-6. `gradle --project-dir android :core:test --stacktrace --no-daemon` passes on the exact source/test commit and the final PR head. No APK packaging, artifact upload, release, main-branch write or auto-merge.
+6. `gradle --project-dir android :core:test --stacktrace --no-daemon` passes on the exact source/test commit; Mainline CI rechecks the docs-updated head. The native workflow is source/JUnit-only. No APK packaging, artifact upload, release, main-branch write or auto-merge.
 
 ## Open-source/license review
 
@@ -37,3 +37,12 @@ Source inspection showed that `NativeBombSimulation.tick()` removed expired flam
 ## Limitations
 
 This is a consistency fix for the current provisional native timing model. It does **not** establish Symbian/EKA2L1 fuse, damage or AI parity. Android-device gameplay, audio, rendering, real FPS/RAM, and full human-played matches remain **NOT TESTED**. Source CI is not a device test.
+
+
+## CI evidence — source/test commit
+
+- Exact source/test commit: `580261ce1113f378de41f6f0fdfbdec5da5e627d`.
+- **PASS — Native Kotlin/JUnit:** [run #40422912836](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40422912836), job `native-source-check`, step `gradle --project-dir android :core:test --stacktrace --no-daemon`, **BUILD SUCCESSFUL in 48s**.
+- **PASS — Mainline:** [run #40422907531](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40422907531) on the same source/test SHA.
+- Artifacts: **0**. No APK was assembled, packaged, uploaded or released.
+- Device, EKA2L1/Symbian parity, audio/rendering and human-played round behavior: **NOT TESTED**. Google Drive LIVE sync is unavailable in this runtime and must not be claimed.
