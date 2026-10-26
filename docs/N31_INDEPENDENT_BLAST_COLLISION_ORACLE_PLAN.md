@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-26  
 **PR:** #2 Native Kotlin/libGDX  
-**Status:** SOURCE COMMITTED; CI PENDING  
+**Status:** PASS — Native source/JUnit and Mainline CI passed on the docs-updated PR head  
 **Production gameplay source changed:** No. This milestone hardens the integration oracle before any production collision/ray changes.
 
 ## Engineering question
@@ -31,4 +31,7 @@ N30 used a denser one-pixel ray sampler, but its wall query delegated to the sam
 
 - Test source commit: `1a069b0e0e0fed7b55a728d34fd8defd2e9059f5`.
 - Test blob: `07dfd6f39237d8626cf0a16f4b2003a7ee6633a2`.
-- Exact CI status: PENDING at the time this plan was written.
+- The test-only commit's first run (#40399638446) was cancelled by the branch concurrency group after documentation was added; it is not counted as PASS.
+- **PASS — Native Kotlin/JUnit on docs-updated head `9b02708ff028d92f7214a6beaca6e50dde7ec8fd`:** [run #40399730989](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40399730989), Gradle `:core:test` step completed successfully; 0 artifacts.
+- **PASS — Mainline on the same docs-updated head:** [run #40399731014](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40399731014), all source/resource checks succeeded.
+- The final acceptance-ledger update will create a docs-only head; that head still requires its own CI recheck.
