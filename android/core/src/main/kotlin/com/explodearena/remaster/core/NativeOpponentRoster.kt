@@ -29,11 +29,12 @@ internal class NativeOpponentRoster(val bots: List<BotSlot>) {
      * Advance one provisional 60Hz opponent tick without roster-order bias.
      *
      * Every living bot first decides from the same immutable actor-position
-     * snapshot. Successful placements are then committed in stable owner order,
-     * and all movement candidates are computed against the same pre-move actor
-     * positions and the now-complete bomb set. Positions are committed only
-     * after every candidate has been calculated. This avoids giving bot2/bot3
-     * a different view merely because an earlier list entry moved first.
+     * snapshot and the same timed-threat context. The context is created once
+     * before planning and discarded after this tick; it is never cached across
+     * fuse/flame updates. Successful placements are then committed in stable
+     * owner order, and all movement candidates are computed against the same
+     * pre-move actor positions and the now-complete bomb set. Positions are
+     * committed only after every candidate has been calculated.
      *
      * These AI and timing rules remain provisional; this is not Symbian parity.
      */
@@ -52,16 +53,19 @@ internal class NativeOpponentRoster(val bots: List<BotSlot>) {
                 .map { actorsAtStart.getValue(it) }
         }
 
-        // Planning is read-only with respect to the actors and bomb simulation.
-        // No bot observes another bot's movement or placement from this tick.
+        // One chain prediction and one immutable spatial index serve all bots.
+        // Planning is read-only, so this pre-placement context is valid for
+        // every decision in this tick and cannot observe a peer's new bomb.
+        val threatContext = NativeBotThreatContext.create(simulation)
         val decisions = living.associateWith { slot ->
-            slot.controller.decide(
+            slot.controller.decideWithContext(
                 stage = stage,
                 bot = actorsAtStart.getValue(slot),
                 target = playerAtStart,
                 simulation = simulation,
                 tick = tick,
                 otherActors = blockersAtStart.getValue(slot),
+                threatContext = threatContext,
             )
         }
 
