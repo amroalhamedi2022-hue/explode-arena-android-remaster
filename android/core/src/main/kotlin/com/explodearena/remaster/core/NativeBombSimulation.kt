@@ -259,10 +259,21 @@ class NativeBombSimulation(
 
     fun predictedTimedThreatSnapshot(withinSeconds: Double): TimedThreatSnapshot {
         val threats = predictTimedChainThreats(activeBombs, withinSeconds)
-        val cells = threats.flatMap { threat ->
-            explosionCells(threat.bomb.x, threat.bomb.y).map { cell ->
-                TimedBlastCell(cell, threat.secondsUntilBlast)
+        // Several bombs can project onto the same 16px blast cell. Keep one
+        // entry per cell at its earliest deadline: later duplicates cannot make
+        // a route safer, and the bot otherwise repeats the same hitbox test in
+        // every BFS candidate. Linked order keeps prediction deterministic.
+        val earliestByCell = linkedMapOf<Spawn, Double>()
+        for (threat in threats) {
+            for (cell in explosionCells(threat.bomb.x, threat.bomb.y)) {
+                val previous = earliestByCell[cell]
+                if (previous == null || threat.secondsUntilBlast < previous) {
+                    earliestByCell[cell] = threat.secondsUntilBlast
+                }
             }
+        }
+        val cells = earliestByCell.map { (cell, deadline) ->
+            TimedBlastCell(cell, deadline)
         }
         return TimedThreatSnapshot(threats, cells)
     }
