@@ -111,23 +111,23 @@ class NativeBotActiveFlameEscapeTest {
             id = 0, image = "test.png", width = 240, height = 160,
             obstacleX = 0, obstacleY = 0,
             grid = List(20) { IntArray(30) },
-            spawns = listOf(Spawn(40.0, 40.0), Spawn(120.0, 40.0)),
+            spawns = listOf(Spawn(40.0, 40.0), Spawn(168.0, 40.0)),
         )
         val sim = NativeBombSimulation(stage)
         assertTrue(sim.place(Actor(40.0, 40.0), "player"))
-        assertTrue(sim.place(Actor(120.0, 40.0), "player2"))
+        assertTrue(sim.place(Actor(168.0, 40.0), "player2"))
         repeat(96) { sim.tick() }
 
         assertTrue(sim.isBurning(40.0, 40.0, StageCollision.ACTOR_RADIUS))
-        assertTrue(sim.isBurning(120.0, 40.0, StageCollision.ACTOR_RADIUS))
+        assertTrue(sim.isBurning(168.0, 40.0, StageCollision.ACTOR_RADIUS))
         val component = NativeBotEscapeRoute.connectedBurningEscapeCells(sim, 40.0, 40.0)
 
         assertTrue("The starting explosion's connected ray remains traversable",
             NativeBotEscapeRoute.isWithinBurningEscapeComponent(component, 88.0, 40.0))
         assertFalse("A separated explosion must not be treated as escape transit",
-            NativeBotEscapeRoute.isWithinBurningEscapeComponent(component, 120.0, 40.0))
+            NativeBotEscapeRoute.isWithinBurningEscapeComponent(component, 168.0, 40.0))
         assertFalse("The disconnected flame cells must not enter the component",
-            component.contains(Spawn(120.0, 40.0)))
+            component.contains(Spawn(168.0, 40.0)))
 
         val direction = NativeBotEscapeRoute.firstDirection(
             stage, Actor(40.0, 40.0), sim, 40.0, 40.0,
