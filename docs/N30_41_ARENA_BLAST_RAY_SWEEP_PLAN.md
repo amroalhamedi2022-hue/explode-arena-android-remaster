@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-26  
 **PR:** #2 Native Kotlin/libGDX  
-**Status:** SOURCE TEST ADDED; CI VERIFICATION PENDING  
+**Status:** SOURCE/JVM CI PASS on documentation-updated PR head  
 **Production gameplay source changed:** No in this slice; this milestone adds an independent integration oracle before any ray implementation changes.
 
 ## Engineering question
@@ -29,4 +29,6 @@ A few hand-picked wall fixtures are not sufficient to establish coverage across 
 
 ## Expected evidence
 
-Record source/test SHA, test blob SHA, CI run URL and result, latest docs-updated PR-head SHA and CI result, and whether the actual test count exceeded 1,000. Any failure must be documented as FAIL, not silently weakened.
+- Test commit: `dcb7c1126f1bc5e04f6702f89cc42701c5831103`; test blob: `5f90167f571c8de37b8ec3c96cfc2acb043044ce`.
+- The first run for the test-only commit was cancelled by the PR concurrency group when the ledger was updated; the exact same test blob then passed on docs-updated PR head `fdea858e14c0e60148e73a7b5dd7355708b9258d` in [Native source CI #40381319340](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40381319340), **BUILD SUCCESSFUL in 54s**, 4 actionable tasks executed.
+- Mainline JS/Python CI #40381319396 also passed on that head. Artifact count: 0. The assertion that more than 1,000 valid placements were checked passed; the test does not print an exact count.
