@@ -34,4 +34,15 @@ Reviewed the existing in-repository N21 TimedThreatSnapshot, N23 TimedBlastIndex
 
 ## Status
 
-Implementation is in progress on PR #2. The shared context is created once in NativeOpponentRoster.advance and passed to every living controller; standalone controller calls retain a fresh-context path. Exact-SHA CI is pending. No APK is built because this is a source-level shared-snapshot and deterministic-decision question.
+## Implementation and exact-SHA verification — SOURCE ACCEPTANCE PASS
+
+- Production: NativeBotThreatContext packages the existing N21 coalesced timed-threat snapshot and one N23 TimedBlastIndex. NativeOpponentRoster.advance creates one context before planning and passes that same instance to every living controller. NativeBotController.decide remains source-compatible; its standalone path creates a fresh context. The context is never cached across ticks.
+- The shared 0.75-second context/index serves imminent checks and chase BFS. Escape-route-specific indexes for proposed placements or the longer route horizon remain local because their inputs differ; no behavior was silently removed.
+- Regression tests compare shared and standalone decisions for all three bot owners, compare indexed membership with the linear blastHits oracle over dense grid/boundary samples, assert simulation immutability, verify a fresh context sees fuse changes, reject invalid horizons, and count exactly one context creation per living roster tick (zero when all bots are defeated).
+- Exact production + test SHA: 4e71fa9e35a292fab0be19bfaa1af662aacf8404.
+- **PASS:** Native Kotlin/JUnit [run 40297267749](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40297267749), job 121486356992. Actual step ran `gradle --project-dir android :core:test --stacktrace --no-daemon`; log: **BUILD SUCCESSFUL in 36s**, 4 actionable tasks executed.
+- **PASS:** Mainline JS/Python validation [run 40297267719](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40297267719) on the same exact source/test SHA.
+- N24 180-tick four-spawn roster-reversal integration and all-41-arena sweep remained in the same `:core:test` suite and passed. Native workflow artifacts: **[] (zero)**. No APK packaging/build/upload, release, merge, auto-merge, or main write.
+- **NOT TESTED:** measured Xiaomi Pad 5 performance, Android runtime, complete match, audio/graphics lifecycle, and original Symbian/EKA2L1 AI/timing parity. This is source acceptance only.
+- Official libGDX and gdx-ai LICENSE files were re-read from their repositories; both are Apache-2.0. N25 copies no external implementation or assets and adds no dependency.
+- PR #2 remains open Draft; collision PR #1 remains separate. Google Drive LIVE sync remains SYNC FAILED because no Drive/Docs connector is available in this runtime; no Drive read-back or write is claimed.
