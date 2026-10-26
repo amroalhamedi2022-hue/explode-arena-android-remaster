@@ -307,3 +307,11 @@ Updated: 2026-10-23 (native migration first code slice)
 - **NOT TESTED:** Xiaomi Pad 5 profiling, native runtime, full 41-arena end-to-end gameplay and Symbian/EKA2L1 timing/AI parity.
 - **License review:** existing Kotlin simulation reused; no external code/assets/dependency added.
 - PR #2 remains open Draft; PR #1 and `main` untouched.
+
+### N22 exact-SHA source CI RESOLVED — 2026-10-26
+
+- **PASS:** Native Kotlin/JUnit source-only workflow [run 40266638153, attempt 2](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40266638153) completed SUCCESS at PR head `2a785ebfe70a4c6ea926328b370f554fe64839b6`, a documentation-only descendant of the exact production+test SHA `23afa7bc5d9e2a5ce4edc8123fff8dee89402776`. The actual Gradle step `gradle --project-dir android :core:test` passed.
+- **PASS:** Mainline source checks [run 40266638187](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40266638187) passed on the same PR head; Mainline also passed on exact source+test SHA `23afa7b` in run 40266596243.
+- **Artifacts: 0.** No APK was assembled or uploaded.
+- **NOT TESTED:** Xiaomi Pad 5 runtime/profiling, 41-arena end-to-end playthrough and original Symbian/EKA2L1 timing or AI parity.
+- PR #2 remains open Draft; collision PR #1 remains separate. No main write or merge.
