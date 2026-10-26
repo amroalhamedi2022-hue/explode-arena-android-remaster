@@ -258,3 +258,15 @@ Updated: 2026-10-23 (native migration first code slice)
 - **NOT TESTED:** Android/Xiaomi Pad 5 launch/render/audio, full 41-arena gameplay, and Symbian/EKA2L1 timing/AI parity. Native artifacts [] and no APK was built.
 - **Drive SYNC FAILED:** Google Drive/Docs connector tools are unavailable in this runtime; LIVE handoff/index were not written/read back. No Drive sync is claimed.
 - PR #2 remains open Draft; PR #1 and main unchanged. Next: continue App Commander N19 process-pipe cleanup acceptance.
+
+
+## 2026-10-26 — N19 connected active-flame escape region
+- **Engineering question:** `allowBurningTransit=true` previously exempted every burning BFS cell when a bot started inside a flame, including spatially disconnected fires. That could let the route planner cross an unrelated explosion while escaping the original one.
+- **Production:** `NativeBotEscapeRoute` now finds the connected active-flame component containing the starting bot using an 8-neighbor flood fill over the 16px flame-cell lattice. Burning transit is permitted only within that component; unrelated active flames remain blocked. The search remains bounded and does not alter bomb/flame state.
+- **Regression:** `NativeBotActiveFlameEscapeTest.escapeTransitComponentExcludesDisconnectedActiveFire` creates simultaneous explosions at x=40 and x=168, verifies that the first blast's connected ray is included and the second explosion is excluded, and confirms a non-burning refuge remains reachable.
+- **PASS exact source+test SHA `9ebc27a34cedab8e671923181084ba2bddb7d2fc`:** [Native Kotlin CI run 40251474221](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40251474221) completed SUCCESS; logs confirm `:core:compileKotlin`, `:core:compileTestKotlin`, `:core:test`, `BUILD SUCCESSFUL` (4 actionable tasks executed). [Mainline source run 40251474309](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40251474309) also PASS on the same SHA.
+- Native workflow artifacts: [] (zero). No APK assembled/uploaded. Device/Xiaomi Pad 5, full game and Symbian/EKA2L1 parity remain **NOT TESTED**.
+- **License review:** inspected official `libgdx/gdx-ai` LICENSE (Apache-2.0); no third-party code or dependency copied/added.
+- **Drive SYNC FAILED:** Google Drive/Docs tools are not exposed in this runtime; LIVE docs were not read/written back. See `docs/N19_CONNECTED_FLAME_ESCAPE_PLAN.md`; do not claim Drive sync.
+- PR #2 remains open Draft; PR #1 and main unchanged. Next: alternate to App Commander.
+
