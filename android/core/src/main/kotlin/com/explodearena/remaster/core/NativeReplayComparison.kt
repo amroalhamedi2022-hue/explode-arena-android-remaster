@@ -37,6 +37,18 @@ object NativeReplayComparison {
         val actual: String?,
     )
 
+    /**
+     * Keeps frame-count diagnostics bounded. The ordinary comparison path has
+     * already checked line length before parsing, but the extra tail frame is
+     * read after one iterator ends and must not bypass that protection.
+     */
+    private fun frameCountDiagnostic(line: String): String =
+        if (line.length <= MAX_TRACE_LINE_LENGTH) {
+            line
+        } else {
+            "oversized-line(length=${line.length},limit=$MAX_TRACE_LINE_LENGTH)"
+        }
+
     /** Returns the first differing frame/field, or null for identical traces. */
     fun firstDivergence(expected: Iterable<String>, actual: Iterable<String>): Divergence? {
         val left = expected.iterator()
@@ -116,8 +128,8 @@ object NativeReplayComparison {
         return when {
             frame == 0 && !expectedHasMore && !actualHasMore ->
                 Divergence(0, "empty-trace", null, null)
-            expectedHasMore -> Divergence(frame, "frame-count", left.next(), null)
-            actualHasMore -> Divergence(frame, "frame-count", null, right.next())
+            expectedHasMore -> Divergence(frame, "frame-count", frameCountDiagnostic(left.next()), null)
+            actualHasMore -> Divergence(frame, "frame-count", null, frameCountDiagnostic(right.next()))
             else -> null
         }
     }
