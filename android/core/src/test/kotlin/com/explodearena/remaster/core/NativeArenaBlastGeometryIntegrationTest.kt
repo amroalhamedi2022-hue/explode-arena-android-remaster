@@ -18,30 +18,49 @@ class NativeArenaBlastGeometryIntegrationTest {
         return StageCatalog.parse(file.readText(Charsets.UTF_8))
     }
 
+    // Deliberately independent of StageCollision.blocked: read the raw stage grid
+    // and enumerate every tile overlapped by the reference radius. If production
+    // collision indexing regresses, the ray oracle must not repeat that bug.
+    private fun referenceBlocked(stage: StageData, x: Double, y: Double, radius: Double): Boolean {
+        if (!x.isFinite() || !y.isFinite() || !radius.isFinite() || radius < 0.0) return true
+        if (x - radius < 0.0 || y - radius < 0.0 ||
+            x + radius >= stage.width || y + radius >= stage.height) return true
+
+        val left = floor((x - radius - stage.obstacleX) / 8.0).toInt()
+        val right = floor((x + radius - stage.obstacleX) / 8.0).toInt()
+        val top = floor((y - radius - stage.obstacleY) / 8.0).toInt()
+        val bottom = floor((y + radius - stage.obstacleY) / 8.0).toInt()
+        if (left < 0 || top < 0 || right >= stage.gridWidth || bottom >= stage.gridHeight) return true
+        for (row in top..bottom) for (column in left..right) {
+            if (stage.grid[row][column] != 0) return true
+        }
+        return false
+    }
+
     private fun referenceFootprint(stage: StageData, bombX: Double, bombY: Double): Set<Spawn> {
-        val cx = floor(bombX / NativeBombSimulation.BOMB_CELL).toInt()
-        val cy = floor(bombY / NativeBombSimulation.BOMB_CELL).toInt()
-        val center = Spawn(
-            cx * NativeBombSimulation.BOMB_CELL + NativeBombSimulation.BOMB_CELL / 2.0,
-            cy * NativeBombSimulation.BOMB_CELL + NativeBombSimulation.BOMB_CELL / 2.0,
-        )
+        // Local constants intentionally avoid production ray geometry constants.
+        val bombCell = 16.0
+        val halfCell = 8.0
+        val cx = floor(bombX / bombCell).toInt()
+        val cy = floor(bombY / bombCell).toInt()
+        val center = Spawn(cx * bombCell + halfCell, cy * bombCell + halfCell)
         val cells = linkedSetOf(center)
         val directions = listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1)
         for ((dx, dy) in directions) {
             for (distance in 1..3) {
-                val targetX = (cx + dx * distance) * 16.0 + 8.0
-                val targetY = (cy + dy * distance) * 16.0 + 8.0
+                val targetX = (cx + dx * distance) * bombCell + halfCell
+                val targetY = (cy + dy * distance) * bombCell + halfCell
                 if (targetX < 0 || targetY < 0 ||
                     targetX >= stage.width || targetY >= stage.height) break
 
-                val fromX = (cx + dx * (distance - 1)) * 16.0 + 8.0
-                val fromY = (cy + dy * (distance - 1)) * 16.0 + 8.0
+                val fromX = (cx + dx * (distance - 1)) * bombCell + halfCell
+                val fromY = (cy + dy * (distance - 1)) * bombCell + halfCell
                 // Independent reference samples every pixel instead of using
                 // the production implementation's four substeps per ray cell.
                 val steps = ceil(kotlin.math.hypot(targetX - fromX, targetY - fromY)).toInt()
                 val blocked = (0..steps).any { step ->
                     val fraction = step.toDouble() / steps
-                    StageCollision.blocked(
+                    referenceBlocked(
                         stage,
                         fromX + (targetX - fromX) * fraction,
                         fromY + (targetY - fromY) * fraction,
@@ -65,7 +84,7 @@ class NativeArenaBlastGeometryIntegrationTest {
         for (stage in stages) {
             for (y in 8 until stage.height step 16) {
                 for (x in 8 until stage.width step 16) {
-                    if (StageCollision.blocked(stage, x.toDouble(), y.toDouble(), 3.0)) continue
+                    if (referenceBlocked(stage, x.toDouble(), y.toDouble(), 3.0)) continue
 
                     val simulation = NativeBombSimulation(stage)
                     assertTrue("arena ${stage.id}: remote test power",
