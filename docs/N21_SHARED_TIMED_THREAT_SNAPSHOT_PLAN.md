@@ -25,4 +25,13 @@ NativeBotController.decide() runs every fixed simulation tick for each living op
 
 ## Implementation status
 
-Production and regression changes committed together. CI result pending; acceptance ledger will be appended after the matching SHA is checked.
+## Implementation and CI result — SOURCE ACCEPTANCE PASS (2026-10-26)
+
+- Production commit and exact source+test SHA: `15d75f79bd64d2e1ea330aa2a28466d6020a55df`.
+- `NativeBombSimulation.TimedThreatSnapshot` now returns threat owners and timestamped cells together; `NativeBotController.decide()` consumes that one snapshot rather than launching two identical timed-chain prediction passes.
+- Regression proves the snapshot matches both existing helper views for a timed bomb that chains into a remote bomb, and proves bombs, flames, and next ID are unchanged.
+- **Native Kotlin/JUnit: PASS** after rerunning the failed job. Initial attempt failed before tests because Maven Central returned HTTP 429 for the Kotlin Gradle plugin BOM; retry attempt 2 completed successfully. [Run 40261677323](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40261677323).
+- **Mainline source checks: PASS** on the same SHA: [run 40261677282](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40261677282).
+- Native artifacts: none; no APK packaging/build/upload.
+- Xiaomi Pad 5 runtime and measured frame-time improvement: **NOT TESTED**. Symbian/EKA2L1 timing parity: **NOT TESTED**.
+- PR #2 remains Draft and unmerged; collision PR #1 remains separate.

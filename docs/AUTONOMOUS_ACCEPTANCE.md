@@ -285,3 +285,12 @@ Updated: 2026-10-23 (native migration first code slice)
 - **License/source review:** rechecked the official `libgdx/gdx-ai` Apache-2.0 LICENSE. No external implementation was copied and no dependency was added.
 - **Drive SYNC FAILED:** Google Drive/Docs connector tools are unavailable in this runtime. LIVE HANDOFF/INDEX were not read or written; this GitHub ledger is only the recovery record, not a successful Drive sync.
 - **PR state:** #2 remains open Draft; collision PR #1 remains separate.
+
+
+## 2026-10-26 — N21 shared timed-threat snapshot (source acceptance PASS)
+- Production: `NativeBombSimulation.TimedThreatSnapshot` packages the timed-chain threats and timestamped blast cells from one prediction. `NativeBotController.decide()` now obtains both from a single snapshot per decision, avoiding a duplicate chain-graph walk for every living bot on every fixed tick.
+- Regression: snapshot equals the existing threat/cell helper results for a timed bomb chaining into a remote bomb; bombs, flames and nextBombId are unchanged by prediction.
+- Exact source+test SHA: `15d75f79bd64d2e1ea330aa2a28466d6020a55df`.
+- **PASS:** Native Kotlin/JUnit [run 40261677323, attempt 2](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40261677323); initial attempt was **FAIL** before tests due Maven Central HTTP 429, then the failed job rerun passed. Mainline JS/Python [run 40261677282](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40261677282) PASS on the same SHA.
+- Artifacts: 0; APK not built. Xiaomi Pad 5 performance measurement and original Symbian/EKA2L1 parity: **NOT TESTED**.
+- PR #2 remains open Draft; collision PR #1 remains separate. No main write or merge.
