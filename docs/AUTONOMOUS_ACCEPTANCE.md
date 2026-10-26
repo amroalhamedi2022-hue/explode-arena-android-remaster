@@ -384,3 +384,17 @@ Updated: 2026-10-23 (native migration first code slice)
 - **NOT TESTED:** Xiaomi Pad 5 measured performance, Android runtime, full match, graphics/audio lifecycle and original Symbian/EKA2L1 AI/timing parity.
 - No external implementation, dependency or copyrighted asset was added. PR #2 remains open Draft; collision PR #1 remains separate.
 - **Google Drive SYNC FAILED:** Drive/Docs connector is unavailable in this runtime; LIVE handoff/index were not read or written back.
+
+
+## 2026-10-26 — N27 bounded replay comparison input (SOURCE ACCEPTANCE PASS)
+
+- **Engineering question:** the replay comparator previously split raw lines before checking field limits and could consume an unbounded iterable. Oversized lines could allocate unnecessarily; a very long or non-terminating trace had no frame cap.
+- **Production source:** `NativeReplayComparison.firstDivergence` now rejects lines longer than 512 Ki characters before `split('|')`, returning only the configured limit and observed length rather than the raw oversized payload. Comparison is capped at 100,000 frames; if either trace has more data, it returns `frame-limit` without consuming the extra frame.
+- **Regression tests:** oversized expected and actual lines; lazy counting traces with 100,010 frames prove exactly 100,000 lines are consumed from each side and the extra tail is untouched. Existing deterministic replay, malformed trace, schema, first-divergence, empty-trace and short frame-count tests remain in the same Gradle suite.
+- **Exact production + test commit:** `13c7647e2b8473c5ff9c3443e1b76f4d22319a80`.
+- **PASS Native Kotlin/JUnit:** [run 40328225806](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40328225806), actual `:core:test`, **BUILD SUCCESSFUL in 46s**.
+- **PASS Mainline JS/Python:** [run 40328225489](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40328225489) on the same PR head.
+- Artifacts: **0**. No APK packaging/build/upload, release, merge, auto-merge or main write.
+- **NOT TESTED:** Xiaomi Pad 5/runtime, real-device performance, full match and original Symbian/EKA2L1 behavior. These are not inferred from JVM CI.
+- No third-party code, dependencies or game assets added. PR #2 remains Draft and separate from collision PR #1.
+- **Google Drive SYNC FAILED:** Drive/Docs connector unavailable in this runtime; LIVE handoff/index were not read or written back.
