@@ -137,4 +137,35 @@ class NativeBotActiveFlameEscapeTest {
         assertTrue(direction!! in 1..4)
     }
 
+    @Test fun indexedFlameFootprintMatchesLinearReferenceAtGridAndHitboxBoundaries() {
+        val (_, sim) = burningStage()
+        val component = NativeBotEscapeRoute.connectedBurningEscapeCells(sim, 40.0, 40.0)
+        val index = BurningEscapeIndex(component)
+        val points = mutableListOf<Pair<Double, Double>>()
+
+        // Dense sample over and around the generated flame footprint.
+        for (x in -8..104 step 2) {
+            for (y in -8..104 step 2) points += x.toDouble() to y.toDouble()
+        }
+        // Include strict hitbox edges and nearby floating-point positions.
+        val offsets = listOf(-13.001, -13.0, -12.999, -8.0, 0.0, 8.0, 12.999, 13.0, 13.001)
+        for (cell in component) {
+            for (offset in offsets) {
+                points += (cell.x + offset) to cell.y
+                points += cell.x to (cell.y + offset)
+                points += (cell.x + offset) to (cell.y + offset)
+            }
+        }
+
+        for ((x, y) in points) {
+            assertEquals(
+                "Indexed and reference hit-tests differ at ($x, $y)",
+                NativeBotEscapeRoute.isWithinBurningEscapeComponent(component, x, y),
+                index.contains(x, y),
+            )
+        }
+        assertFalse(index.contains(Double.NaN, 40.0))
+        assertFalse(index.contains(40.0, Double.POSITIVE_INFINITY))
+    }
+
 }
