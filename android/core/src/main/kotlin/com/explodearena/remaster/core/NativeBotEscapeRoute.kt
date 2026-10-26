@@ -158,7 +158,7 @@ internal object NativeBotEscapeRoute {
         // A refuge outside our own blast can still be inside another active
         // bomb's ray. Snapshot all active footprints once to avoid recomputing
         // obstacle-ray traversal for every visited BFS cell.
-        val activeThreats = simulation.predictedActiveBlastCells()
+        val activeThreatIndex = TimedBlastIndex.fromCells(simulation.predictedActiveBlastCells())
         // A bot may cross the connected fire region it is already standing in,
         // but must not treat an unrelated flame as a permissible transit lane.
         val escapeFlameComponent = if (allowBurningTransit) {
@@ -191,27 +191,21 @@ internal object NativeBotEscapeRoute {
         } else {
             simulation.predictedTimedBlastCells(20.0)
         }
-        val earliestThreatFuse = timedCells.asSequence()
-            .filter { NativeBombSimulation.blastHits(
-                it.cell, bot.x, bot.y, StageCollision.ACTOR_RADIUS,
-            ) }
-            .map { it.secondsUntilBlast }
-            .minOrNull()
+        val timedThreatIndex = TimedBlastIndex(timedCells)
+        val earliestThreatFuse = timedThreatIndex.earliestDeadlineAt(
+            bot.x, bot.y, StageCollision.ACTOR_RADIUS,
+        )
         val entersBlastTooLate = { x: Double, y: Double, travelSeconds: Double ->
-            timedCells.any { threat ->
-                travelSeconds + FUSE_MARGIN_SECONDS >= threat.secondsUntilBlast &&
-                    NativeBombSimulation.blastHits(
-                        threat.cell, x, y, StageCollision.ACTOR_RADIUS,
-                    )
-            }
+            val deadline = timedThreatIndex.earliestDeadlineAt(
+                x, y, StageCollision.ACTOR_RADIUS,
+            )
+            deadline != null && travelSeconds + FUSE_MARGIN_SECONDS >= deadline
         }
         val travelBudget = earliestThreatFuse?.let { remaining ->
             (remaining - FUSE_MARGIN_SECONDS).coerceAtLeast(0.0) * NativeBotController.SPEED
         }
         val threatenedByOtherBomb = { x: Double, y: Double ->
-            activeThreats.any { cell ->
-                NativeBombSimulation.blastHits(cell, x, y, StageCollision.ACTOR_RADIUS)
-            }
+            activeThreatIndex.contains(x, y, StageCollision.ACTOR_RADIUS)
         }
         if ((ignoreProposedBomb || !simulation.wouldBlastHitFrom(bombX, bombY, bot.x, bot.y)) &&
             !threatenedByOtherBomb(bot.x, bot.y) &&

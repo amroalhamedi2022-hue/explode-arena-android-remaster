@@ -106,6 +106,8 @@ class NativeBotController(private val owner: String = "bot") {
         val size = w.toLong() * h.toLong()
         // Avoid allocating unbounded arrays if a malformed stage slips through.
         if (size <= 0 || size > MAX_GRID_CELLS) return 0
+        // Build once per BFS plan; each candidate then checks at most four grid cells.
+        val imminentIndex = TimedBlastIndex.fromCells(imminentCells)
         val startCol = floor((bot.x - stage.obstacleX) / StageCollision.CELL).toInt()
         val startRow = floor((bot.y - stage.obstacleY) / StageCollision.CELL).toInt()
         if (startCol !in 0 until w || startRow !in 0 until h) return 0
@@ -138,9 +140,7 @@ class NativeBotController(private val owner: String = "bot") {
                         simulation.bombs, bot.passBomb) ||
                     StageCollision.blockedByActors(x, y, otherActors) ||
                     simulation.isBurning(x, y, StageCollision.ACTOR_RADIUS) ||
-                    imminentCells.any { NativeBombSimulation.blastHits(
-                        it, x, y, StageCollision.ACTOR_RADIUS,
-                    ) }) continue
+                    imminentIndex.contains(x, y, StageCollision.ACTOR_RADIUS)) continue
                 seen[index] = true
                 first[index] = if (cell == start) i + 1 else first[cell]
                 queue[tail++] = index

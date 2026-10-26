@@ -315,3 +315,11 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Artifacts: 0.** No APK was assembled or uploaded.
 - **NOT TESTED:** Xiaomi Pad 5 runtime/profiling, 41-arena end-to-end playthrough and original Symbian/EKA2L1 timing or AI parity.
 - PR #2 remains open Draft; collision PR #1 remains separate. No main write or merge.
+
+
+## 2026-10-26 N23 — bounded timed-blast spatial index (PENDING CI)
+- Engineering question: after N22 duplicate-cell coalescing, do repeated linear scans in chase/escape BFS still dominate candidate checks, and can a 16px spatial index preserve exact hitbox/deadline behavior?
+- Production source changes prepared: new `TimedBlastIndex`; integrate bounded lookups into `NativeBotController.plan` and `NativeBotEscapeRoute.firstDirection`. The one-off cached-direction safety check remains linear to avoid per-tick index construction.
+- New JUnit regressions compare indexed membership with the existing linear `blastHits` oracle across negative/positive coordinates and strict boundaries; cover earliest deadlines, duplicates, empty index, invalid input and radius bounds.
+- Source/test CI and Mainline validation are pending; no APK packaging, artifact upload, release, merge or main write.
+- Device profiling, Xiaomi Pad 5 runtime, full 41-arena playthrough and original Symbian/EKA2L1 parity remain NOT TESTED. Google Drive LIVE sync must be verified separately; GitHub is the source checkpoint.
