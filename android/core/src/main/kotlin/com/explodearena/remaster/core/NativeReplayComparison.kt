@@ -11,6 +11,8 @@ package com.explodearena.remaster.core
  */
 object NativeReplayComparison {
     private const val SCHEMA = "EA-NATIVE-PROVISIONAL-v2"
+    internal const val MAX_TRACE_FRAMES = 100_000
+    internal const val MAX_TRACE_LINE_LENGTH = 512 * 1024
     private val fieldNames = listOf(
         "stage/tick", "actor-position", "health/invulnerability",
         "pass-bomb", "remote-owners", "next-bomb-id", "bombs", "flames",
@@ -44,9 +46,23 @@ object NativeReplayComparison {
         var actualPreviousTick: Long? = null
         var expectedStage: Int? = null
         var actualStage: Int? = null
-        while (left.hasNext() && right.hasNext()) {
+        while (frame < MAX_TRACE_FRAMES && left.hasNext() && right.hasNext()) {
             val a = left.next()
             val b = right.next()
+            // Bound raw input before split() allocates a field list. Do not echo
+            // untrusted oversized content into the divergence result.
+            if (a.length > MAX_TRACE_LINE_LENGTH) {
+                return Divergence(
+                    frame, "expected-line-length",
+                    MAX_TRACE_LINE_LENGTH.toString(), a.length.toString(),
+                )
+            }
+            if (b.length > MAX_TRACE_LINE_LENGTH) {
+                return Divergence(
+                    frame, "actual-line-length",
+                    MAX_TRACE_LINE_LENGTH.toString(), b.length.toString(),
+                )
+            }
             val lhs = a.split('|')
             val rhs = b.split('|')
             if (lhs.firstOrNull() != SCHEMA) {
@@ -82,11 +98,26 @@ object NativeReplayComparison {
             actualPreviousTick = rhs[2].toLong()
             frame++
         }
+        val expectedHasMore = left.hasNext()
+        val actualHasMore = right.hasNext()
+        if (frame == MAX_TRACE_FRAMES && (expectedHasMore || actualHasMore)) {
+            val side = when {
+                expectedHasMore && actualHasMore -> "both"
+                expectedHasMore -> "expected"
+                else -> "actual"
+            }
+            return Divergence(
+                frame,
+                "frame-limit",
+                "at-most $MAX_TRACE_FRAMES frames",
+                "additional frame(s) in $side trace",
+            )
+        }
         return when {
-            frame == 0 && !left.hasNext() && !right.hasNext() ->
+            frame == 0 && !expectedHasMore && !actualHasMore ->
                 Divergence(0, "empty-trace", null, null)
-            left.hasNext() -> Divergence(frame, "frame-count", left.next(), null)
-            right.hasNext() -> Divergence(frame, "frame-count", null, right.next())
+            expectedHasMore -> Divergence(frame, "frame-count", left.next(), null)
+            actualHasMore -> Divergence(frame, "frame-count", null, right.next())
             else -> null
         }
     }
