@@ -457,3 +457,11 @@ Updated: 2026-10-23 (native migration first code slice)
 - This closes the pending status from the prior N31 note. The test-only source/test commit remains `1a069b0e0e0fed7b55a728d34fd8defd2e9059f5`, blob `07dfd6f39237d8626cf0a16f4b2003a7ee6633a2`.
 - This ledger-only update creates a newer PR head; recheck Native and Mainline CI on that new head before transferring PASS to it. No gameplay source/assets/APK changed.
 - Physical Android device, Symbian/EKA2L1 parity, original audio/visuals and full human-played match remain **NOT TESTED**. Google Drive LIVE sync remains **SYNC FAILED** because the Drive/Docs connector is unavailable in this runtime.
+
+
+## 2026-10-26 N31 final docs-head CI follow-up
+
+- **PASS — Native Kotlin/JUnit:** [run #40409513494](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40409513494) on PR #2 head `6d88c3cdd0ade150a1387f8a9244b28db068b928`; `:core:test` completed, `BUILD SUCCESSFUL in 46s`, zero artifacts.
+- **PASS — Mainline JS/Python:** [run #40409513378](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40409513378) on the same head; source/resource checks completed successfully.
+- The N31 raw-grid oracle test blob remains `07dfd6f39237d8626cf0a16f4b2003a7ee6633a2`; no gameplay source or asset changed in this follow-up. This next ledger/plan update creates a new head and needs another CI recheck.
+- Android device, EKA2L1 parity, original graphics/audio, and full human-played match remain **NOT TESTED**. Google Drive LIVE sync remains **SYNC FAILED** because the Drive/Docs connector is unavailable.
