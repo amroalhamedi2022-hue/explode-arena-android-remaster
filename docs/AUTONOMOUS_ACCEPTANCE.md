@@ -323,3 +323,16 @@ Updated: 2026-10-23 (native migration first code slice)
 - New JUnit regressions compare indexed membership with the existing linear `blastHits` oracle across negative/positive coordinates and strict boundaries; cover earliest deadlines, duplicates, empty index, invalid input and radius bounds.
 - Source/test CI and Mainline validation are pending; no APK packaging, artifact upload, release, merge or main write.
 - Device profiling, Xiaomi Pad 5 runtime, full 41-arena playthrough and original Symbian/EKA2L1 parity remain NOT TESTED. Google Drive LIVE sync must be verified separately; GitHub is the source checkpoint.
+
+
+## 2026-10-26 N23 — timed-blast spatial index — SOURCE ACCEPTANCE PASS
+- Production/test checkpoint: `98d47752048bf29194dbc2d0e717068ec972deeb`. Production index commit: `60aa5ea1762f003917dd2a499163d1783b9448ed`; nullable JUnit assertion fix: `98d47752048bf29194dbc2d0e717068ec972deeb`.
+- The new bounded primitive `TimedBlastIndex` replaces repeated linear cell scans inside `NativeBotController.plan` and `NativeBotEscapeRoute.firstDirection`. It stores 16px grid keys in primitive arrays/open addressing, checks four candidate cells per actor query, preserves strict hitbox boundaries, and retains the earliest deadline for duplicate cells. The one-off cached-direction safety check remains linear to avoid constructing an index on every fixed tick.
+- New `TimedBlastIndexTest` compares indexed membership against the existing linear `NativeBombSimulation.blastHits` oracle around positive/negative grid cells and exact boundaries; tests duplicate cells/earliest deadlines, empty indexes, non-finite queries, unaligned cells, invalid deadlines and radius bounds. Independent geometry cross-check: 4,225 coordinate cases, zero mismatches.
+- Initial CI on intermediate SHA `60aa5ea1762f003917dd2a499163d1783b9448ed` **FAIL**: Kotlin correctly caught nullable `Double?` values passed to JUnit's primitive double assertion. Fixed with explicit `requireNotNull` in test commit `98d47752048bf29194dbc2d0e717068ec972deeb`.
+- **PASS on exact source+test SHA `98d47752048bf29194dbc2d0e717068ec972deeb`:** Native Kotlin/JUnit [run 40271739066](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40271739066), actual `gradle --project-dir android :core:test`, `BUILD SUCCESSFUL in 43s`.
+- **PASS:** Mainline validation on the same SHA [run 40271739122](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40271739122).
+- **Artifacts: 0.** No APK packaging, upload or release. The CI workflow is source/JUnit only.
+- **NOT TESTED:** Xiaomi Pad 5 runtime, real-time FPS/allocation profiling, full 41-arena playthrough, native audio playback and original Symbian/EKA2L1 timing/AI parity.
+- PR #2 remains open Draft. Collision PR #1 and `main` are untouched. No auto-merge.
+- **Google Drive LIVE sync: SYNC FAILED** because no Google Drive/Docs connector is available in this runtime; no LIVE document read/write or folder verification is claimed.

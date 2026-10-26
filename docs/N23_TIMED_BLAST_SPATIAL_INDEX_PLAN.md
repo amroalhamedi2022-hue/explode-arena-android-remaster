@@ -28,4 +28,14 @@ Reviewed the existing in-repository `BurningEscapeIndex` as the closest tested d
 
 ## Implementation
 
-Pending source/JUnit CI. No APK build is requested because this change's question is exact deterministic equivalence of spatial lookups versus the existing linear hitbox oracle; device packaging cannot establish that equivalence.
+## CI result — SOURCE ACCEPTANCE PASS (2026-10-26)
+
+- Initial native run on intermediate SHA `60aa5ea1762f003917dd2a499163d1783b9448ed` failed test compilation because two nullable `Double?` results were passed to JUnit's primitive double assertion. Fixed with `requireNotNull` in test commit `98d47752048bf29194dbc2d0e717068ec972deeb`.
+- **PASS on exact source+test SHA `98d47752048bf29194dbc2d0e717068ec972deeb`:** [Native Kotlin/JUnit run 40271739066](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40271739066), task `gradle --project-dir android :core:test`, `BUILD SUCCESSFUL in 43s`.
+- **PASS:** [Mainline source validation run 40271739122](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40271739122) on the same SHA.
+- Independent geometry cross-check exercised 4,225 boundary/grid coordinate cases with zero mismatches against the linear hitbox oracle; the corresponding Kotlin/JUnit regression is part of `:core:test`.
+- **Artifacts: 0.** No APK packaging, artifact upload or release.
+- Xiaomi Pad 5 runtime/profiling, 41-arena end-to-end playthrough and original Symbian/EKA2L1 parity remain NOT TESTED.
+- PR #2 remains open Draft; collision PR #1 and `main` untouched. Google Drive LIVE sync remains SYNC FAILED because this runtime has no Drive/Docs connector; no Drive write/read-back is claimed.
+
+
