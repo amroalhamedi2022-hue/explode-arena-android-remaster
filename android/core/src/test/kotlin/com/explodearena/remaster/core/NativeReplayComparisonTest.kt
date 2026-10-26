@@ -64,7 +64,33 @@ class NativeReplayComparisonTest {
         val diff = NativeReplayComparison.firstDivergence(full, full.take(3))!!
         assertEquals(3, diff.frameIndex)
         assertEquals("frame-count", diff.field)
+        assertEquals(full[3], diff.expected)
         assertNull(diff.actual)
+    }
+
+    @Test fun frameCountMismatchBoundsOversizedTailDiagnosticsOnBothSides() {
+        val valid = minimalTraceLine(0)
+        val oversized = "x".repeat(NativeReplayComparison.MAX_TRACE_LINE_LENGTH + 1)
+        val marker =
+            "oversized-line(length=${oversized.length},limit=${NativeReplayComparison.MAX_TRACE_LINE_LENGTH})"
+
+        val expectedTail = NativeReplayComparison.firstDivergence(
+            listOf(valid, oversized), listOf(valid),
+        )!!
+        assertEquals(1, expectedTail.frameIndex)
+        assertEquals("frame-count", expectedTail.field)
+        assertEquals(marker, expectedTail.expected)
+        assertNull(expectedTail.actual)
+        assertNotEquals(oversized, expectedTail.expected)
+
+        val actualTail = NativeReplayComparison.firstDivergence(
+            listOf(valid), listOf(valid, oversized),
+        )!!
+        assertEquals(1, actualTail.frameIndex)
+        assertEquals("frame-count", actualTail.field)
+        assertNull(actualTail.expected)
+        assertEquals(marker, actualTail.actual)
+        assertNotEquals(oversized, actualTail.actual)
     }
 
     @Test fun rejectsTwoEmptyTracesInsteadOfClaimingParity() {
