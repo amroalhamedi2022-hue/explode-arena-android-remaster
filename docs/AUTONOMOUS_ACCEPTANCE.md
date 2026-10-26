@@ -428,7 +428,7 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Google Drive SYNC FAILED:** Drive/Docs connector unavailable; LIVE documents were not read or written. This GitHub update is not a Drive sync.
 
 
-## 2026-10-26 — N30 all-arena blast-ray geometry sweep (CI PENDING)
+## 2026-10-26 — N30 all-arena blast-ray geometry sweep (SOURCE/JVM CI PASS)
 
 - **Engineering question:** does each valid 16px bomb placement across all 41 real arena records produce the same provisional flame-cell set as a denser independent one-pixel segment sampler, including offset obstacle grids and stage boundaries?
 - **Test-only source change:** added `android/core/src/test/kotlin/com/explodearena/remaster/core/NativeArenaBlastGeometryIntegrationTest.kt`. It enumerates valid bomb-cell centers, explicitly enables/detonates remote bombs to avoid fuse timing, compares production flame cells to a one-pixel ray reference, and rejects duplicate cells. The reference shares the collision contract but not the production four-substep ray loop.
