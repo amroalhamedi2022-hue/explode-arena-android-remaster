@@ -294,3 +294,16 @@ Updated: 2026-10-23 (native migration first code slice)
 - **PASS:** Native Kotlin/JUnit [run 40262196746](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40262196746) and Mainline JS/Python [run 40262196734](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40262196734) on the final SHA. An earlier attempt on the previous SHA encountered Maven Central HTTP 429 before tests; its failed job was rerun successfully.
 - Artifacts: 0; APK not built. Xiaomi Pad 5 performance measurement and original Symbian/EKA2L1 parity: **NOT TESTED**.
 - PR #2 remains open Draft; collision PR #1 remains separate. No main write or merge.
+
+## 2026-10-26 — N22 timed-threat cell coalescing
+
+- **Engineering question:** multiple timed bomb rays can include the same lattice cell. Can the bot avoid repeated hitbox checks while preserving every threatened cell and its earliest ignition deadline?
+- **Production:** `NativeBombSimulation.predictedTimedThreatSnapshot` now emits one cell record per unique `Spawn`, retaining the minimum deadline and deterministic first-seen ordering. The legacy raw-cell helper remains unchanged as an independent oracle.
+- **Regression:** updated the existing timed-chain snapshot test to compare cell-set parity, assert uniqueness and earliest-deadline preservation, and confirm prediction leaves bombs, flames and next ID unchanged.
+- **Production commit:** `42a32970d35d00b187a10b7e91513c4b0acc8730`.
+- **Exact source+test SHA:** `23afa7bc5d9e2a5ce4edc8123fff8dee89402776`.
+- **CI at documentation checkpoint:** Native Kotlin/JUnit run 40266596222 and Mainline run 40266596243 were in progress. App-specific source checks are not applicable to this repo. Final status must be updated only after reading exact-SHA run results.
+- **No APK:** source/JUnit tests answer this deterministic simulation question. No packaging or artifact upload.
+- **NOT TESTED:** Xiaomi Pad 5 profiling, native runtime, full 41-arena end-to-end gameplay and Symbian/EKA2L1 timing/AI parity.
+- **License review:** existing Kotlin simulation reused; no external code/assets/dependency added.
+- PR #2 remains open Draft; PR #1 and `main` untouched.
