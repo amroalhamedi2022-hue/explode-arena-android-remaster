@@ -8,9 +8,9 @@ N22 coalesced overlapping timed-blast cells, but the bot's chase BFS and escape 
 
 ## Acceptance criteria
 
-1. Index only finite 16px-aligned cells and non-negative finite deadlines; duplicate cells retain the earliest deadline.
+1. Index only finite 16px-aligned cells and non-negative finite deadlines; duplicate cells retain the earliest deadline in a bounded primitive open-addressed table.
 2. Queries preserve the strict geometry of `NativeBombSimulation.blastHits` and support radii from 0 through the native 5px actor radius.
-3. Each valid query checks no more than four possible cell keys; no per-query cell/list allocation.
+3. Each valid query checks exactly four possible cell slots with primitive arrays, no boxed keys or per-query cell/list allocation.
 4. Use the index in chase BFS, timed escape deadline checks, and active-bomb footprint checks. Keep the one-off cached-direction safety check unchanged to avoid building an index every fixed tick.
 5. Tests compare index membership against the existing linear hitbox oracle across positive/negative cells and exact boundaries, and cover earliest deadlines, duplicates, empty input, invalid coordinates, alignment and radius bounds.
 6. Run `gradle --project-dir android :core:test` and Mainline source validation on the exact source+test SHA. No APK packaging, artifact upload, release, merge or main write.
