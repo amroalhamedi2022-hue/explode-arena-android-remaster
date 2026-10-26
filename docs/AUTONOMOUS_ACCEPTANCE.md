@@ -440,3 +440,11 @@ Updated: 2026-10-23 (native migration first code slice)
 - No production mechanic, dependency, or game asset was changed. No APK/package task, artifact, release, merge, auto-merge, or main write.
 - **NOT TESTED:** original Symbian/EKA2L1 blast parity, device rendering/audio, Xiaomi Pad 5 performance, or human-played full match.
 - **Google Drive SYNC FAILED:** no Google Drive/Docs connector is available in this runtime; LIVE handoff/index were not read or written. GitHub docs are not claimed as Drive sync.
+
+## 2026-10-26 N31 — independent raw-grid blast oracle
+
+- **Test-only hardening:** `NativeArenaBlastGeometryIntegrationTest` no longer calls `StageCollision.blocked` from its reference ray or candidate-cell filter. The oracle independently enumerates every raw 8px grid tile overlapped by the 3px ray radius, applies world/grid bounds, and uses local 16px bomb-cell constants. The production detonation footprint is still compared over all valid placements across all 41 real stage records.
+- **Why:** N30 used a dense one-pixel ray sampler, but delegated wall occupancy to the same production collision helper; a shared tile-index defect could therefore make both sides agree incorrectly. N31 removes that common collision implementation from the oracle.
+- **Test commit:** `1a069b0e0e0fed7b55a728d34fd8defd2e9059f5`; test blob `07dfd6f39237d8626cf0a16f4b2003a7ee6633a2`.
+- **CI:** PENDING at docs update time; do not mark PASS until the exact test and docs-updated PR heads have successful Native `:core:test` and Mainline checks. No APK/package task or artifacts are intended.
+- **Limitations:** stage data and intended 8px/16px geometry remain project assumptions. This is not Symbian/EKA2L1 parity or a device test. Android launch, rendering, sound and complete human-played rounds remain NOT TESTED.
