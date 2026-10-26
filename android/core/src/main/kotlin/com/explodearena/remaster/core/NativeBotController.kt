@@ -22,21 +22,41 @@ class NativeBotController(private val owner: String = "bot") {
         simulation: NativeBombSimulation,
         tick: Long,
         otherActors: List<Actor> = emptyList(),
+    ): Decision = decideInternal(stage, bot, target, simulation, tick, otherActors, null)
+
+    /** Roster-only entry point: every bot in one tick shares the same read-only context. */
+    internal fun decideWithContext(
+        stage: StageData,
+        bot: Actor,
+        target: Actor,
+        simulation: NativeBombSimulation,
+        tick: Long,
+        otherActors: List<Actor>,
+        threatContext: NativeBotThreatContext,
+    ): Decision = decideInternal(stage, bot, target, simulation, tick, otherActors, threatContext)
+
+    private fun decideInternal(
+        stage: StageData,
+        bot: Actor,
+        target: Actor,
+        simulation: NativeBombSimulation,
+        tick: Long,
+        otherActors: List<Actor>,
+        providedContext: NativeBotThreatContext?,
     ): Decision {
         require(bot.x.isFinite() && bot.y.isFinite() && target.x.isFinite() && target.y.isFinite())
         require(tick >= 0)
+        // Standalone callers receive a fresh context; a roster supplies one
+        // shared context computed before any bot plans or places a bomb.
+        val threatContext = providedContext ?: NativeBotThreatContext.create(simulation)
+        val imminentThreats = threatContext.snapshot.threats
+        val imminentIndex = threatContext.imminentIndex
         // Replan at 10Hz, immediately if the cached move becomes unsafe.
         val dx = doubleArrayOf(0.0, 1.0, 0.0, -1.0, 0.0)
         val dy = doubleArrayOf(0.0, 0.0, 1.0, 0.0, -1.0)
-        // A bot that is already inside an imminent timed ray must seek a
-        // refuge; a bot outside it must not chase the player INTO that ray.
-        // Snapshot rays once per decision, not for every BFS candidate.
+        // Threat owners and timestamped cells come from the same prediction.
+        // The roster shares that immutable prediction across all living bots.
         // Remote bombs are excluded: they have no countdown.
-        // Threat owners and timestamped cells must come from the SAME prediction.
-        // Separate helper calls repeat the chain traversal and ray generation.
-        val imminent = simulation.predictedTimedThreatSnapshot(IMMINENT_FUSE_SECONDS)
-        val imminentThreats = imminent.threats
-        val imminentCells = imminent.cells.map { it.cell }
         val imminentBomb = imminentThreats
             .filter { simulation.wouldBlastHitFrom(it.bomb.x, it.bomb.y, bot.x, bot.y) }
             .minByOrNull { it.secondsUntilBlast }?.bomb
@@ -47,9 +67,7 @@ class NativeBotController(private val owner: String = "bot") {
         val escapingFlame = simulation.isBurning(bot.x, bot.y, StageCollision.ACTOR_RADIUS)
         val escaping = escapeBomb != null || escapingFlame
         val isImminent = { x: Double, y: Double ->
-            imminentCells.any { NativeBombSimulation.blastHits(
-                it, x, y, StageCollision.ACTOR_RADIUS,
-            ) }
+            imminentIndex.contains(x, y, StageCollision.ACTOR_RADIUS)
         }
         val canStep = { direction: Int ->
             val nx = bot.x + dx[direction] * SPEED * FixedStepClock.STEP_SECONDS
@@ -71,7 +89,7 @@ class NativeBotController(private val owner: String = "bot") {
                     otherActors, allowBurningTransit = escapingFlame,
                     ignoreProposedBomb = escapeBomb == null,
                 ) ?: 0
-            } else plan(stage, bot, target, simulation, otherActors, imminentCells)
+            } else plan(stage, bot, target, simulation, otherActors, imminentIndex)
             lastPlanTick = tick
             wasEscaping = escaping
         }
@@ -99,15 +117,14 @@ class NativeBotController(private val owner: String = "bot") {
         target: Actor,
         simulation: NativeBombSimulation,
         otherActors: List<Actor>,
-        imminentCells: List<Spawn>,
+        imminentIndex: TimedBlastIndex,
     ): Int {
         val w = stage.gridWidth
         val h = stage.gridHeight
         val size = w.toLong() * h.toLong()
         // Avoid allocating unbounded arrays if a malformed stage slips through.
         if (size <= 0 || size > MAX_GRID_CELLS) return 0
-        // Build once per BFS plan; each candidate then checks at most four grid cells.
-        val imminentIndex = TimedBlastIndex.fromCells(imminentCells)
+        // The immutable index was built once for this context/tick, not once per bot BFS.
         val startCol = floor((bot.x - stage.obstacleX) / StageCollision.CELL).toInt()
         val startRow = floor((bot.y - stage.obstacleY) / StageCollision.CELL).toInt()
         if (startCol !in 0 until w || startRow !in 0 until h) return 0
@@ -160,9 +177,6 @@ class NativeBotController(private val owner: String = "bot") {
     companion object {
         const val SPEED = 54.0
         private const val REPLAN_TICKS = 6L
-        // Conservative native AI heuristic: evaluate danger within 45 ticks.
-        // Not a measured Symbian AI reaction window.
-        private const val IMMINENT_FUSE_SECONDS = 0.75
         private const val MAX_GRID_CELLS = 20_000L
     }
 }
