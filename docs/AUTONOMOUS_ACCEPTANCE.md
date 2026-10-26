@@ -375,7 +375,7 @@ Updated: 2026-10-23 (native migration first code slice)
 
 ## 2026-10-26 — N26 shared per-bomb blast footprints (CI pending)
 - Engineering question: reuse each timed threat's blast-ray geometry across living bots without changing escape-threat decisions or simulation state.
-- Source changes: `NativeBombSimulation.predictedBlastCellsFor` returns a read-only copy of the computed ray cells; `NativeBotThreatContext` precomputes one footprint per predicted threat; `NativeBotController` queries cached cells instead of rebuilding the same rays for each bot.
+- Source changes: `NativeBombSimulation.predictedTimedThreatSnapshot` now computes each threat's ray geometry once and stores it as `TimedThreatFootprint`, reusing those same cells to build the deduplicated spatial-index input and the roster's shared context. `NativeBotController` queries cached cells instead of rebuilding the same rays for each bot.
 - Regression: `NativeBotThreatContextTest.sharedThreatFootprintsMatchStandaloneOracleAcrossWallAndHitboxBoundaries` compares cached hits with `wouldBlastHitFrom` on a 4px grid, with an 8px wall truncating rays. Existing shared-vs-standalone decision and no-mutation tests remain in the suite.
 - Exact source/test SHA and CI result will be appended after the source workflow completes. No APK build or artifact is requested for this source-level question.
 - Device, EKA2L1 parity and real-device performance: NOT TESTED.

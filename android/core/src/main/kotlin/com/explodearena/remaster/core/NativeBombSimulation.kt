@@ -246,46 +246,44 @@ class NativeBombSimulation(
      */
     data class TimedBlastCell(val cell: Spawn, val secondsUntilBlast: Double)
 
+    /** The ray geometry for one predicted threat, calculated once per snapshot. */
+    data class TimedThreatFootprint(
+        val threat: TimedChainThreat,
+        val cells: List<Spawn>,
+    )
+
     /**
      * One immutable view of a timed-threat calculation. Bot decisions need
-     * both the threatening bombs and their timestamped footprints; computing
-     * them through separate public helpers repeats the full chain-graph walk
-     * for every bot on every fixed tick.
+     * the threat list, per-threat ray geometry and deduplicated timestamped
+     * cells. All are derived in one chain-graph walk and one ray calculation
+     * per threat, then shared by the roster for this tick.
      */
     data class TimedThreatSnapshot(
         val threats: List<TimedChainThreat>,
         val cells: List<TimedBlastCell>,
+        val threatFootprints: List<TimedThreatFootprint> = emptyList(),
     )
 
     fun predictedTimedThreatSnapshot(withinSeconds: Double): TimedThreatSnapshot {
         val threats = predictTimedChainThreats(activeBombs, withinSeconds)
-        // Several bombs can project onto the same 16px blast cell. Keep one
-        // entry per cell at its earliest deadline: later duplicates cannot make
-        // a route safer, and the bot otherwise repeats the same hitbox test in
-        // every BFS candidate. Linked order keeps prediction deterministic.
+        // Calculate each bomb's ray geometry once, then reuse it both for the
+        // deduplicated spatial index input and each bot's escape-threat lookup.
+        val footprints = threats.map { threat ->
+            TimedThreatFootprint(threat, explosionCells(threat.bomb.x, threat.bomb.y).toList())
+        }
         val earliestByCell = linkedMapOf<Spawn, Double>()
-        for (threat in threats) {
-            for (cell in explosionCells(threat.bomb.x, threat.bomb.y)) {
+        for (footprint in footprints) {
+            for (cell in footprint.cells) {
                 val previous = earliestByCell[cell]
-                if (previous == null || threat.secondsUntilBlast < previous) {
-                    earliestByCell[cell] = threat.secondsUntilBlast
+                if (previous == null || footprint.threat.secondsUntilBlast < previous) {
+                    earliestByCell[cell] = footprint.threat.secondsUntilBlast
                 }
             }
         }
         val cells = earliestByCell.map { (cell, deadline) ->
             TimedBlastCell(cell, deadline)
         }
-        return TimedThreatSnapshot(threats, cells)
-    }
-
-    /**
-     * Return the exact ray footprint for an already predicted bomb without
-     * changing fuse, flame, ownership or bomb-ID state. Shared bot contexts
-     * compute this geometry once per threat instead of once per bot.
-     */
-    internal fun predictedBlastCellsFor(bomb: Bomb): List<Spawn> {
-        require(bomb.x.isFinite() && bomb.y.isFinite()) { "Bomb coordinates must be finite" }
-        return explosionCells(bomb.x, bomb.y).toList()
+        return TimedThreatSnapshot(threats, cells, footprints)
     }
 
     fun predictedTimedBlastCells(withinSeconds: Double): List<TimedBlastCell> =

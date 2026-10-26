@@ -11,8 +11,8 @@ Source inspection alone is insufficient: strict hitbox boundaries and rays stopp
 
 ## Implementation
 
-- Extend the per-tick `NativeBotThreatContext` with one precomputed footprint for each predicted timed-chain threat.
-- Compute each footprint once when the context is created; do not cache it across ticks because fuse/flame state changes.
+- Extend `NativeBombSimulation.TimedThreatSnapshot` with one precomputed footprint for each predicted timed-chain threat.
+- Compute each footprint once during snapshot creation and reuse those exact cells both for the deduplicated spatial-index input and the per-bot escape lookup; do not cache snapshots across ticks because fuse/flame state changes.
 - Select an escape threat by testing the cached footprint with the same strict `blastHits` rule, replacing per-bot recomputation of `explosionCells`.
 - Keep `NativeBombSimulation.wouldBlastHitFrom` as the independent oracle used by tests and standalone callers.
 - Do not change fuse deadlines, blast geometry, ownership, movement, or Symbian-parity claims.
@@ -27,8 +27,8 @@ Source inspection alone is insufficient: strict hitbox boundaries and rays stopp
 
 ## Status ledger
 
-- Source and regression test: included in this commit.
-- Native JUnit CI: pending.
+- Source and regression test: included in the N26 implementation and follow-up geometry-reuse commits.
+- Native JUnit CI: pending for the final source SHA.
 - Mainline JS/Python CI: pending.
 - Device/EKA2L1 parity and performance profiling: NOT TESTED.
 - Google Drive LIVE sync: SYNC FAILED if the Drive/Docs connector remains unavailable; do not infer sync from GitHub docs.
