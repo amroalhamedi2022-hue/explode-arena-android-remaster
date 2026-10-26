@@ -75,8 +75,8 @@ internal object NativeBotEscapeRoute {
      * toward a reachable cell outside the predicted blast, 0 if already safe,
      * or null when no bounded refuge is found. A null result forbids planting.
      */
-    // While escaping a flame already underfoot, the bot must be allowed to
-    // traverse burning intermediate points; only the destination is a refuge.
+    // While escaping active fire, allow transit only inside the connected
+    // flame component containing the bot; the final destination must be unlit.
     // ignoreProposedBomb is for flame-only escapes with no hypothetical bomb.
     fun firstDirection(
         stage: StageData,
