@@ -357,3 +357,17 @@ Updated: 2026-10-23 (native migration first code slice)
 - **NOT TESTED:** Xiaomi Pad 5, native Android rendering/audio, full match completion, real-device performance and Symbian/EKA2L1 AI/timing parity. This is source acceptance only.
 - PR #2 remains open Draft; PR #1 and main remain untouched. No release, merge or auto-merge.
 - **Google Drive SYNC FAILED:** no Google Drive/Docs connector is available in this runtime, so LIVE HANDOFF/INDEX read-back and folder metadata verification could not be performed.
+
+## 2026-10-26 N25 — shared immutable bot threat context (SOURCE ACCEPTANCE PASS)
+
+- **Engineering question:** N21 removed duplicate prediction work inside one controller, but each living bot still independently calculated the same 0.75-second timed-chain snapshot and rebuilt its imminent-threat index during a shared roster tick.
+- **Production source:** added NativeBotThreatContext to pair the existing coalesced timed-threat snapshot with one TimedBlastIndex. NativeOpponentRoster.advance now creates one context before planning and passes the same instance to each living bot. NativeBotController.decide remains source-compatible and constructs a fresh context for standalone calls. Context is not cached across ticks.
+- **Scope boundary:** common imminent-threat checks and chase BFS reuse the shared index. Escape-route indexes for hypothetical placements or longer prediction horizons remain local because those inputs differ; they were not silently removed.
+- **Regression tests:** shared-vs-standalone decision parity for bot/bot2/bot3; dense grid and strict-boundary comparison of index membership against the linear blastHits oracle; simulation immutability; fuse-change freshness; invalid-horizon fail-closed behavior; and a factory-count integration asserting exactly one context per living roster tick and zero when all bots are defeated.
+- **Exact production + test SHA:** 4e71fa9e35a292fab0be19bfaa1af662aacf8404.
+- **PASS:** Native Kotlin/JUnit [run 40297267749](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40297267749), job 121486356992. Actual step `gradle --project-dir android :core:test --stacktrace --no-daemon`; log: **BUILD SUCCESSFUL in 36s**, 4 actionable tasks executed.
+- **PASS:** Mainline JS/Python [run 40297267719](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40297267719) on the same source/test SHA. N24's 180-tick four-spawn reversal and all-41-arena sweep remained in the `:core:test` suite and passed.
+- Native workflow artifacts: **[] (zero)**. No APK packaging/build/upload, release, merge, auto-merge or main write. The later documentation-only commit does not change the tested source or tests.
+- **NOT TESTED:** Xiaomi Pad 5 measured performance, Android runtime, full match, graphics/audio lifecycle and original Symbian/EKA2L1 AI/timing parity.
+- License/source review: official libGDX and gdx-ai LICENSE files were re-read and are Apache-2.0. N25 copied no external implementation/assets and added no dependency.
+- PR #2 remains open Draft; collision PR #1 remains separate. **Google Drive SYNC FAILED:** Drive/Docs connector is unavailable in this runtime; LIVE handoff/index were not read or written back.
