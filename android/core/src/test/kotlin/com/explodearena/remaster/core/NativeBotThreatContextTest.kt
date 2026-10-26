@@ -120,4 +120,19 @@ class NativeBotThreatContextTest {
         assertEquals("defeated bots need no planning context", 2, contextCreations)
     }
 
+    @Test fun invalidContextHorizonFailsClosedWithoutMutatingSimulation() {
+        val stage = arena()
+        val simulation = NativeBombSimulation(stage)
+        assertTrue(simulation.place(Actor(56.0, 24.0), "player"))
+        val bombsBefore = simulation.bombs.map { it.copy() }
+        val nextIdBefore = simulation.nextBombId
+        for (invalid in listOf(Double.NaN, Double.POSITIVE_INFINITY, -0.01)) {
+            assertThrows(IllegalArgumentException::class.java) {
+                NativeBotThreatContext.create(simulation, invalid)
+            }
+        }
+        assertEquals(bombsBefore, simulation.bombs)
+        assertEquals(nextIdBefore, simulation.nextBombId)
+    }
+
 }
