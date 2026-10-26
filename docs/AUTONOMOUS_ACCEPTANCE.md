@@ -449,3 +449,11 @@ Updated: 2026-10-23 (native migration first code slice)
 - **PASS — Native Kotlin/JUnit:** [run #40399730989](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40399730989) on docs-updated PR head `9b02708ff028d92f7214a6beaca6e50dde7ec8fd`; the `:core:test` step succeeded. The first test-only commit run #40399638446 was cancelled by branch concurrency and is not counted as PASS.
 - **PASS — Mainline:** [run #40399731014](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40399731014) on the same head; all source/resource checks succeeded. Artifacts: 0. A final docs-only head will receive its own CI recheck.
 - **Limitations:** stage data and intended 8px/16px geometry remain project assumptions. This is not Symbian/EKA2L1 parity or a device test. Android launch, rendering, sound and complete human-played rounds remain NOT TESTED.
+
+
+## 2026-10-26 N31 CI follow-up — latest Native run completed
+
+- The previously pending Native run has completed: **PASS** — [CI #40400090276](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40400090276), job `native-source-check`, `:core:test` step succeeded. The workflow checked out synthetic PR merge commit `09a149fbffa848f94b3d00d0d96ed3811d0e1694`, corresponding to PR #2 head `726f83b1691ea1610888a9d623c9e879e411f92b`; zero artifacts.
+- This closes the pending status from the prior N31 note. The test-only source/test commit remains `1a069b0e0e0fed7b55a728d34fd8defd2e9059f5`, blob `07dfd6f39237d8626cf0a16f4b2003a7ee6633a2`.
+- This ledger-only update creates a newer PR head; recheck Native and Mainline CI on that new head before transferring PASS to it. No gameplay source/assets/APK changed.
+- Physical Android device, Symbian/EKA2L1 parity, original audio/visuals and full human-played match remain **NOT TESTED**. Google Drive LIVE sync remains **SYNC FAILED** because the Drive/Docs connector is unavailable in this runtime.
