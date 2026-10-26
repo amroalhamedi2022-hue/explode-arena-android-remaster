@@ -4,7 +4,11 @@ package com.explodearena.remaster.core
  * Native opponents for 1-, 2- and 4-spawn arenas. Each opponent owns a
  * separate provisional AI, vitality and bomb quota. Not Symbian mode parity.
  */
-internal class NativeOpponentRoster(val bots: List<BotSlot>) {
+internal class NativeOpponentRoster(
+    val bots: List<BotSlot>,
+    private val threatContextFactory: (NativeBombSimulation) -> NativeBotThreatContext =
+        { simulation -> NativeBotThreatContext.create(simulation) },
+) {
     class BotSlot(
         val owner: String,
         val actor: Actor,
@@ -56,7 +60,7 @@ internal class NativeOpponentRoster(val bots: List<BotSlot>) {
         // One chain prediction and one immutable spatial index serve all bots.
         // Planning is read-only, so this pre-placement context is valid for
         // every decision in this tick and cannot observe a peer's new bomb.
-        val threatContext = NativeBotThreatContext.create(simulation)
+        val threatContext = threatContextFactory(simulation)
         val decisions = living.associateWith { slot ->
             slot.controller.decideWithContext(
                 stage = stage,
