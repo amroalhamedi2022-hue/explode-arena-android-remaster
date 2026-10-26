@@ -99,4 +99,25 @@ class NativeBotThreatContextTest {
         assertEquals(nextIdBefore, simulation.nextBombId)
         assertEquals(remoteOwnersBefore, simulation.remoteDetonatorOwners)
     }
+    @Test fun rosterCreatesExactlyOneContextPerLivingTickAndNoneWhenAllBotsAreDefeated() {
+        val stage = arena()
+        val player = Actor(24.0, 24.0)
+        val seed = NativeOpponentRoster.create(stage, player)
+        var contextCreations = 0
+        val roster = NativeOpponentRoster(seed.bots) { simulation ->
+            contextCreations++
+            NativeBotThreatContext.create(simulation)
+        }
+        val simulation = NativeBombSimulation(stage)
+
+        roster.advance(stage, player, simulation, 0)
+        assertEquals("one shared context serves every bot in the tick", 1, contextCreations)
+        roster.advance(stage, player, simulation, 1)
+        assertEquals("context is refreshed once on the next tick", 2, contextCreations)
+
+        roster.bots.forEach { slot -> repeat(350) { slot.vitality.tick(burning = true) } }
+        assertEquals(0, roster.advance(stage, player, simulation, 2))
+        assertEquals("defeated bots need no planning context", 2, contextCreations)
+    }
+
 }
