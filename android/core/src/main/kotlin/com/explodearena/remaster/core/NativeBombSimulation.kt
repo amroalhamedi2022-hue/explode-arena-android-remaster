@@ -20,6 +20,9 @@ class NativeBombSimulation(
     data class Flame(val cells: List<Spawn>, val remaining: Double)
     private val activeBombs = mutableListOf<Bomb>()
     private val activeFlames = mutableListOf<Flame>()
+    // Flames removed at the end of the most recent tick still occupied their
+    // cells during that tick's damage sample. Rendering only uses activeFlames.
+    private var expiredFlamesDuringLastTick: List<Flame> = emptyList()
     private val remoteOwners = mutableSetOf<String>()
     private var nextId = 1L
 
@@ -79,10 +82,10 @@ class NativeBombSimulation(
             }
         }.map { it.id }
         val dt = FixedStepClock.STEP_SECONDS
-        val flamesRemaining = activeFlames.map { it.copy(remaining = it.remaining - dt) }
-            .filter { it.remaining > 1e-10 }
+        val decrementedFlames = activeFlames.map { it.copy(remaining = it.remaining - dt) }
+        expiredFlamesDuringLastTick = decrementedFlames.filter { it.remaining <= 1e-10 }
         activeFlames.clear()
-        activeFlames.addAll(flamesRemaining)
+        activeFlames.addAll(decrementedFlames.filter { it.remaining > 1e-10 })
         val updated = activeBombs.map { bomb ->
             if (bomb.remote) bomb else bomb.copy(remaining = requireNotNull(bomb.remaining) - dt)
         }
@@ -129,6 +132,21 @@ class NativeBombSimulation(
     fun isBurning(x: Double, y: Double, radius: Double = 0.0): Boolean {
         require(x.isFinite() && y.isFinite() && radius.isFinite() && radius >= 0)
         return activeFlames.any { flame -> flame.cells.any { blastHits(it, x, y, radius) } }
+    }
+
+    /**
+     * Damage-sample occupancy after tick(). Includes active flames and flames
+     * whose lifetime reached zero at this tick boundary: those cells were
+     * hazardous throughout the interval even though they are no longer drawn.
+     * Call immediately after tick(), before advancing the next simulation tick.
+     */
+    fun isBurningDuringLastTick(
+        x: Double, y: Double, radius: Double = 0.0,
+    ): Boolean {
+        require(x.isFinite() && y.isFinite() && radius.isFinite() && radius >= 0)
+        return isBurning(x, y, radius) || expiredFlamesDuringLastTick.any { flame ->
+            flame.cells.any { blastHits(it, x, y, radius) }
+        }
     }
 
     /**

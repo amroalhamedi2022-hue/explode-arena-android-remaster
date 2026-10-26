@@ -77,6 +77,27 @@ class NativeOpponentRosterTest {
         }
     }
 
+    @Test fun botReceivesDamageWhenFlameExpiresAtTickBoundary() {
+        val arena = stage(2)
+        val vitality = NativeVitality(
+            initialHealth = 1, initialInvulnerabilitySeconds = 0.0,
+            hitInvulnerabilitySeconds = 0.0,
+        )
+        val bot = NativeOpponentRoster.BotSlot("bot", Actor(40.0, 24.0), vitality)
+        val roster = NativeOpponentRoster(listOf(bot))
+        val sim = NativeBombSimulation(
+            arena, bombFuseSeconds = 0.1, blastLifetimeSeconds = 0.05, bombRange = 1,
+        )
+        assertTrue(sim.place(Actor(40.0, 24.0), "player"))
+        repeat(6) { sim.tick() }
+        repeat(2) { sim.tick() }
+        sim.tick()
+        assertFalse(sim.isBurning(40.0, 24.0, StageCollision.ACTOR_RADIUS))
+        assertTrue(sim.isBurningDuringLastTick(40.0, 24.0, StageCollision.ACTOR_RADIUS))
+        roster.applyDamageForLastTick(sim)
+        assertTrue(bot.vitality.defeated)
+    }
+
     private data class BotState(
         val owner: String,
         val x: Double,
@@ -116,8 +137,9 @@ class NativeOpponentRosterTest {
         val sim = NativeBombSimulation(arena)
 
         repeat(180) { tick ->
+            roster.advance(arena, player, sim, tick.toLong(), applyDamage = false)
             sim.tick()
-            roster.advance(arena, player, sim, tick.toLong())
+            roster.applyDamageForLastTick(sim)
             val living = roster.blockingActors()
             for (slot in roster.bots.filterNot { it.vitality.defeated }) {
                 assertFalse("bot ${slot.owner} entered terrain", StageCollision.blocked(

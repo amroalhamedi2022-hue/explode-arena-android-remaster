@@ -42,7 +42,13 @@ internal class NativeOpponentRoster(
      *
      * These AI and timing rules remain provisional; this is not Symbian parity.
      */
-    fun advance(stage: StageData, player: Actor, simulation: NativeBombSimulation, tick: Long): Int {
+    fun advance(
+        stage: StageData,
+        player: Actor,
+        simulation: NativeBombSimulation,
+        tick: Long,
+        applyDamage: Boolean = true,
+    ): Int {
         bots.filter { it.vitality.defeated }.forEach { it.walking = false }
         val living = bots.filterNot { it.vitality.defeated }.sortedBy { it.owner }
         if (living.isEmpty()) return 0
@@ -137,11 +143,24 @@ internal class NativeOpponentRoster(
                     else -> 0
                 }
             }
-            slot.vitality.tick(
-                simulation.isBurning(actor.x, actor.y, StageCollision.ACTOR_RADIUS),
-            )
+            if (applyDamage) {
+                slot.vitality.tick(
+                    simulation.isBurning(actor.x, actor.y, StageCollision.ACTOR_RADIUS),
+                )
+            }
         }
         return placed
+    }
+
+    /** Apply damage after tick(), including flame cells that expired at its boundary. */
+    fun applyDamageForLastTick(simulation: NativeBombSimulation) {
+        for (slot in bots) {
+            slot.vitality.tick(
+                simulation.isBurningDuringLastTick(
+                    slot.actor.x, slot.actor.y, StageCollision.ACTOR_RADIUS,
+                ),
+            )
+        }
     }
 
     companion object {

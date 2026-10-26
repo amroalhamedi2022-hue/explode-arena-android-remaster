@@ -199,13 +199,19 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
                     opponents.blockingActors(),
                 )
                 walking = actor.x != oldX || actor.y != oldY
-                if (bombSimulation.tick() > 0) explosionSound.play(0.75f)
-                // Use the actor's actual provisional 5px collision radius, not a
-                // point sample that misses flame hits along the sprite edge.
-                vitality.tick(bombSimulation.isBurning(actor.x, actor.y, radius = StageCollision.ACTOR_RADIUS))
-                repeat(opponents.advance(stage, actor, bombSimulation, clock.ticks)) {
+                // Move all actors against the same pre-tick world, then advance
+                // fuses/flames and sample damage at the tick boundary. This keeps
+                // player and bot damage consistent on a flame's final active tick.
+                repeat(opponents.advance(stage, actor, bombSimulation, clock.ticks, applyDamage = false)) {
                     placeSound.play(0.45f)
                 }
+                if (bombSimulation.tick() > 0) explosionSound.play(0.75f)
+                vitality.tick(
+                    bombSimulation.isBurningDuringLastTick(
+                        actor.x, actor.y, radius = StageCollision.ACTOR_RADIUS,
+                    ),
+                )
+                opponents.applyDamageForLastTick(bombSimulation)
             } else {
                 walking = false
                 opponents.stopWalking()

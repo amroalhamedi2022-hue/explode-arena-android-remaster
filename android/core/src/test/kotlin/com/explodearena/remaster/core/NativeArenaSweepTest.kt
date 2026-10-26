@@ -39,8 +39,9 @@ class NativeArenaSweepTest {
         // Exercise the real 60Hz bot/collision/bomb integration, including
         // the six-tick bot replan boundary, without waiting for full fuse expiry.
         repeat(8) { frame ->
+            val placed = roster.advance(stage, player, simulation, frame.toLong(), applyDamage = false)
             simulation.tick()
-            val placed = roster.advance(stage, player, simulation, frame.toLong())
+            roster.applyDamageForLastTick(simulation)
             assertTrue("arena ${stage.id}: invalid bot placement count", placed in 0..roster.bots.size)
             for (slot in roster.bots) {
                 val actor = slot.actor

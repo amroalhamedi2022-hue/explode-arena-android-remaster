@@ -44,11 +44,12 @@ class NativeArenaFuseIntegrationTest {
         // 96 ticks reaches the provisional 1.6s fuse; 130 ticks also spans
         // the 0.45s flame lifetime so post-blast cleanup is exercised.
         repeat(130) { frame ->
+            roster.advance(stage, player, simulation, frame.toLong(), applyDamage = false)
             detonations += simulation.tick()
             playerVitality.tick(
-                simulation.isBurning(player.x, player.y, StageCollision.ACTOR_RADIUS),
+                simulation.isBurningDuringLastTick(player.x, player.y, StageCollision.ACTOR_RADIUS),
             )
-            roster.advance(stage, player, simulation, frame.toLong())
+            roster.applyDamageForLastTick(simulation)
 
             assertTrue("arena ${stage.id}: player position must remain finite",
                 player.x.isFinite() && player.y.isFinite())

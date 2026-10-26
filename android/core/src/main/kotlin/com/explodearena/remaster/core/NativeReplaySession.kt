@@ -112,7 +112,9 @@ class NativeReplaySession(
             )
             bombSimulation.tick()
             vitality.tick(
-                bombSimulation.isBurning(actor.x, actor.y, StageCollision.ACTOR_RADIUS),
+                bombSimulation.isBurningDuringLastTick(
+                    actor.x, actor.y, StageCollision.ACTOR_RADIUS,
+                ),
             )
         }
         ticks++

@@ -5,7 +5,9 @@ import kotlin.math.max
 /**
  * Kotlin port of the current Mainline's PROVISIONAL 3-HP/1.7s damage rule.
  * It does not establish the original Symbian game's health or invulnerability.
- * Called once per fixed 60 Hz simulation tick, AFTER bomb/flame updates.
+ * Called once per fixed 60 Hz simulation tick after movement and bomb updates.
+ * The caller's burning sample must include flames active during that whole tick,
+ * including any flame that expires at the tick boundary.
  */
 class NativeVitality(
     initialHealth: Int = 3,
