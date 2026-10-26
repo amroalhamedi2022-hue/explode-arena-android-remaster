@@ -174,7 +174,14 @@ class NativeBombSimulationTest {
         val snapshot = sim.predictedTimedThreatSnapshot(2.0)
 
         assertEquals(sim.predictedTimedChainThreats(2.0), snapshot.threats)
-        assertEquals(sim.predictedTimedBlastCells(2.0), snapshot.cells)
+        val legacyCells = sim.predictedTimedBlastCells(2.0)
+        assertEquals(legacyCells.map { it.cell }.toSet(), snapshot.cells.map { it.cell }.toSet())
+        assertEquals(snapshot.cells.size, snapshot.cells.map { it.cell }.toSet().size)
+        assertTrue("overlapping bomb rays should be coalesced", legacyCells.size > snapshot.cells.size)
+        snapshot.cells.forEach { cell ->
+            val earliest = legacyCells.filter { it.cell == cell.cell }.minOf { it.secondsUntilBlast }
+            assertEquals(earliest, cell.secondsUntilBlast, 0.0)
+        }
         assertTrue(snapshot.threats.any { it.bomb.owner == "player" && it.bomb.remote })
         assertTrue(snapshot.threats.any { it.bomb.owner == "player2" && !it.bomb.remote })
         assertEquals(bombsBefore, sim.bombs)
