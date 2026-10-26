@@ -278,6 +278,16 @@ class NativeBombSimulation(
         return TimedThreatSnapshot(threats, cells)
     }
 
+    /**
+     * Return the exact ray footprint for an already predicted bomb without
+     * changing fuse, flame, ownership or bomb-ID state. Shared bot contexts
+     * compute this geometry once per threat instead of once per bot.
+     */
+    internal fun predictedBlastCellsFor(bomb: Bomb): List<Spawn> {
+        require(bomb.x.isFinite() && bomb.y.isFinite()) { "Bomb coordinates must be finite" }
+        return explosionCells(bomb.x, bomb.y).toList()
+    }
+
     fun predictedTimedBlastCells(withinSeconds: Double): List<TimedBlastCell> =
         predictedTimedChainThreats(withinSeconds).flatMap { threat ->
             explosionCells(threat.bomb.x, threat.bomb.y).map { cell ->

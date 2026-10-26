@@ -49,7 +49,6 @@ class NativeBotController(private val owner: String = "bot") {
         // Standalone callers receive a fresh context; a roster supplies one
         // shared context computed before any bot plans or places a bomb.
         val threatContext = providedContext ?: NativeBotThreatContext.create(simulation)
-        val imminentThreats = threatContext.snapshot.threats
         val imminentIndex = threatContext.imminentIndex
         // Replan at 10Hz, immediately if the cached move becomes unsafe.
         val dx = doubleArrayOf(0.0, 1.0, 0.0, -1.0, 0.0)
@@ -57,9 +56,15 @@ class NativeBotController(private val owner: String = "bot") {
         // Threat owners and timestamped cells come from the same prediction.
         // The roster shares that immutable prediction across all living bots.
         // Remote bombs are excluded: they have no countdown.
-        val imminentBomb = imminentThreats
-            .filter { simulation.wouldBlastHitFrom(it.bomb.x, it.bomb.y, bot.x, bot.y) }
-            .minByOrNull { it.secondsUntilBlast }?.bomb
+        val imminentBomb = threatContext.threatFootprints
+            .filter { footprint ->
+                footprint.cells.any { cell ->
+                    NativeBombSimulation.blastHits(
+                        cell, bot.x, bot.y, StageCollision.ACTOR_RADIUS,
+                    )
+                }
+            }
+            .minByOrNull { it.threat.secondsUntilBlast }?.threat?.bomb
         val ownBomb = simulation.bombs.firstOrNull { it.owner == owner }
         val escapeBomb = ownBomb ?: imminentBomb
         // Standing in an active flame is an escape emergency even after the

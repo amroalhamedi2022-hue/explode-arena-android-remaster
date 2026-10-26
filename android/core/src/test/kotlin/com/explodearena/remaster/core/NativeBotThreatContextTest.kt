@@ -47,6 +47,46 @@ class NativeBotThreatContextTest {
         assertEquals(remoteOwnersBefore, simulation.remoteDetonatorOwners)
     }
 
+    @Test fun sharedThreatFootprintsMatchStandaloneOracleAcrossWallAndHitboxBoundaries() {
+        val wallStage = arena().copy(
+            grid = List(20) { row ->
+                IntArray(20) { col -> if (col == 8 && row in 2..17) 1 else 0 }
+            },
+        )
+        val simulation = NativeBombSimulation(wallStage)
+        assertTrue(simulation.place(Actor(56.0, 24.0), "player"))
+        assertTrue(simulation.place(Actor(56.0, 120.0), "player2"))
+        repeat(60) { simulation.tick() }
+
+        val context = NativeBotThreatContext.create(simulation)
+        assertEquals(context.snapshot.threats, context.threatFootprints.map { it.threat })
+        assertEquals(2, context.threatFootprints.size)
+
+        // The cached footprint must be observationally identical to the
+        // original wouldBlastHitFrom calculation, including strict hitbox
+        // edges and rays stopped by an offset 8px obstacle grid.
+        for (footprint in context.threatFootprints) {
+            for (x in -4..164 step 4) for (y in -4..164 step 4) {
+                val expected = simulation.wouldBlastHitFrom(
+                    footprint.threat.bomb.x,
+                    footprint.threat.bomb.y,
+                    x.toDouble(),
+                    y.toDouble(),
+                    StageCollision.ACTOR_RADIUS,
+                )
+                val actual = footprint.cells.any { cell ->
+                    NativeBombSimulation.blastHits(
+                        cell, x.toDouble(), y.toDouble(), StageCollision.ACTOR_RADIUS,
+                    )
+                }
+                assertEquals(
+                    "cached footprint mismatch for ${footprint.threat.bomb.owner} at ($x,$y)",
+                    expected, actual,
+                )
+            }
+        }
+    }
+
     @Test fun freshContextReflectsFuseChangesInsteadOfCachingAcrossTicks() {
         val stage = arena()
         val simulation = NativeBombSimulation(stage)
