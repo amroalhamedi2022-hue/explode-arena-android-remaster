@@ -270,3 +270,18 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Drive SYNC FAILED:** Google Drive/Docs tools are not exposed in this runtime; LIVE docs were not read/written back. See `docs/N19_CONNECTED_FLAME_ESCAPE_PLAN.md`; do not claim Drive sync.
 - PR #2 remains open Draft; PR #1 and main unchanged. Next: alternate to App Commander.
 
+
+
+## 2026-10-26 — N20 indexed flame escape membership (source acceptance: PASS)
+
+- **Engineering question:** N19's active-flame escape path scanned every cell in the connected flame component for each BFS candidate. This could make a bounded 20,000-cell route search perform O(grid × flame cells) hit tests.
+- **Production source changed:** `BurningEscapeIndex` builds an immutable set of packed 16px lattice coordinates once per escape plan and checks at most the two nearest columns × two nearest rows (four candidate keys), retaining the existing strict `NativeBombSimulation.blastHits` semantics. It rejects non-finite positions and positions outside the indexed bounds. The linear reference helper remains available for regression comparison.
+- **Production commit:** `7da45dad01f70f06f55dc01067345f986b502406`.
+- **Regression / exact source+test SHA:** `2a41a99bc4b40ee689a58899509abf969e425d66`; dense 2px sampling plus strict hitbox-boundary offsets compared indexed lookup against the linear reference; NaN and Infinity cases rejected.
+- **PASS:** Native Kotlin/JUnit workflow [run 40256273436](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40256273436) passed the actual Gradle `:core:test` step on the exact source+test SHA after the first attempt was cancelled by a newer branch update and the job was rerun.
+- **PASS:** Mainline JS/Python source checks [run 40256273461](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40256273461) passed on the same source+test SHA. The docs-only descendant also passed Native run 40256304673 and Mainline run 40256304692.
+- **Artifacts:** zero. No APK build/package/upload, release, merge or main write.
+- **NOT TESTED:** Xiaomi Pad 5 runtime, real-device frame-time profiling, original Symbian/EKA2L1 flame-hitbox parity, full gameplay. The optimization preserves the existing provisional native model; it does not establish original-game parity.
+- **License/source review:** rechecked the official `libgdx/gdx-ai` Apache-2.0 LICENSE. No external implementation was copied and no dependency was added.
+- **Drive SYNC FAILED:** Google Drive/Docs connector tools are unavailable in this runtime. LIVE HANDOFF/INDEX were not read or written; this GitHub ledger is only the recovery record, not a successful Drive sync.
+- **PR state:** #2 remains open Draft; collision PR #1 remains separate.
