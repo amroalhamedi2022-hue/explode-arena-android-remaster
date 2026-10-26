@@ -23,5 +23,16 @@ Inspected the official `libgdx/gdx-ai` repository LICENSE; it is Apache-2.0. Its
 - Device/Xiaomi Pad 5 and Symbian/EKA2L1 parity remain NOT TESTED.
 - Google Drive LIVE sync is unavailable in this runtime; no Drive sync will be claimed without read-back verification.
 
-## Result
-Pending implementation and exact-SHA CI.
+## Result — N19 SOURCE ACCEPTANCE PASS (2026-10-26)
+- Production fix: `NativeBotEscapeRoute.kt` now computes the active flame component containing the bot's starting position with a bounded 8-neighbor flood fill over the 16px flame-cell lattice. During an active-flame escape, only cells within that connected component may be traversed while burning; disconnected active flames remain blocked. Normal escape and unlit-refuge checks remain in force.
+- Production commits: `603da2db187d553950ea9734f12c5e4558e1fc07` (component and route gate), `454505f8126dd0683ec680312ac2b1f5adc244c4` (clarified invariant).
+- Regression commit / exact source+test SHA: `9ebc27a34cedab8e671923181084ba2bddb7d2fc`. Test uses two simultaneous blasts centered at x=40 and x=168, proving the first component includes its connected ray but excludes the separated second explosion, while a refuge remains reachable.
+- **PASS:** actual Gradle step `gradle --project-dir android :core:test --stacktrace --no-daemon`, with `:core:compileKotlin`, `:core:compileTestKotlin`, and `:core:test` all successful in [Native Kotlin CI run 40251474221](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40251474221), on the exact source+test SHA.
+- **PASS:** Mainline JS/Python source checks on the same SHA in [run 40251474309](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40251474309).
+- Native workflow artifacts: [] (zero). No APK packaging/upload, no release, merge, or main write.
+- **NOT TESTED:** Xiaomi Pad 5 runtime, full gameplay, and Symbian/EKA2L1 fire/AI parity. The change only corrects the provisional native route's handling of disconnected active flames.
+- **Drive SYNC FAILED:** Google Drive/Docs connector tools are unavailable in this runtime; LIVE HANDOFF/INDEX were not read or written. GitHub plan and acceptance ledger are the recovery records; no Drive sync is claimed.
+- PR #2 remains open Draft; collision PR #1 remains separate.
+
+## Next
+Alternate to App Commander for its next source-only functional milestone; preserve real-device and EKA2L1 verification as separate acceptance gates.
