@@ -4,6 +4,67 @@ import kotlin.math.floor
 import kotlin.math.abs
 
 /**
+ * Spatial index for flame cells produced by NativeBombSimulation. Flame centers
+ * lie on the 16px lattice; an actor footprint can overlap only the two nearest
+ * center columns and rows. This keeps escape checks bounded to at most four
+ * hash lookups instead of scanning the full connected flame component per BFS cell.
+ *
+ * This is a performance-preserving index for the provisional native model,
+ * not evidence of original Symbian/EKA2L1 hitbox parity.
+ */
+internal class BurningEscapeIndex(cells: Set<Spawn>) {
+    private val step = NativeBombSimulation.BOMB_CELL.toDouble()
+    private val half = step / 2.0
+    private val keys: Set<Long>
+    private val minColumn: Int
+    private val maxColumn: Int
+    private val minRow: Int
+    private val maxRow: Int
+
+    init {
+        val coordinates = cells.map { cell ->
+            val column = gridIndex(cell.x)
+            val row = gridIndex(cell.y)
+            require(kotlin.math.abs(cell.x - center(column)) < 1e-6 &&
+                kotlin.math.abs(cell.y - center(row)) < 1e-6) {
+                "Flame cells must be aligned to the native bomb grid"
+            }
+            column to row
+        }
+        keys = coordinates.map { key(it.first, it.second) }.toSet()
+        minColumn = coordinates.minOfOrNull { it.first } ?: 0
+        maxColumn = coordinates.maxOfOrNull { it.first } ?: -1
+        minRow = coordinates.minOfOrNull { it.second } ?: 0
+        maxRow = coordinates.maxOfOrNull { it.second } ?: -1
+    }
+
+    fun contains(x: Double, y: Double): Boolean {
+        if (keys.isEmpty() || !x.isFinite() || !y.isFinite()) return false
+        val reach = 8.0 + StageCollision.ACTOR_RADIUS
+        if (x <= center(minColumn) - reach || x >= center(maxColumn) + reach ||
+            y <= center(minRow) - reach || y >= center(maxRow) + reach) return false
+
+        val baseColumn = gridIndex(x)
+        val baseRow = gridIndex(y)
+        for (column in baseColumn..(baseColumn + 1)) {
+            for (row in baseRow..(baseRow + 1)) {
+                if (key(column, row) !in keys) continue
+                if (NativeBombSimulation.blastHits(
+                        Spawn(center(column), center(row)), x, y, StageCollision.ACTOR_RADIUS,
+                    )
+                ) return true
+            }
+        }
+        return false
+    }
+
+    private fun gridIndex(value: Double): Int = floor((value - half) / step).toInt()
+    private fun center(index: Int): Double = index * step + half
+    private fun key(column: Int, row: Int): Long =
+        (column.toLong() shl 32) or (row.toLong() and 0xffffffffL)
+}
+
+/**
  * Bounded deterministic escape search for the PROVISIONAL native bot.
  * It uses the native bomb ray/wall model, not the HTML/WebView renderer.
  * Fuse, blast and movement parity with Symbian/EKA2L1 remain unverified.
@@ -103,10 +164,10 @@ internal object NativeBotEscapeRoute {
         val escapeFlameComponent = if (allowBurningTransit) {
             connectedBurningEscapeCells(simulation, bot.x, bot.y)
         } else emptySet()
+        val escapeFlameIndex = BurningEscapeIndex(escapeFlameComponent)
         val burningBlocks = { x: Double, y: Double ->
             simulation.isBurning(x, y, StageCollision.ACTOR_RADIUS) &&
-                !(allowBurningTransit &&
-                    isWithinBurningEscapeComponent(escapeFlameComponent, x, y))
+                !(allowBurningTransit && escapeFlameIndex.contains(x, y))
         }
         // An opponent's timed bomb can explode sooner than the proposed or
         // owned bomb. When its ray already covers the bot, use the EARLIEST
