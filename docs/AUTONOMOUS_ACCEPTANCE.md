@@ -30,3 +30,14 @@ Repository visibility: **PRIVATE**; never expose original extracted assets publi
 2. Acquire measurable EKA2L1 Symbian gameplay evidence to replace provisional blast/actor constants, keeping Windows Mobile references explicitly separate.
 3. Build/test an actual Android APK and compare collision, layering and audio against original Symbian recordings.
 4. Independent end-to-end recheck is mandatory **only after** all functional, visual, platform and security requirements are actually evidenced.
+
+
+## 2026-10-26 — PR #1 collision branch CI retry (SOURCE VALIDATION PASS)
+
+- **Question:** the prior Mainline run `39949353493` failed at the job level with no executable steps or downloadable logs. A free GitHub Actions retry was used to determine whether that failure was reproducible; no source or test files were changed for the retry.
+- **Exact PR #1 source SHA:** `c08d6d5b5aa1adcc0fe3fe00e6bd479fdea8abae`.
+- **PASS:** [Mainline run 39949353493, successful retry](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/39949353493). Steps completed: core movement/blocking/blast calculations; world engine; provisional blast collision regression; 41-arena duel simulation (6,150 steps); practice bot; 41-arena integration sweep (17,967 ticks, 176 planted bombs, 165 explosions); map preview/resource synchronization; 15 RIFF WAV checks; and source-only Android manifest/resource integrity checks.
+- The successful retry establishes that the prior failure was transient/non-reproducible on this run, but does not prove its original root cause because the first attempt had no logs/steps.
+- **NOT TESTED:** Android APK/device, original Symbian/EKA2L1 timing/collision parity, HD visuals and complete modes.
+- No APK packaging/artifact, merge, auto-merge, main write, dependency or copyrighted asset change.
+- **Google Drive SYNC FAILED:** Drive/Docs connector unavailable; LIVE documents were not read or written.
