@@ -246,12 +246,29 @@ class NativeBombSimulation(
      */
     data class TimedBlastCell(val cell: Spawn, val secondsUntilBlast: Double)
 
-    fun predictedTimedBlastCells(withinSeconds: Double): List<TimedBlastCell> =
-        predictedTimedChainThreats(withinSeconds).flatMap { threat ->
+    /**
+     * One immutable view of a timed-threat calculation. Bot decisions need
+     * both the threatening bombs and their timestamped footprints; computing
+     * them through separate public helpers repeats the full chain-graph walk
+     * for every bot on every fixed tick.
+     */
+    data class TimedThreatSnapshot(
+        val threats: List<TimedChainThreat>,
+        val cells: List<TimedBlastCell>,
+    )
+
+    fun predictedTimedThreatSnapshot(withinSeconds: Double): TimedThreatSnapshot {
+        val threats = predictTimedChainThreats(activeBombs, withinSeconds)
+        val cells = threats.flatMap { threat ->
             explosionCells(threat.bomb.x, threat.bomb.y).map { cell ->
                 TimedBlastCell(cell, threat.secondsUntilBlast)
             }
         }
+        return TimedThreatSnapshot(threats, cells)
+    }
+
+    fun predictedTimedBlastCells(withinSeconds: Double): List<TimedBlastCell> =
+        predictedTimedThreatSnapshot(withinSeconds).cells
 
     /**
      * Imminent automatic explosions INCLUDING active-flame ignition and

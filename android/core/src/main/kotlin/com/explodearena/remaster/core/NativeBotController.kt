@@ -32,8 +32,11 @@ class NativeBotController(private val owner: String = "bot") {
         // refuge; a bot outside it must not chase the player INTO that ray.
         // Snapshot rays once per decision, not for every BFS candidate.
         // Remote bombs are excluded: they have no countdown.
-        val imminentThreats = simulation.predictedTimedChainThreats(IMMINENT_FUSE_SECONDS)
-        val imminentCells = simulation.predictedImminentTimedBlastCells(IMMINENT_FUSE_SECONDS)
+        // Threat owners and timestamped cells must come from the SAME prediction.
+        // Separate helper calls repeat the chain traversal and ray generation.
+        val imminent = simulation.predictedTimedThreatSnapshot(IMMINENT_FUSE_SECONDS)
+        val imminentThreats = imminent.threats
+        val imminentCells = imminent.cells.map { it.cell }
         val imminentBomb = imminentThreats
             .filter { simulation.wouldBlastHitFrom(it.bomb.x, it.bomb.y, bot.x, bot.y) }
             .minByOrNull { it.secondsUntilBlast }?.bomb

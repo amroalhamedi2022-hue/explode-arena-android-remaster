@@ -159,4 +159,27 @@ class NativeBombSimulationTest {
             sim.predictedImminentTimedBlastCells(-1.0)
         }
     }
+
+    @Test fun timedThreatSnapshotMatchesLegacyViewsWithoutMutatingSimulation() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena)
+        assertTrue(sim.setRemoteDetonator("player", true))
+        assertTrue(sim.place(Actor(24.0, 24.0), "player"))
+        // This timed bomb's ray reaches and schedules the remote bomb.
+        assertTrue(sim.place(Actor(56.0, 24.0), "player2"))
+        val bombsBefore = sim.bombs
+        val flamesBefore = sim.flames
+        val nextIdBefore = sim.nextBombId
+
+        val snapshot = sim.predictedTimedThreatSnapshot(2.0)
+
+        assertEquals(sim.predictedTimedChainThreats(2.0), snapshot.threats)
+        assertEquals(sim.predictedTimedBlastCells(2.0), snapshot.cells)
+        assertTrue(snapshot.threats.any { it.bomb.owner == "player" && it.bomb.remote })
+        assertTrue(snapshot.threats.any { it.bomb.owner == "player2" && !it.bomb.remote })
+        assertEquals(bombsBefore, sim.bombs)
+        assertEquals(flamesBefore, sim.flames)
+        assertEquals(nextIdBefore, sim.nextBombId)
+    }
+
 }
