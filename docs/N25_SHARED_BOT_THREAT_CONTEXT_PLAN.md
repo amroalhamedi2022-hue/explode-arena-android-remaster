@@ -9,7 +9,7 @@ N21 reduced duplicate prediction work inside one bot decision, but each living b
 ## Acceptance criteria
 
 1. A roster tick with at least one living bot computes one TimedThreatSnapshot for the existing provisional 0.75-second imminent horizon, before any bot plans or places a bomb.
-2. The same immutable snapshot and one prebuilt TimedBlastIndex are passed to every bot decision in that roster tick; no per-bot duplicate snapshot/index construction occurs in the shared path.
+2. The same immutable snapshot and one prebuilt TimedBlastIndex are passed to every bot decision in that roster tick. Common imminent-threat checks and chase BFS do not rebuild the 0.75-second context/index per bot. Escape-route-specific indexes for hypothetical placements or the longer route horizon remain local because their inputs differ.
 3. Standalone NativeBotController.decide(...) remains source-compatible and builds a fresh context for callers outside a roster. Context is never cached across ticks, so bomb fuse/flame changes cannot leave stale threat data.
 4. Preserve exact NativeBombSimulation.blastHits strict-boundary behavior, earliest-deadline snapshot semantics, stable owner-ordered bomb placement, and N24 reversed-roster determinism.
 5. New Kotlin/JUnit tests compare shared-context decisions with independently constructed contexts for multiple bots, compare the shared index with the linear hitbox oracle over grid/boundary samples, and verify planning does not mutate bombs, flames, next ID, or remote-owner state.
@@ -34,4 +34,4 @@ Reviewed the existing in-repository N21 TimedThreatSnapshot, N23 TimedBlastIndex
 
 ## Status
 
-Implementation and exact-SHA CI are pending. No APK is built because this is a source-level shared-snapshot and deterministic-decision question.
+Implementation is in progress on PR #2. The shared context is created once in NativeOpponentRoster.advance and passed to every living controller; standalone controller calls retain a fresh-context path. Exact-SHA CI is pending. No APK is built because this is a source-level shared-snapshot and deterministic-decision question.
