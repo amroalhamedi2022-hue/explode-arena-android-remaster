@@ -412,3 +412,17 @@ Updated: 2026-10-23 (native migration first code slice)
 - **NOT TESTED:** Xiaomi Pad 5/runtime, real-device performance, full match, graphics/audio lifecycle, and original Symbian/EKA2L1 parity. This is source/JVM acceptance only.
 - No third-party code, dependencies or game assets added. PR #2 remains open Draft; collision PR #1 remains separate.
 - **Google Drive SYNC FAILED:** Drive/Docs connector unavailable in this runtime; LIVE handoff/index were not read or written and folder metadata was not verified.
+
+
+## 2026-10-26 — N29 full-fuse integration sweep across all 41 arenas (INTEGRATION TEST PASS)
+
+- **Engineering question:** the prior real-arena sweep exercised only eight fixed ticks; it did not cross the provisional fuse or post-blast flame window. N29 checks whether the actual 41-stage catalog can complete a full 130-tick bomb lifecycle without invalid actor state, terrain/actor overlap, quota violations, or a bomb that never detonates.
+- **Test-only change:** added `android/core/src/test/kotlin/com/explodearena/remaster/core/NativeArenaFuseIntegrationTest.kt`. It uses the existing production catalog, spawn resolver, roster, bomb simulation, vitality and collision code; it does not duplicate the simulation.
+- **Coverage:** all 41 real stages; expected 1/2/4 spawn distribution; 130 ticks per arena (96 provisional fuse ticks plus a post-blast window); finite positions; no solid collision or living-actor overlap; per-owner bomb quota; initial bomb detonation/removal; deterministic full snapshots for representative 1-, 2- and 4-spawn stages.
+- **Exact test commit:** `c62218cb16bd048cc498f9f754effd9103393193`; test blob `11a78ba2afb2b4c84180700ad35adc2c5c042fdf`.
+- **PASS Native Kotlin/JUnit:** [run 40364236670](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40364236670), real `:core:test`, log **BUILD SUCCESSFUL in 51s**, 4 actionable tasks executed.
+- **PASS Mainline JS/Python:** [run 40364236639](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40364236639) on the same commit.
+- **Docs:** `docs/N29_FULL_FUSE_41_ARENA_INTEGRATION_PLAN.md` created and checked in. No production gameplay source changed in N29; this is a broader integration acceptance gate, not a new mechanic.
+- **Artifacts: 0.** No APK packaging/build/upload, release, merge, auto-merge or main write. No copyrighted assets or dependencies added.
+- **NOT TESTED:** Symbian/EKA2L1 parity, Android touch/audio/graphics runtime, Xiaomi Pad 5 FPS/RAM, or human-played full match. Fuse, flame and AI values remain provisional.
+- **Google Drive SYNC FAILED:** Drive/Docs connector unavailable; LIVE documents were not read or written. This GitHub update is not a Drive sync.
