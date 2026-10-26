@@ -347,3 +347,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - No APK was built because list-order determinism is a source/JUnit question; no artifact upload, release, merge or main write.
 - Xiaomi Pad 5 runtime, full gameplay and Symbian/EKA2L1 AI/timing parity remain NOT TESTED.
 - Google Drive SYNC FAILED: Drive/Docs connector tools are unavailable in this runtime; LIVE HANDOFF/INDEX were not read or written.
+
+
+### N24 exact-SHA verification — SOURCE ACCEPTANCE PASS (2026-10-26)
+- Exact production+test SHA: b31657ef20127901a22931dc402278572eb71e28. The source/test changes are on PR #2 branch; the subsequent commit, if any, is documentation-only.
+- **PASS:** Native Kotlin/JUnit [run 40282530487](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40282530487), job 121438779605, actual step `gradle --project-dir android :core:test --stacktrace --no-daemon`; log: **BUILD SUCCESSFUL in 47s**.
+- **PASS:** Mainline JS/Python source checks [run 40282530545](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40282530545) on the same exact SHA.
+- The executed Gradle task includes the 180-tick four-spawn reversed-roster integration and all-41-arena same-order/reversed-order sweep. Native workflow artifacts: **[]**; no APK was assembled or uploaded.
+- **NOT TESTED:** Xiaomi Pad 5, native Android rendering/audio, full match completion, real-device performance and Symbian/EKA2L1 AI/timing parity. This is source acceptance only.
+- PR #2 remains open Draft; PR #1 and main remain untouched. No release, merge or auto-merge.
+- **Google Drive SYNC FAILED:** no Google Drive/Docs connector is available in this runtime, so LIVE HANDOFF/INDEX read-back and folder metadata verification could not be performed.

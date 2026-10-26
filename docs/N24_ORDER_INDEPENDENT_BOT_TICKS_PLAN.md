@@ -32,10 +32,14 @@ Rechecked the official libGDX and libgdx/gdx-ai LICENSE files; both are Apache-2
 - Xiaomi Pad 5 runtime, full gameplay, and Symbian/EKA2L1 AI/timing parity remain NOT TESTED.
 - Google Drive LIVE sync has been unavailable in this runtime; no Drive sync is claimed without verified read-back.
 
-## Implementation checkpoint — awaiting exact-SHA CI
+## Implementation and CI result — SOURCE ACCEPTANCE PASS
 
 - Production: NativeOpponentRoster.advance now separates shared-snapshot planning, stable bomb-placement commit, candidate movement calculation, overlap conflict handling, and final position/vitality commit.
 - Tests: NativeOpponentRosterTest runs a four-spawn scenario for 180 ticks in normal and reversed roster order; NativeArenaSweepTest extends all-41 arena integration and reversed-order checks for every multi-bot arena.
-- Code/test SHA and CI results will be appended after the actual runs complete.
-- No APK was built. No new game assets were uploaded. PR #1 and main are untouched.
-- Google Drive SYNC FAILED: the Drive/Docs connector is not available in this runtime; LIVE documents were not read or written.
+- Exact production + regression source/test SHA: b31657ef20127901a22931dc402278572eb71e28.
+- **PASS:** Native Kotlin/JUnit actual Gradle step in [run 40282530487](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40282530487), job 121438779605. The step executed `gradle --project-dir android :core:test --stacktrace --no-daemon` and logged **BUILD SUCCESSFUL in 47s**.
+- **PASS:** Mainline JS/Python validation in [run 40282530545](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40282530545) on the same exact SHA.
+- Native workflow artifacts: **[] (zero)**. No APK packaging/build or upload was performed.
+- **NOT TESTED:** Xiaomi Pad 5 runtime, full playable match, audio/graphics lifecycle, measured device performance and original Symbian/EKA2L1 AI/timing parity.
+- PR #2 remains open Draft; PR #1 and main are untouched. No merge or auto-merge.
+- **Google Drive SYNC FAILED:** the Drive/Docs connector is not available in this runtime; LIVE documents were not read or written.
