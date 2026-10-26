@@ -398,3 +398,17 @@ Updated: 2026-10-23 (native migration first code slice)
 - **NOT TESTED:** Xiaomi Pad 5/runtime, real-device performance, full match and original Symbian/EKA2L1 behavior. These are not inferred from JVM CI.
 - No third-party code, dependencies or game assets added. PR #2 remains Draft and separate from collision PR #1.
 - **Google Drive SYNC FAILED:** Drive/Docs connector unavailable in this runtime; LIVE handoff/index were not read or written back.
+
+
+## 2026-10-26 — N28 bounded replay frame-count diagnostics (SOURCE ACCEPTANCE PASS)
+
+- **Engineering question:** N27 checked line size while both traces had frames, but the short-vs-long `frame-count` return path passed the extra tail line directly into `Divergence`. This could retain an arbitrarily large untrusted string after the main parsing guard. The question was documented in `docs/N28_BOUNDED_REPLAY_TAIL_DIAGNOSTICS_PLAN.md` before CI was triggered.
+- **Production change:** `NativeReplayComparison.frameCountDiagnostic` returns in-bound tail lines verbatim for compatibility and replaces an oversized tail with `oversized-line(length=…,limit=…)`. Both expected-only and actual-only tails use the same bounded path; frame count, iterator consumption, schema validation and the 100,000-frame cap are unchanged.
+- **Regression:** the existing short-reference test now asserts its bounded tail remains verbatim. New test `frameCountMismatchBoundsOversizedTailDiagnosticsOnBothSides` covers oversized expected and actual tail lines, exact frame index/field, marker lengths, and absence of the original payload.
+- **Exact production + test SHA:** `3a89cbb2c4c096ae8b7bf2902f41655dec2069f2`.
+- **PASS Native Kotlin/JUnit:** [run 40343980572](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40343980572), actual `:core:test`; log: **BUILD SUCCESSFUL in 52s**, 4 tasks executed.
+- **PASS Mainline JS/Python:** [run 40343980576](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40343980576) on the same source/test checkpoint.
+- **Independent source re-read:** production blob `454f839a6d17418df178c341fdb31485891cb8d5`; test blob `f6b800a9b49eeae1eaf474197318bd7b579e4c1b`. Artifacts: **0**. No APK packaging/build/upload, release, merge, auto-merge or main write.
+- **NOT TESTED:** Xiaomi Pad 5/runtime, real-device performance, full match, graphics/audio lifecycle, and original Symbian/EKA2L1 parity. This is source/JVM acceptance only.
+- No third-party code, dependencies or game assets added. PR #2 remains open Draft; collision PR #1 remains separate.
+- **Google Drive SYNC FAILED:** Drive/Docs connector unavailable in this runtime; LIVE handoff/index were not read or written and folder metadata was not verified.
