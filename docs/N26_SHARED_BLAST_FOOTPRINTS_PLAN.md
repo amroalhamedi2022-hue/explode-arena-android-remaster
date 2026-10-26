@@ -1,7 +1,7 @@
 # N26 — Shared per-bomb blast footprints
 
 Date: 2026-10-26  
-Status: implementation committed; source CI pending.
+Status: source acceptance PASS on exact source/test SHA 19c65522ea75533089cf4630bb86d2454876c153.
 
 ## Engineering question
 
@@ -28,7 +28,8 @@ Source inspection alone is insufficient: strict hitbox boundaries and rays stopp
 ## Status ledger
 
 - Source and regression test: included in the N26 implementation and follow-up geometry-reuse commits.
-- Native JUnit CI: pending for the final source SHA.
-- Mainline JS/Python CI: pending.
+- **PASS Native Kotlin/JUnit:** [run 40310546626](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40310546626), exact SHA above; `BUILD SUCCESSFUL in 54s`, 4 actionable tasks.
+- **PASS Mainline JS/Python:** [run 40310546805](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40310546805), same SHA.
+- Artifacts: zero; no APK packaging.
 - Device/EKA2L1 parity and performance profiling: NOT TESTED.
 - Google Drive LIVE sync: SYNC FAILED if the Drive/Docs connector remains unavailable; do not infer sync from GitHub docs.

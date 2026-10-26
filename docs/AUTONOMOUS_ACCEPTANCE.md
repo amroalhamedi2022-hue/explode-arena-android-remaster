@@ -373,9 +373,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - PR #2 remains open Draft; collision PR #1 remains separate. **Google Drive SYNC FAILED:** Drive/Docs connector is unavailable in this runtime; LIVE handoff/index were not read or written back.
 
 
-## 2026-10-26 — N26 shared per-bomb blast footprints (CI pending)
-- Engineering question: reuse each timed threat's blast-ray geometry across living bots without changing escape-threat decisions or simulation state.
-- Source changes: `NativeBombSimulation.predictedTimedThreatSnapshot` now computes each threat's ray geometry once and stores it as `TimedThreatFootprint`, reusing those same cells to build the deduplicated spatial-index input and the roster's shared context. `NativeBotController` queries cached cells instead of rebuilding the same rays for each bot.
-- Regression: `NativeBotThreatContextTest.sharedThreatFootprintsMatchStandaloneOracleAcrossWallAndHitboxBoundaries` compares cached hits with `wouldBlastHitFrom` on a 4px grid, with an 8px wall truncating rays. Existing shared-vs-standalone decision and no-mutation tests remain in the suite.
-- Exact source/test SHA and CI result will be appended after the source workflow completes. No APK build or artifact is requested for this source-level question.
-- Device, EKA2L1 parity and real-device performance: NOT TESTED.
+## 2026-10-26 — N26 shared per-bomb blast footprints (SOURCE ACCEPTANCE PASS)
+- **Engineering question:** reuse each timed threat's blast-ray geometry across living bots without changing escape-threat decisions or simulation state. Source inspection alone could not establish strict edge/wall parity with the previous calculation.
+- **Production source:** `NativeBombSimulation.predictedTimedThreatSnapshot` now computes each threat's ray geometry once and stores it as `TimedThreatFootprint`; the same footprint cells build the deduplicated spatial-index input and serve the roster's shared context. `NativeBotController` now checks these cached cells instead of rebuilding the same rays for each bot. Fuse deadlines, movement, blast geometry and ownership rules were not changed.
+- **Regression:** `NativeBotThreatContextTest.sharedThreatFootprintsMatchStandaloneOracleAcrossWallAndHitboxBoundaries` compares cached hits with the independent `wouldBlastHitFrom` oracle on a 4px grid, including strict hitbox edges and an 8px wall truncating rays. Existing shared-vs-standalone decision parity, no-mutation, context-per-tick and 180-tick roster-order tests remain in the suite.
+- **Exact production + test SHA:** `19c65522ea75533089cf4630bb86d2454876c153`.
+- **PASS:** Native Kotlin/JUnit [run 40310546626](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40310546626), job 121530344864; actual step `gradle --project-dir android :core:test --stacktrace --no-daemon`; log: **BUILD SUCCESSFUL in 54s**, 4 actionable tasks executed.
+- **PASS:** Mainline JS/Python [run 40310546805](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40310546805) on the same SHA. This is a source/test validation result, not device validation.
+- Native workflow artifacts: **[] (zero)**. No APK packaging/build/upload, release, merge, auto-merge or main write.
+- **NOT TESTED:** Xiaomi Pad 5 measured performance, Android runtime, full match, graphics/audio lifecycle and original Symbian/EKA2L1 AI/timing parity.
+- No external implementation, dependency or copyrighted asset was added. PR #2 remains open Draft; collision PR #1 remains separate.
+- **Google Drive SYNC FAILED:** Drive/Docs connector is unavailable in this runtime; LIVE handoff/index were not read or written back.
