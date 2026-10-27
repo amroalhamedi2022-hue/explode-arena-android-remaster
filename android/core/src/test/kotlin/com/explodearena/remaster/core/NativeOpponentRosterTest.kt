@@ -85,6 +85,7 @@ class NativeOpponentRosterTest {
         )
         val bot = NativeOpponentRoster.BotSlot("bot", Actor(40.0, 24.0), vitality)
         val roster = NativeOpponentRoster(listOf(bot))
+        bot.walking = true
         val sim = NativeBombSimulation(
             arena, bombFuseSeconds = 0.1, blastLifetimeSeconds = 0.05, bombRange = 1,
         )
@@ -96,6 +97,7 @@ class NativeOpponentRosterTest {
         assertTrue(sim.isBurningDuringLastTick(40.0, 24.0, StageCollision.ACTOR_RADIUS))
         roster.applyDamageForLastTick(sim)
         assertTrue(bot.vitality.defeated)
+        assertFalse("a newly defeated bot must stop its walking animation in the same tick", bot.walking)
     }
 
     @Test fun sameTickPlacementsRefreshThreatContextBeforeMovement() {
