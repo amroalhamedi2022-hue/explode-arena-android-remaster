@@ -704,6 +704,7 @@ Updated: 2026-10-23 (native migration first code slice)
 
 - Canonical bomb identity/geometry keys are now built once in the immutable per-tick NativeBotThreatContext and shared by all living bots. The controller no longer maps/sorts a separate key list per bot decision. Direction and grid-neighbor vectors are static controller tables rather than per-decision/per-plan arrays.
 - Added a regression proving countdown-only changes preserve the key set while a later timed threat changes it; existing N49 tests continue to cover immediate invalidation and six-tick replanning.
-- Source/test SHA and CI: **PENDING**.
+- **Source/test SHA:** `86a72d66d332c48592accc543a8473e02fca350d` — Native Kotlin/JUnit [CI #40536070449](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40536070449) **PASS**; Mainline JS/Python [CI #40536070458](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40536070458) **PASS** on the same SHA.
+- Artifact listing: **0**; no APK packaging/signing/upload. Documentation-updated PR-head recheck: **PENDING**.
 - Android device and Symbian/EKA2L1 parity: **NOT TESTED**. Artifacts: **0 expected**; no APK task.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed; no LIVE read/write or folder metadata verification is claimed.
