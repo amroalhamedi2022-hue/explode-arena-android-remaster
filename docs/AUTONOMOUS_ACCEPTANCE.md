@@ -621,12 +621,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - **NOT TESTED:** Xiaomi Pad 5 visual state, actual Android rendering/audio, Symbian/EKA2L1 parity and full game completeness.
 - No merge, main write, release, auto-merge or new copyrighted assets. Google Drive LIVE sync remains **SYNC FAILED** because no Drive/Docs connector is exposed; no LIVE read/write or folder metadata verification is claimed.
 
-## 2026-10-27 — N43 Android lifecycle pause wiring
+## 2026-10-27 — N43 lifecycle pause/touch integration regression
 
-- **Question:** Was the existing pause gate actually connected to libGDX's Android lifecycle callbacks?
-- **Production source changed:** `ExplodeArenaNativeGame.pause()/resume()` now delegate through `NativeLifecycleCallbacks` to the existing gate. Foreground return clears stale accumulator time but requires an explicit resume tap.
-- **Integration test:** `NativeLifecycleCallbacksTest.backgroundResumeKeepsFuseFrozenUntilExplicitResumeTap` covers repeated pause callbacks, a live bomb fuse, no catch-up while backgrounded, and explicit resume.
-- **Source/Native Kotlin JUnit CI:** pending on the new source/test SHA.
-- **Android device lifecycle / Xiaomi Pad 5:** **NOT TESTED**.
-- **APK/artifacts:** none; no APK packaging or upload.
-- No Symbian parity claim, merge, main write, or original asset upload.
+- **Review correction:** `ExplodeArenaNativeGame` already had libGDX `pause()/resume()` overrides calling the pause gate and suppressing held touches. This milestone does not claim those hooks were missing; it extracts their existing gate/touch behavior behind a pure adapter and tests the combined contract.
+- **Production refactor + integration test SHA:** `2c106eff29ee72cb9612006e6418440a886f2ec5`.
+- **PASS — Native Kotlin/JUnit:** [CI #40478515898](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40478515898), `:core:test`, BUILD SUCCESSFUL in 57s.
+- **PASS — Mainline:** [CI #40478515868](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40478515868), same SHA.
+- **FAIL, superseded:** [CI #40478046466](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40478046466) caught duplicate lifecycle overrides in the first attempt; corrected before the passing source/test SHA.
+- **Artifacts:** zero. No APK build/package/upload.
+- **NOT TESTED:** Xiaomi Pad 5 / HyperOS lifecycle and sound behavior; Symbian/EKA2L1 parity remains unverified.
+- No merge, main write, auto-merge, or new copyrighted assets.
