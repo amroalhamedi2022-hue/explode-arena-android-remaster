@@ -28,8 +28,8 @@ This extends project-owned Kotlin/JUnit code and existing in-repository simulati
 
 ## Verification ledger
 
-- Source/test SHA: **PENDING**
-- Native Kotlin/JUnit CI: **PENDING**
-- Mainline CI: **PENDING**
-- Artifacts: expected **0**; source-only workflow, no APK.
-- Physical device and EKA2L1 parity: **NOT TESTED**.
+- **PASS — exact source/test/PR head:** `8b49f7666061d534efe27afcfa9948e01cd3ff33`.
+- **PASS — Native Kotlin/JUnit:** [run #40446349623](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40446349623), `:core:test` completed successfully.
+- **PASS — Mainline:** [run #40446349648](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40446349648), source/stage/resource checks passed.
+- Artifacts: **0** confirmed; no APK packaging occurred.
+- Physical device, Xiaomi Pad 5, audio/visual play, and EKA2L1 parity: **NOT TESTED**.
