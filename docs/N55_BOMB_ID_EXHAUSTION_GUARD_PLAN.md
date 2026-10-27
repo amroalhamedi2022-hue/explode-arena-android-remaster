@@ -29,6 +29,6 @@
 - **Source + test SHA:** `ead28891a9b7a4825ce94d42af942bfda901506e`.
 - **PASS — Native Kotlin/JUnit:** [run #40572909270](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40572909270).
 - **PASS — Mainline JS/Python:** [run #40572909353](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40572909353).
-- Docs-updated PR-head recheck: pending; result will be recorded in the PR conversation after the checks complete.
+- **PASS — previous docs-updated PR head:** `a219fdd13296b7243f9653b71e9a4d7efa19bdd2`; Native Kotlin/JUnit [#40573367593](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40573367593) and Mainline [#40573367562](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40573367562) both succeeded. This status/ledger append creates a new PR head; its final recheck is tracked in the PR conversation.
 - **NOT TESTED:** Xiaomi Pad 5 / Android gameplay, Symbian EKA2L1 parity, native full-game completeness.
 - APK artifacts: **0**. No original game assets or third-party code added.
