@@ -620,3 +620,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Artifacts: 0 confirmed** on both runs. No APK packaging/signing/upload. Docs-updated PR-head recheck is pending and will be reported in the PR discussion without another source change.
 - **NOT TESTED:** Xiaomi Pad 5 visual state, actual Android rendering/audio, Symbian/EKA2L1 parity and full game completeness.
 - No merge, main write, release, auto-merge or new copyrighted assets. Google Drive LIVE sync remains **SYNC FAILED** because no Drive/Docs connector is exposed; no LIVE read/write or folder metadata verification is claimed.
+
+## 2026-10-27 — N43 Android lifecycle pause wiring
+
+- **Question:** Was the existing pause gate actually connected to libGDX's Android lifecycle callbacks?
+- **Production source changed:** `ExplodeArenaNativeGame.pause()/resume()` now delegate through `NativeLifecycleCallbacks` to the existing gate. Foreground return clears stale accumulator time but requires an explicit resume tap.
+- **Integration test:** `NativeLifecycleCallbacksTest.backgroundResumeKeepsFuseFrozenUntilExplicitResumeTap` covers repeated pause callbacks, a live bomb fuse, no catch-up while backgrounded, and explicit resume.
+- **Source/Native Kotlin JUnit CI:** pending on the new source/test SHA.
+- **Android device lifecycle / Xiaomi Pad 5:** **NOT TESTED**.
+- **APK/artifacts:** none; no APK packaging or upload.
+- No Symbian parity claim, merge, main write, or original asset upload.

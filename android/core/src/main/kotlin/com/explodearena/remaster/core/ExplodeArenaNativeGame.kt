@@ -49,6 +49,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     private lateinit var vitality: NativeVitality
     private var roundFlow = NativeRoundFlow()
     private val pauseGate = NativePauseGate()
+    private val lifecycleCallbacks = NativeLifecycleCallbacks(pauseGate, clock)
     // Independent provisional bots for each additional arena spawn (1/2/4).
     // Original Symbian AI, game modes and palettes remain unverified.
     private lateinit var opponents: NativeOpponentRoster
@@ -83,6 +84,19 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         placeSound = Gdx.audio.newSound(Gdx.files.internal("assets/sfx/bomb_place.wav"))
         explosionSound = Gdx.audio.newSound(Gdx.files.internal("assets/sfx/bomb_explode1.wav"))
         viewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
+    }
+
+    /**
+     * libGDX forwards Android Activity background/resume events through these
+     * ApplicationListener callbacks. Returning to foreground stays paused
+     * until the player explicitly resumes from the native controls.
+     */
+    override fun pause() {
+        lifecycleCallbacks.onPause()
+    }
+
+    override fun resume() {
+        lifecycleCallbacks.onResume()
     }
 
     override fun resize(width: Int, height: Int) {
