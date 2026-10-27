@@ -708,3 +708,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - Artifact listing: **0**; no APK packaging/signing/upload. Documentation-updated PR head `0b3914860dd66e0515e9a269987aafd430830f29`: Native Kotlin/JUnit [CI #40536753328](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40536753328) and Mainline JS/Python [CI #40536753032](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40536753032) both **PASS**. The verified production/test SHA remains `86a72d66d332c48592accc543a8473e02fca350d`.
 - Android device and Symbian/EKA2L1 parity: **NOT TESTED**. Artifacts: **0 expected**; no APK task.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed; no LIVE read/write or folder metadata verification is claimed.
+
+
+## 2026-10-27 N51 — same-tick bot placement replan
+
+- Production behavior: after any successful bot bomb placement, the roster creates one fresh shared threat context after the full placement commit and recalculates movement-only decisions for every living bot. The second pass preserves each placer's pass-bomb grace and cannot place additional bombs.
+- Exact source/test SHA: `6ba42eb14fa92c62ece1807fa3396f9cd69a90f2`.
+- **PASS — Native Kotlin/JUnit:** [CI #40545607851](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40545607851), `:core:test`, no APK packaging.
+- **PASS — Mainline JS/Python:** [CI #40545607886](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40545607886).
+- Regression: `sameTickPlacementsRefreshThreatContextBeforeMovement` verifies the post-placement context sees the complete committed bomb set, retains pass-bomb grace, and leaves bots out of blocking bomb collisions. Existing roster order-independence and 41-arena 1/2/4-spawn integration suites pass.
+- **NOT TESTED:** Xiaomi Pad 5, Android runtime, Symbian/EKA2L1 parity, FPS/RAM. Artifacts: 0 expected; no APK packaging.
+- Google Drive LIVE handoff/index: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime; no sync claimed.
