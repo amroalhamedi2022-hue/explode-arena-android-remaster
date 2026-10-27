@@ -45,6 +45,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     private var walking = false
     private var animationSeconds = 0.0
     private val clock = FixedStepClock()
+    private lateinit var roundTickClock: NativeRoundTickClock
     private lateinit var bombSimulation: NativeBombSimulation
     private lateinit var vitality: NativeVitality
     private var roundFlow = NativeRoundFlow()
@@ -117,6 +118,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         vitality = fresh.playerVitality
         opponents = fresh.opponents
         roundFlow = fresh.roundFlow
+        roundTickClock = fresh.tickClock
         facing = 2
         walking = false
         animationSeconds = 0.0
@@ -188,7 +190,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
                 opponents = opponents,
                 simulation = bombSimulation,
                 roundFlow = roundFlow,
-                tick = clock.ticks,
+                tick = roundTickClock.nextTick(),
                 dx = dx,
                 dy = dy,
                 hasNextStage = stageIndex < stages.lastIndex,
