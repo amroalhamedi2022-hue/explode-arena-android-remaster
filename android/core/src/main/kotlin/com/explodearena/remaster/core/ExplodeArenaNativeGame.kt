@@ -190,36 +190,22 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         // fractional tick in an arena that was just replaced or resumed.
         pauseGate.advance(clock, if (commands.advanceWorld) Gdx.graphics.deltaTime.toDouble() else 0.0) {
             animationSeconds += FixedStepClock.STEP_SECONDS
-            if (roundFlow.isPlaying) {
-                val oldX = actor.x
-                val oldY = actor.y
-                StageCollision.move(
-                    stage, actor, dx, dy, 77.0,
-                    FixedStepClock.STEP_SECONDS, bombSimulation.bombs,
-                    opponents.blockingActors(),
-                )
-                walking = actor.x != oldX || actor.y != oldY
-                // Move all actors against the same pre-tick world, then advance
-                // fuses/flames and sample damage at the tick boundary. This keeps
-                // player and bot damage consistent on a flame's final active tick.
-                val tickResult = opponents.advanceSimulationTick(
-                    stage, actor, bombSimulation, clock.ticks,
-                )
-                repeat(tickResult.bombsPlaced) { placeSound.play(0.45f) }
-                if (tickResult.bombsDetonated > 0) explosionSound.play(0.75f)
-                vitality.tick(
-                    bombSimulation.isBurningDuringLastTick(
-                        actor.x, actor.y, radius = StageCollision.ACTOR_RADIUS,
-                    ),
-                )
-            } else {
-                walking = false
-                opponents.stopWalking()
-            }
-            if (roundFlow.tick(
-                    vitality.defeated, opponents.allDefeated,
-                    opponents.present, stageIndex < stages.lastIndex,
-                )) advanceAfterTick = true
+            val result = NativeArenaTick.advance(
+                stage = stage,
+                player = actor,
+                playerVitality = vitality,
+                opponents = opponents,
+                simulation = bombSimulation,
+                roundFlow = roundFlow,
+                tick = clock.ticks,
+                dx = dx,
+                dy = dy,
+                hasNextStage = stageIndex < stages.lastIndex,
+            )
+            walking = result.playerWalking
+            repeat(result.bombsPlaced) { placeSound.play(0.45f) }
+            if (result.bombsDetonated > 0) explosionSound.play(0.75f)
+            if (result.advanceStage) advanceAfterTick = true
         }
         // Swap textures/stage only after all catch-up ticks, never inside the
         // FixedStepClock callback (which owns the current accumulator).
