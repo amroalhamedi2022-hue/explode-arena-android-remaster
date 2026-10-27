@@ -752,3 +752,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - Native Kotlin/JUnit [CI #40563943582](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40563943582) was pending at the time of this entry; final docs-head results will be added to the PR conversation after recheck.
 - Device/EKA2L1 parity: **NOT TESTED**. APK artifacts: **0**. No new dependencies/assets, merge or main write.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime; no LIVE read/write or folder metadata verification is claimed.
+
+
+## 2026-10-27 N55 — fail-closed bomb identity exhaustion
+
+- Production changes: `NativeBombSimulation` accepts a positive replay/checkpoint starting ID, reserves `Long.MAX_VALUE` as exhausted, and throws before mutating the actor or bomb list instead of allowing `nextId++` to wrap negative. `NativeReplaySession` passes the checkpoint through to the same simulation used by the replay harness.
+- Regression tests: invalid non-positive identity checkpoints; direct placement at exhaustion; replay integration proving a failed placement leaves the full trace and bomb list unchanged.
+- **PASS — exact source/test SHA:** `ead28891a9b7a4825ce94d42af942bfda901506e`; Native Kotlin/JUnit [run #40572909270](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40572909270) and Mainline JS/Python [run #40572909353](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40572909353).
+- Docs-updated PR-head recheck pending; result will be posted in PR #2 after CI finishes. APK artifacts: **0**; no APK packaging.
+- Xiaomi Pad 5, real gameplay and Symbian/EKA2L1 parity: **NOT TESTED**.
+- No new assets/dependencies; no merge, main write or auto-merge. Google Drive LIVE sync remains **SYNC FAILED** because no Drive/Docs connector is available in this runtime; no Drive read/write or folder metadata verification is claimed.
+
