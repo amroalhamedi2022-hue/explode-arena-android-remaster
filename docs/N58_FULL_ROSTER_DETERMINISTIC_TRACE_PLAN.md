@@ -26,8 +26,10 @@ Do repeated native simulation runs produce the same full gameplay trace across 1
 
 ## Evidence
 
-- Source/test SHA: pending.
-- Final PR head: pending.
-- Native Kotlin/JUnit CI: pending.
-- Mainline JS/Python: check actual workflow trigger; no claim until verified.
+- Source commit: f9ea8faedb2689be760c9d819ba41c3c3aa9ecc2; integration-test commit: 130fcb397cc3485c2ae9a51744e22de3b20297a1; final source tweak: 6c16a203ff2fbbcb81f6234ae9b9e8795eb75ba6.
+- Exact tested PR head: 6c16a203ff2fbbcb81f6234ae9b9e8795eb75ba6.
+- Native Kotlin/JUnit CI #40595056469: PASS; log reports BUILD SUCCESSFUL in 52s.
+- Mainline JS/Python CI #40595056470: PASS on the same SHA.
+- APK artifacts: 0. Device/audio/HD art/EKA2L1: NOT TESTED.
+- The evidence-only docs commit that follows is separately rechecked.
 - Device/audio/HD art/EKA2L1: NOT TESTED.

@@ -797,8 +797,8 @@ Updated: 2026-10-23 (native migration first code slice)
 - Added a headless replay harness that drives the production NativeArenaTick/NativeOpponentRoster/BombSimulation path and snapshots player health, every bot position/health/animation state, bomb IDs/owners/fuses, remote ownership, flame cells, and round state.
 - Added regressions for repeatable four-spawn scripted runs, malformed input atomicity, and all 41 original stage records with their actual 1/2/4-spawn layouts.
 - This is native-regression evidence only. The trace is explicitly provisional and does not claim Symbian/EKA2L1 parity.
-- Source/test SHA: pending CI.
-- Native Kotlin/JUnit CI on final docs-updated head: pending.
+- Source commit f9ea8faedb2689be760c9d819ba41c3c3aa9ecc2 and integration-test commit 130fcb397cc3485c2ae9a51744e22de3b20297a1 are verified at PR head 6c16a203ff2fbbcb81f6234ae9b9e8795eb75ba6.
+- Native Kotlin/JUnit CI #40595056469: PASS (BUILD SUCCESSFUL in 52s); Mainline JS/Python CI #40595056470: PASS on the same SHA. The following evidence-only docs commit is separately rechecked.
 - Mainline JS/Python CI: not triggered by this Kotlin-only source addition unless workflow paths include docs; check actual runs.
 - APK build/artifacts: 0. Device launch, audio, HD fidelity, and EKA2L1 parity: NOT TESTED.
 - No original assets were added or copied from external sources.
