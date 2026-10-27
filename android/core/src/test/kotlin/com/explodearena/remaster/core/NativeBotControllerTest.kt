@@ -318,12 +318,12 @@ class NativeBotControllerTest {
         val openArena = stage()
         // A wall blocks the direct chase step, so the bot must take a safe perpendicular refuge.
         val arena = openArena.copy(grid = openArena.grid.mapIndexed { row, cells ->
-            cells.copyOf().also { if (row == 5) it[10] = 751 }
+            cells.copyOf().also { if (row == 5) it[12] = 751 }
         })
         val sim = NativeBombSimulation(arena, bombLimit = 2, bombRange = 1)
         assertTrue(sim.setRemoteDetonator("player2", true))
-        val bot = Actor(72.0, 40.0)
-        assertTrue(sim.place(Actor(64.0, 40.0), "player2"))
+        val bot = Actor(88.0, 40.0)
+        assertTrue(sim.place(Actor(72.0, 40.0), "player2"))
         assertTrue(sim.place(Actor(56.0, 40.0), "player"))
         repeat(60) { sim.tick() }
         assertTrue(
@@ -332,9 +332,9 @@ class NativeBotControllerTest {
                 it.bomb.owner == "player2" && it.bomb.remote
             },
         )
-        val refuge = NativeBotEscapeRoute.firstDirection(arena, bot, sim, 64.0, 40.0)
+        val refuge = NativeBotEscapeRoute.firstDirection(arena, bot, sim, 72.0, 40.0)
         assertNotNull("A refuge exists outside both predicted blast footprints", refuge)
-        val choice = NativeBotController().decide(arena, bot, Actor(104.0, 40.0), sim, 60)
+        val choice = NativeBotController().decide(arena, bot, Actor(120.0, 40.0), sim, 60)
         assertFalse(choice.placeBomb)
         assertFalse("The bot must not continue directly into the timed chain", choice.dx == 1.0 && choice.dy == 0.0)
     }
