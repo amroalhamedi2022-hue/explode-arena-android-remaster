@@ -67,6 +67,34 @@ class NativeRoundFlowTest {
         assertEquals(NativeRoundFlow.State.ADVANCING, flow.state)
     }
 
+
+    @Test fun presentationClockAdvancesOnlyDuringPlayAndVictoryHold() {
+        val flow = NativeRoundFlow(victoryHoldTicks = 1)
+        assertTrue(flow.advancesPresentationClock)
+
+        assertFalse(flow.tick(false, true, true, true))
+        assertEquals(NativeRoundFlow.State.WON, flow.state)
+        assertTrue(flow.advancesPresentationClock)
+
+        assertTrue(flow.tick(false, true, true, true))
+        assertEquals(NativeRoundFlow.State.ADVANCING, flow.state)
+        assertFalse(flow.advancesPresentationClock)
+
+        val lost = NativeRoundFlow().also { it.tick(true, false, true, true) }
+        assertEquals(NativeRoundFlow.State.LOST, lost.state)
+        assertFalse(lost.advancesPresentationClock)
+
+        val draw = NativeRoundFlow().also { it.tick(true, true, true, true) }
+        assertEquals(NativeRoundFlow.State.DRAW, draw.state)
+        assertFalse(draw.advancesPresentationClock)
+
+        val complete = NativeRoundFlow(victoryHoldTicks = 1)
+        complete.tick(false, true, true, false)
+        assertFalse(complete.tick(false, true, true, false))
+        assertEquals(NativeRoundFlow.State.COMPLETE, complete.state)
+        assertFalse(complete.advancesPresentationClock)
+    }
+
     @Test fun invalidHoldIsRejectedAndNewRoundIsIndependent() {
         assertThrows(IllegalArgumentException::class.java) { NativeRoundFlow(0) }
         val previous = NativeRoundFlow(1)
