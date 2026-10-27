@@ -107,4 +107,92 @@ class NativeArenaTickAllArenasIntegrationTest {
         assertTrue("Player must receive the final active-flame damage sample", vitality.defeated)
         assertEquals(NativeRoundFlow.State.LOST, round.state)
     }
+
+    private data class FinalFlameOutcome(
+        val botDefeated: Boolean,
+        val playerDefeated: Boolean,
+        val botDefeatedTick: Int,
+        val advanceSignals: Int,
+        val finalState: NativeRoundFlow.State,
+    )
+
+    private fun runBotFinalFlameScenario(hasNextStage: Boolean): FinalFlameOutcome {
+        val stage = StageData(
+            id = 0, image = "test.png", width = 128, height = 128,
+            obstacleX = 0, obstacleY = 0,
+            grid = List(16) { IntArray(16) },
+            spawns = listOf(Spawn(96.0, 96.0), Spawn(40.0, 40.0)),
+        )
+        val player = Actor(96.0, 96.0)
+        val playerVitality = NativeVitality(
+            initialHealth = 3,
+            initialInvulnerabilitySeconds = 0.0,
+            hitInvulnerabilitySeconds = 0.0,
+        )
+        val botVitality = NativeVitality(
+            initialHealth = 1,
+            initialInvulnerabilitySeconds = 0.0,
+            hitInvulnerabilitySeconds = 0.0,
+        )
+        val bot = NativeOpponentRoster.BotSlot(
+            owner = "bot",
+            actor = Actor(40.0, 40.0),
+            vitality = botVitality,
+        )
+        val roster = NativeOpponentRoster(listOf(bot))
+        val simulation = NativeBombSimulation(
+            stage,
+            bombLimit = 1,
+            bombFuseSeconds = 0.1,
+            blastLifetimeSeconds = 0.05,
+            bombRange = 1,
+        )
+        assertTrue("Bot-owned timed bomb must be accepted", simulation.place(bot.actor, "bot"))
+        val round = NativeRoundFlow(victoryHoldTicks = 1)
+        var botDefeatedTick = -1
+        var advanceSignals = 0
+
+        repeat(12) { tick ->
+            val result = NativeArenaTick.advance(
+                stage = stage,
+                player = player,
+                playerVitality = playerVitality,
+                opponents = roster,
+                simulation = simulation,
+                roundFlow = round,
+                tick = tick.toLong(),
+                dx = 0.0,
+                dy = 0.0,
+                hasNextStage = hasNextStage,
+            )
+            if (botVitality.defeated && botDefeatedTick < 0) botDefeatedTick = tick
+            if (result.advanceStage) advanceSignals++
+        }
+        return FinalFlameOutcome(
+            botDefeated = botVitality.defeated,
+            playerDefeated = playerVitality.defeated,
+            botDefeatedTick = botDefeatedTick,
+            advanceSignals = advanceSignals,
+            finalState = round.state,
+        )
+    }
+
+    @Test fun botDeathOnFinalFlameTickWinsRoundAndSignalsNextStageExactlyOnce() {
+        val outcome = runBotFinalFlameScenario(hasNextStage = true)
+
+        assertTrue("Bot must be defeated by the timed bomb's final flame interval", outcome.botDefeated)
+        assertTrue("The bot must be defeated during the 12 fixed-step integration window", outcome.botDefeatedTick in 0..11)
+        assertFalse("The distant player must survive", outcome.playerDefeated)
+        assertEquals("Victory hold should emit one transition, not repeat", 1, outcome.advanceSignals)
+        assertEquals(NativeRoundFlow.State.ADVANCING, outcome.finalState)
+    }
+
+    @Test fun botDeathOnFinalFlameTickCompletesFinalArenaWithoutWrapping() {
+        val outcome = runBotFinalFlameScenario(hasNextStage = false)
+
+        assertTrue(outcome.botDefeated)
+        assertFalse(outcome.playerDefeated)
+        assertEquals("Final arena must not emit a next-stage signal", 0, outcome.advanceSignals)
+        assertEquals(NativeRoundFlow.State.COMPLETE, outcome.finalState)
+    }
 }
