@@ -688,3 +688,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - Exact source/test SHA and CI results pending.
 - Device/Symbian parity **NOT TESTED**; no APK/artifacts, merge, main write, or new game assets.
 - Google Drive LIVE sync **SYNC FAILED** if no Drive/Docs connector is available; no sync is claimed without verification.
+
+
+## 2026-10-27 N49 — final verification addendum
+
+- **PASS — exact final source/test SHA:** b68c8588ff1b1de044656bb3f504f3344345b219.
+- **PASS — Native Kotlin/JUnit:** [CI #40526396371](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40526396371).
+- **PASS — Mainline JS/Python:** [CI #40526396471](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40526396471).
+- The earlier c308fb8 first pass was superseded after review added immediate invalidation when the timed-threat identity/geometry set changes. The final SHA above contains that follow-up and the additional regression.
+- **Artifacts: 0**; no APK packaging/signing/upload. Xiaomi Pad 5 and Symbian/EKA2L1: **NOT TESTED**.
+- Google Drive LIVE sync: **SYNC FAILED** because no Drive/Docs connector is exposed in this runtime; no LIVE read/write or folder metadata verification is claimed.

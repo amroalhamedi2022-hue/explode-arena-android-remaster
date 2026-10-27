@@ -35,3 +35,13 @@ This is a bounded optimization of the project's existing Kotlin controller, not 
 - Xiaomi Pad 5 and Symbian/EKA2L1 parity: **NOT TESTED**.
 - Artifacts expected: **0**; no APK task is allowed.
 - Google Drive LIVE sync: **SYNC FAILED** if the Drive/Docs connector is unavailable in the current runtime; do not claim sync without a verified read-after-write.
+
+
+## Verification addendum — 2026-10-27
+
+- **Final source/test SHA:** b68c8588ff1b1de044656bb3f504f3344345b219.
+- **PASS — Native Kotlin/JUnit:** [CI #40526396371](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40526396371), native-source-check completed successfully.
+- **PASS — Mainline JS/Python:** [CI #40526396471](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40526396471), exact same SHA.
+- A follow-up regression also proves a newly appearing timed-chain threat invalidates the cached plan immediately; the stable route remains throttled to six ticks while next-step safety is checked every decision.
+- **Artifacts: 0** in both runs; no APK packaging/signing/upload.
+- Xiaomi Pad 5 and Symbian/EKA2L1 parity: **NOT TESTED**. No new game assets, dependency, merge, main write or auto-merge.
