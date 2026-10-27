@@ -568,3 +568,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Artifacts: 0 confirmed**; no APK packaging/upload.
 - No release, merge or main write. Device and Symbian/EKA2L1 parity: **NOT TESTED**.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is available in this runtime; no LIVE read/write or folder metadata verification is claimed.
+
+
+## 2026-10-27 N40 — terminal-round retry-only input isolation (CI pending)
+
+- **Production change:** LOST/DRAW handling now precedes stage navigation. Terminal rounds accept an explicit retry only; navigation and remote input are ignored, and a combined retry/navigation frame produces only a retry decision.
+- **Regression coverage:** both LOST and DRAW; touch + keyboard navigation; retry precedence; 40 repeated terminal navigation frames proving the fixed-step clock and a live bomb fuse remain unchanged.
+- **Plan:** `docs/N40_TERMINAL_RETRY_INPUT_ISOLATION_PLAN.md`.
+- **CI:** pending exact source/test and docs-head checks; results will be appended after the workflow completes.
+- **Artifacts:** expected zero by the source-only workflow; no APK build requested.
+- **Device / EKA2L1:** **NOT TESTED**. No merge, main write, release, auto-merge or original asset upload.

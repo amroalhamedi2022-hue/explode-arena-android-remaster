@@ -105,6 +105,67 @@ class NativeFrameCommandsTest {
         }
     }
 
+    @Test fun lostAndDrawnRoundsIgnoreNavigationAndRetryWinsCombinedFrame() {
+        val terminalStates = listOf(
+            NativeRoundFlow(victoryHoldTicks = 1).also { it.tick(true, false, true, true) },
+            NativeRoundFlow(victoryHoldTicks = 1).also { it.tick(true, true, true, true) },
+        )
+        for (round in terminalStates) {
+            assertTrue(round.canRetry)
+            val navigationOnly = NativeFrameCommands.resolve(
+                NativeTouchControls.Frame(nextStage = true, previousStage = true, detonateRemote = true),
+                NativeFrameCommands.Keys(nextStage = true, previousStage = true),
+                paused = false, canRetry = round.canRetry, isPlaying = round.isPlaying,
+            )
+            assertEquals(NativeFrameCommands.Decision(), navigationOnly)
+
+            val retryPlusNavigation = NativeFrameCommands.resolve(
+                NativeTouchControls.Frame(nextStage = true, placeBomb = true, detonateRemote = true),
+                NativeFrameCommands.Keys(previousStage = true),
+                paused = false, canRetry = round.canRetry, isPlaying = round.isPlaying,
+            )
+            assertEquals(NativeFrameCommands.Decision(retry = true), retryPlusNavigation)
+
+            val keyboardRetryPlusNavigation = NativeFrameCommands.resolve(
+                none,
+                NativeFrameCommands.Keys(placeBomb = true, nextStage = true),
+                paused = false, canRetry = round.canRetry, isPlaying = round.isPlaying,
+            )
+            assertEquals(NativeFrameCommands.Decision(retry = true), keyboardRetryPlusNavigation)
+        }
+    }
+
+    @Test fun terminalNavigationCannotAdvanceClockOrAgeBombFuse() {
+        val stage = StageData(0, "terminal.png", 128, 128, 0, 0,
+            List(16) { IntArray(16) }, listOf(Spawn(40.0, 40.0)))
+        val terminalStates = listOf(
+            NativeRoundFlow(victoryHoldTicks = 1).also { it.tick(true, false, true, true) },
+            NativeRoundFlow(victoryHoldTicks = 1).also { it.tick(true, true, true, true) },
+        )
+        for (round in terminalStates) {
+            val initialState = round.state
+            val simulation = NativeBombSimulation(stage)
+            assertTrue(simulation.place(Actor(40.0, 40.0)))
+            val initialFuse = simulation.bombs.single().remaining!!
+            val clock = FixedStepClock()
+            val gate = NativePauseGate()
+            repeat(40) {
+                val command = NativeFrameCommands.resolve(
+                    NativeTouchControls.Frame(nextStage = true, detonateRemote = true),
+                    NativeFrameCommands.Keys(previousStage = true),
+                    paused = false, canRetry = round.canRetry, isPlaying = round.isPlaying,
+                )
+                assertEquals(NativeFrameCommands.Decision(), command)
+                assertEquals(0, gate.advance(clock, if (command.advanceWorld) 0.25 else 0.0) {
+                    simulation.tick()
+                })
+            }
+            assertEquals(0L, clock.ticks)
+            assertEquals(initialFuse, simulation.bombs.single().remaining!!, 0.0)
+            assertEquals(initialState, round.state)
+        }
+    }
+
     @Test fun heldTouchAfterArenaSwapRequiresFullReleaseBeforeNewBombOrNavigation() {
         val controls = NativeTouchControls()
         val l = controls.layout(1200, 800)

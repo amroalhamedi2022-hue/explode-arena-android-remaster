@@ -34,17 +34,18 @@ internal object NativeFrameCommands {
         if (touch.pauseToggle || keys.pause) return Decision(togglePause = true)
         if (paused) return Decision()
 
+        val bombRequested = touch.placeBomb || keys.placeBomb
+
+        // LOST/DRAW are terminal: navigation and remote input cannot bypass the
+        // explicit retry action. A simultaneous retry + navigation frame retries
+        // only; it must never switch arenas and mutate the terminal round together.
+        if (canRetry) return if (bombRequested) Decision(retry = true) else Decision()
+
         // Stage navigation must not also mutate either arena's bomb/AI state.
         if (touch.nextStage || keys.nextStage) return Decision(stageDelta = 1)
         if (touch.previousStage || keys.previousStage) return Decision(stageDelta = -1)
 
-        val bombRequested = touch.placeBomb || keys.placeBomb
-        if (bombRequested && canRetry) return Decision(retry = true)
-
-        // A lost/drawn round is terminal until retry. Keep rendering the result,
-        // but do not keep advancing the fixed-step clock or accepting remote actions.
         // WON remains advanceable because its victory-hold timer is driven by ticks.
-        if (canRetry) return Decision()
 
         // Deliberate simultaneous bomb + remote taps remain supported while
         // actively playing; the simulation itself enforces remote ownership.
