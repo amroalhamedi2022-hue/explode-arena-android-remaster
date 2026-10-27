@@ -25,5 +25,8 @@
 
 - Production: NativePauseGate.advance now rejects NaN, infinity and negative frame deltas before the paused fast path, so pause state cannot mask malformed frame timing.
 - Regression: NativePauseGateTest.pausedGateRejectsInvalidFrameDeltasBeforeThePauseShortCircuit verifies invalid inputs do not tick or invoke callbacks while backgrounded.
-- Plan: docs/N59_PAUSE_GATE_DELTA_VALIDATION_PLAN.md; final PR-head source/JUnit and Mainline CI: PENDING.
-- Android lifecycle/device and Symbian/EKA2L1 parity: NOT TESTED; APK artifacts: 0. No assets/dependencies added, no merge or main write.
+- Plan: docs/N59_PAUSE_GATE_DELTA_VALIDATION_PLAN.md.
+- Source/test/docs commit: ff5e64f46c92f1fedbc72d048521523e5c19c7f5. Native Kotlin/JUnit CI #40598732190 PASS; Mainline JS/Python CI #40598732425 PASS on this exact SHA.
+- Native job ran the core test task successfully; artifact query returned 0. No APK packaging/upload.
+- Android lifecycle/device and Symbian/EKA2L1 parity remain NOT TESTED. Final docs-head recheck: PENDING.
+- No assets/dependencies added, no merge or main write.

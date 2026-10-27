@@ -14,5 +14,5 @@ NativePauseGate.advance now enforces the same finite, non-negative frame-time co
 - No APK packaging, assets, dependencies, or main-branch writes.
 
 ## Evidence
-- Source and regression test added in the N59 PR commit; CI: PENDING.
+- Source/test/docs commit ff5e64f46c92f1fedbc72d048521523e5c19c7f5: Native Kotlin/JUnit CI #40598732190 PASS and Mainline JS/Python CI #40598732425 PASS. Artifact query: 0. Final docs-head recheck: PENDING.
 - Device lifecycle and Symbian/EKA2L1 parity: NOT TESTED.

@@ -809,4 +809,4 @@ Updated: 2026-10-23 (native migration first code slice)
 - Source change: validate finite non-negative frame delta before NativePauseGate checks paused state; previously a paused gate silently swallowed malformed frame deltas that FixedStepClock rejects while active.
 - Regression covers NaN, both infinities, negative delta, zero delta, unchanged tick count, and no callback execution while backgrounded.
 - Plan: docs/N59_PAUSE_GATE_DELTA_VALIDATION_PLAN.md.
-- Source/JUnit + Mainline CI on this commit: PENDING. Device lifecycle and EKA2L1 parity: NOT TESTED. APK artifacts: 0.
+- Source/test/docs commit: ff5e64f46c92f1fedbc72d048521523e5c19c7f5. Native Kotlin/JUnit CI #40598732190 PASS; Mainline JS/Python CI #40598732425 PASS on the same SHA. Artifact query: 0. Device lifecycle and EKA2L1 parity: NOT TESTED. Final docs-head recheck: PENDING.
