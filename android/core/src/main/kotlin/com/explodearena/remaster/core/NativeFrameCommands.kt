@@ -41,6 +41,11 @@ internal object NativeFrameCommands {
         val bombRequested = touch.placeBomb || keys.placeBomb
         if (bombRequested && canRetry) return Decision(retry = true)
 
+        // A lost/drawn round is terminal until retry. Keep rendering the result,
+        // but do not keep advancing the fixed-step clock or accepting remote actions.
+        // WON remains advanceable because its victory-hold timer is driven by ticks.
+        if (canRetry) return Decision()
+
         // Deliberate simultaneous bomb + remote taps remain supported while
         // actively playing; the simulation itself enforces remote ownership.
         return Decision(
