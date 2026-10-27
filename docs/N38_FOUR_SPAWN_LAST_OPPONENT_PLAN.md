@@ -36,6 +36,5 @@ In a four-spawn arena, do already-defeated opponents stop blocking space without
 - **PASS — Mainline source checks:** [run #40452935490](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40452935490).
 - **Artifacts: 0 confirmed**; no APK packaging/upload.
 
-- APK/artifacts: **NOT RUN / 0 expected**.
 - Physical device and Symbian/EKA2L1 parity: **NOT TESTED**.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed; no LIVE handoff/index read/write or folder metadata verification is claimed.
