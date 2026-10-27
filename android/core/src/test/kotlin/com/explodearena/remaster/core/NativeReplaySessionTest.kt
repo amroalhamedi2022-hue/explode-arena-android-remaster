@@ -90,4 +90,19 @@ class NativeReplaySessionTest {
         assertTrue(remote.snapshot().traceLine().contains("|remoteOwners=player|"))
     }
 
+
+    @Test fun bombIdentityExhaustionDoesNotAdvanceReplayOrMutateWorld() {
+        val replay = NativeReplaySession(
+            stage(), Spawn(24.0, 24.0), initialBombId = Long.MAX_VALUE,
+        )
+        val before = replay.snapshot().traceLine()
+
+        val failure = assertThrows(IllegalStateException::class.java) {
+            replay.step(NativeReplayInput(placeBomb = true, dx = 1.0))
+        }
+
+        assertEquals("Bomb ID counter exhausted", failure.message)
+        assertEquals(before, replay.snapshot().traceLine())
+        assertTrue(replay.snapshot().bombs.isEmpty())
+    }
 }
