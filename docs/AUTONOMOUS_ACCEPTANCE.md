@@ -791,3 +791,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - Artifact query for Native CI #40590981279 returned **0 artifacts**; no APK packaging/upload occurred.
 - This follow-up append creates a new PR head. Its final-head CI result is reported in PR #2 conversation; no further ledger edit is made solely to chase the new head.
 - Android device and Symbian/EKA2L1 parity: **NOT TESTED**. Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime.
+
+## 2026-10-28 — N58 full-roster deterministic arena trace
+
+- Added a headless replay harness that drives the production NativeArenaTick/NativeOpponentRoster/BombSimulation path and snapshots player health, every bot position/health/animation state, bomb IDs/owners/fuses, remote ownership, flame cells, and round state.
+- Added regressions for repeatable four-spawn scripted runs, malformed input atomicity, and all 41 original stage records with their actual 1/2/4-spawn layouts.
+- This is native-regression evidence only. The trace is explicitly provisional and does not claim Symbian/EKA2L1 parity.
+- Source/test SHA: pending CI.
+- Native Kotlin/JUnit CI on final docs-updated head: pending.
+- Mainline JS/Python CI: not triggered by this Kotlin-only source addition unless workflow paths include docs; check actual runs.
+- APK build/artifacts: 0. Device launch, audio, HD fidelity, and EKA2L1 parity: NOT TESTED.
+- No original assets were added or copied from external sources.
