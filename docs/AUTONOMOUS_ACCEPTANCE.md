@@ -759,7 +759,7 @@ Updated: 2026-10-23 (native migration first code slice)
 - Production changes: `NativeBombSimulation` accepts a positive replay/checkpoint starting ID, reserves `Long.MAX_VALUE` as exhausted, and throws before mutating the actor or bomb list instead of allowing `nextId++` to wrap negative. `NativeReplaySession` passes the checkpoint through to the same simulation used by the replay harness.
 - Regression tests: invalid non-positive identity checkpoints; direct placement at exhaustion; replay integration proving a failed placement leaves the full trace and bomb list unchanged.
 - **PASS — exact source/test SHA:** `ead28891a9b7a4825ce94d42af942bfda901506e`; Native Kotlin/JUnit [run #40572909270](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40572909270) and Mainline JS/Python [run #40572909353](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40572909353).
-- Docs-updated PR-head recheck pending; result will be posted in PR #2 after CI finishes. APK artifacts: **0**; no APK packaging.
+- **PASS — prior docs-updated PR head:** `a219fdd13296b7243f9653b71e9a4d7efa19bdd2` (Native #40573367593 + Mainline #40573367562). This ledger append creates a new head; final recheck is tracked in PR #2 conversation. APK artifacts: **0**; no APK packaging.
 - Xiaomi Pad 5, real gameplay and Symbian/EKA2L1 parity: **NOT TESTED**.
 - No new assets/dependencies; no merge, main write or auto-merge. Google Drive LIVE sync remains **SYNC FAILED** because no Drive/Docs connector is available in this runtime; no Drive read/write or folder metadata verification is claimed.
 
