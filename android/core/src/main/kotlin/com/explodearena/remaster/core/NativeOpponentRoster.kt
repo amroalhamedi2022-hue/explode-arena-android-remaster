@@ -49,6 +49,9 @@ internal class NativeOpponentRoster(
         tick: Long,
         applyDamage: Boolean = true,
     ): Int {
+        // Validate before touching bot animation state or taking the solo-arena
+        // early return. advanceSimulationTick must not age fuses on an invalid tick.
+        require(tick >= 0L) { "Invalid opponent tick" }
         bots.filter { it.vitality.defeated }.forEach { it.walking = false }
         val living = bots.filterNot { it.vitality.defeated }.sortedBy { it.owner }
         if (living.isEmpty()) return 0
