@@ -83,7 +83,7 @@ internal data class NativeArenaReplayFrame(
  */
 internal class NativeArenaReplaySession(
     private val stage: StageData,
-    private val hasNextStage: Boolean = true,
+    private val hasNextStage: Boolean = stage.id < 40,
 ) {
     private var round: NativeArenaRoundState = NativeArenaRoundStateFactory.create(stage)
     private var ticksInRound = 0L
