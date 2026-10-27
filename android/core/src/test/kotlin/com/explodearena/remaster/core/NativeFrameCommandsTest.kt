@@ -63,11 +63,11 @@ class NativeFrameCommandsTest {
     @Test fun idleAndVictoryHoldFramesAdvanceWithoutInventingBombActions() {
         for (playing in listOf(true, false)) {
             assertEquals(NativeFrameCommands.Decision(advanceWorld = true),
-                NativeFrameCommands.resolve(none, NativeFrameCommands.Keys(), false, false, playing))
+                NativeFrameCommands.resolve(none, NativeFrameCommands.Keys(), false, false, playing, advancesClock = true))
         }
         assertEquals(NativeFrameCommands.Decision(advanceWorld = true),
             NativeFrameCommands.resolve(NativeTouchControls.Frame(placeBomb = true, detonateRemote = true),
-                NativeFrameCommands.Keys(), false, false, false))
+                NativeFrameCommands.Keys(), false, false, false, advancesClock = true))
     }
 
     @Test fun lostAndDrawnRoundsFreezeClockUntilExplicitRetry() {
@@ -214,6 +214,38 @@ class NativeFrameCommandsTest {
         assertTrue(play.advanceWorld)
         assertEquals(1, gate.advance(clock, FixedStepClock.STEP_SECONDS) { bombs.tick() })
         assertTrue(bombs.bombs.single().remaining!! < initialFuse)
+    }
+
+    @Test fun completedFinalArenaFreezesClockWhileVictoryHoldStillAdvances() {
+        val flow = NativeRoundFlow(victoryHoldTicks = 1)
+        assertFalse(flow.tick(false, true, true, hasNextStage = false))
+        assertEquals(NativeRoundFlow.State.WON, flow.state)
+
+        val clock = FixedStepClock()
+        val gate = NativePauseGate()
+        val victory = NativeFrameCommands.resolve(
+            none, NativeFrameCommands.Keys(), paused = false,
+            canRetry = flow.canRetry, isPlaying = flow.isPlaying,
+            advancesClock = flow.advancesPresentationClock,
+        )
+        assertTrue("the victory hold must keep advancing", victory.advanceWorld)
+        assertEquals(1, gate.advance(clock, FixedStepClock.STEP_SECONDS) {})
+
+        assertFalse(flow.tick(false, true, true, hasNextStage = false))
+        assertEquals(NativeRoundFlow.State.COMPLETE, flow.state)
+        assertFalse(flow.advancesPresentationClock)
+        val terminal = NativeFrameCommands.resolve(
+            none, NativeFrameCommands.Keys(), paused = false,
+            canRetry = flow.canRetry, isPlaying = flow.isPlaying,
+            advancesClock = flow.advancesPresentationClock,
+        )
+        assertEquals(NativeFrameCommands.Decision(), terminal)
+        repeat(40) {
+            assertEquals(0, gate.advance(
+                clock, if (terminal.advanceWorld) 0.25 else 0.0,
+            ) {})
+        }
+        assertEquals("COMPLETE must not keep the fixed-step clock alive", 1L, clock.ticks)
     }
 
 }

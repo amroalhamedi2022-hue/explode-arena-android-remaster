@@ -29,6 +29,7 @@ internal object NativeFrameCommands {
         paused: Boolean,
         canRetry: Boolean,
         isPlaying: Boolean,
+        advancesClock: Boolean = isPlaying,
     ): Decision {
         // Highest priority: toggling pause consumes the entire frame.
         if (touch.pauseToggle || keys.pause) return Decision(togglePause = true)
@@ -52,7 +53,7 @@ internal object NativeFrameCommands {
         return Decision(
             placeBomb = bombRequested && isPlaying,
             detonateRemote = (touch.detonateRemote || keys.detonateRemote) && isPlaying,
-            advanceWorld = true, // includes the provisional victory hold
+            advanceWorld = advancesClock, // only PLAYING and WON may advance the fixed-step clock
         )
     }
 }

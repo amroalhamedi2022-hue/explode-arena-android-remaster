@@ -151,6 +151,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
             paused = pauseGate.isPaused,
             canRetry = roundFlow.canRetry,
             isPlaying = roundFlow.isPlaying,
+            advancesClock = roundFlow.advancesPresentationClock,
         )
         if (commands.togglePause) pauseGate.toggle(clock)
         if (commands.stageDelta != 0) selectStage(stageIndex + commands.stageDelta)
