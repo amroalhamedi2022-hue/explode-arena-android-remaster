@@ -28,6 +28,6 @@ Does a retry or stage replacement begin bot planning at the same local tick phas
 - **PASS — Native Kotlin/JUnit:** [CI #40559115392](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40559115392), step `Test native Kotlin core without Android packaging` succeeded.
 - **PASS — Mainline JS/Python:** [CI #40559115582](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40559115582) succeeded on the same source/test head.
 - **Artifacts:** 0 on both runs; no APK packaging was invoked.
-- **Docs-updated PR-head recheck:** pending after this plan/ledger commit.
+- **PASS — documentation-updated PR-head recheck:** head `2dd795074c7bc8c7338b2e154e00e667dd903652`; Native [CI #40559674506](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40559674506) and Mainline [CI #40559674298](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40559674298) both succeeded.
 - Android device rendering, physical-device behavior, and Symbian/EKA2L1 parity: **NOT TESTED**.
 - Google Drive LIVE sync: **SYNC FAILED** — no Google Drive/Docs connector is available in this runtime; no LIVE read/write or folder metadata verification is claimed.
