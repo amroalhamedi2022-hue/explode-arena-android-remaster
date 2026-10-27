@@ -30,7 +30,9 @@ This is a regression test against project-owned Kotlin simulation and the existi
 ## Verification ledger
 
 - Engineering question and acceptance criteria recorded before the test run.
-- Source/test SHA: PENDING.
-- Native Kotlin/JUnit and Mainline PR-head recheck: PENDING.
-- Artifacts: expected 0; no APK build.
-- Xiaomi Pad 5, human-played round, original Symbian/EKA2L1 parity: NOT TESTED.
+- **PASS — source/test/PR head:** `b2daf1b9fecd3376ccf3480e79961d8ed40bc457`.
+- **PASS — Native Kotlin/JUnit:** [run #40447501558](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40447501558), `:core:test`, BUILD SUCCESSFUL in 38s.
+- **PASS — Mainline:** [run #40447501612](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40447501612), source/stage/resource checks succeeded.
+- **Artifacts: 0 confirmed** for both runs; no APK packaging or upload.
+- Xiaomi Pad 5, human-played round, original Symbian/EKA2L1 parity: **NOT TESTED**.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime; no LIVE read/write or folder metadata verification is claimed.
