@@ -666,3 +666,16 @@ Updated: 2026-10-23 (native migration first code slice)
 - Xiaomi Pad 5 and Symbian/EKA2L1 parity: **NOT TESTED**.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime; no LIVE document read/write or folder metadata verification is claimed.
 - PR #2 remains Draft/open; PR #1 collision remains separate. No merge, main write, release or auto-merge.
+
+
+## 2026-10-27 N48 — chained remote-bomb escape regression correction
+
+- **Initial attempt — FAIL:** test-only commit `6fd4b8831c9558df93dda8a09af6482c317f3b65`, Native CI [#40518948655](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40518948655). The fixture placed the wall so the bot had no reachable refuge; the assertion failure was valid and was not waived.
+- **Correction:** move the wall from row 5/column 12 to column 13, require a non-zero refuge, and assert that the production controller follows the independently computed direction.
+- **Source/test SHA:** `ec9a6f37811710e6d5996a7bf22ca42869a8c6c9`.
+- **PASS — Native Kotlin/JUnit:** [#40520940594](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40520940594), source-only `:core:test`.
+- **PASS — Mainline JS/Python:** [#40520940530](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40520940530).
+- **Artifacts: 0**; no APK packaging/signing/upload and no new game assets.
+- Xiaomi Pad 5 and Symbian/EKA2L1 AI parity: **NOT TESTED**.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime; no LIVE read/write or folder metadata verification is claimed.
+- Detailed plan: [N48 chained remote-bomb refuge regression](N48_CHAINED_REMOTE_BOMB_REFUGE_REGRESSION_PLAN.md).
