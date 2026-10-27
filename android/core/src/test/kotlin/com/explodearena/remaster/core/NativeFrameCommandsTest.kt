@@ -76,6 +76,8 @@ class NativeFrameCommandsTest {
             NativeRoundFlow(victoryHoldTicks = 1).also { it.tick(true, true, true, true) },
         )
         for (round in terminalStates) {
+            val initialState = round.state
+            assertTrue(initialState == NativeRoundFlow.State.LOST || initialState == NativeRoundFlow.State.DRAW)
             assertTrue(round.canRetry)
             assertFalse(round.isPlaying)
             val idle = NativeFrameCommands.resolve(
@@ -99,7 +101,7 @@ class NativeFrameCommandsTest {
                 assertEquals(0, gate.advance(clock, if (idle.advanceWorld) 0.25 else 0.0) {})
             }
             assertEquals(0L, clock.ticks)
-            assertEquals(round.state, if (round.canRetry) round.state else NativeRoundFlow.State.PLAYING)
+            assertEquals(initialState, round.state)
         }
     }
 
