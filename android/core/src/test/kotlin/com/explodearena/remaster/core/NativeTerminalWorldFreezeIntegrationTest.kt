@@ -78,6 +78,46 @@ class NativeTerminalWorldFreezeIntegrationTest {
         }
     }
 
+
+    @Test fun botsStopWalkingOnTheExactTickThatLatchesLoss() {
+        val stage = StageData(
+            id = 0, image = "test.png", width = 128, height = 128,
+            obstacleX = 0, obstacleY = 0, grid = List(16) { IntArray(16) },
+            spawns = listOf(Spawn(96.0, 96.0), Spawn(40.0, 40.0)),
+        )
+
+        // Prove the fixture produces movement on the same AI tick in an otherwise
+        // equivalent live round; otherwise a false result would not test the fix.
+        val baselinePlayer = Actor(96.0, 96.0)
+        val baselineRoster = NativeOpponentRoster.create(stage, baselinePlayer)
+        baselineRoster.advanceSimulationTick(stage, baselinePlayer, NativeBombSimulation(stage), 6L)
+        assertTrue("fixture must produce a moving bot", baselineRoster.bots.any { it.walking })
+
+        val player = Actor(96.0, 96.0)
+        val roster = NativeOpponentRoster.create(stage, player)
+        val simulation = NativeBombSimulation(
+            stage, bombFuseSeconds = 0.1, blastLifetimeSeconds = 0.5, bombRange = 1,
+        )
+        assertTrue(simulation.place(player))
+        repeat(6) { simulation.tick() }
+        assertTrue("fixture must have an active flame", simulation.flames.isNotEmpty())
+        assertTrue(simulation.isBurning(player.x, player.y, StageCollision.ACTOR_RADIUS))
+
+        val vitality = NativeVitality(
+            initialHealth = 1, initialInvulnerabilitySeconds = 0.0,
+            hitInvulnerabilitySeconds = 0.0,
+        )
+        val round = NativeRoundFlow(victoryHoldTicks = 1)
+        NativeArenaTick.advance(
+            stage, player, vitality, roster, simulation, round,
+            tick = 6L, dx = 0.0, dy = 0.0, hasNextStage = true,
+        )
+
+        assertTrue("final flame must latch player defeat", vitality.defeated)
+        assertEquals(NativeRoundFlow.State.LOST, round.state)
+        assertTrue("terminal transition tick must stop bot walking", roster.bots.none { it.walking })
+    }
+
     @Test fun drawFreezesFuseAndCannotBecomeAnotherOutcome() {
         val stage = StageData(
             id = 0, image = "test.png", width = 128, height = 128,
