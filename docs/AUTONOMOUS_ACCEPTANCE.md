@@ -774,3 +774,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - Documentation updates create a new PR head; final-head CI recheck is tracked in the PR conversation.
 - Xiaomi Pad 5, gameplay, and Symbian/EKA2L1 parity: **NOT TESTED**. APK artifacts: **0**. No copyrighted assets/dependencies added; no merge, main write, or auto-merge.
 - Google Drive LIVE sync: **SYNC FAILED** — this runtime has no Google Drive/Docs connector; no Drive read/write or folder metadata verification is claimed.
+
+## 2026-10-27 — N57 opponent-tick fail-closed guard (CI pending)
+
+- **Production:** `NativeOpponentRoster.advance` now rejects negative ticks before clearing bot animation state or returning early for an empty roster. This closes a bypass where `advanceSimulationTick` could still age bomb fuses in a solo arena.
+- **Regression:** `NativeOpponentRosterTest.negativeTickCannotAdvanceSoloArenaBombFuses` places a timed bomb, calls the canonical roster tick with `-1`, and asserts rejection with the fuse and flame state unchanged.
+- Production commit: `83ce94da22374e7a516f8cc446a820c9f6c8bcac`; test commit: `4f329e943e1c2d8297224ecd20f4808de0e7cd6d`.
+- Plan: `docs/N57_OPPONENT_TICK_FAIL_CLOSED_PLAN.md`.
+- Native Kotlin/JUnit + Mainline JS/Python on the final docs-updated PR head: **PENDING**; do not call this milestone CI-PASS until both complete.
+- Android device and Symbian/EKA2L1 parity: **NOT TESTED**. APK artifacts: **0**. No asset/dependency change, merge, main write, or auto-merge.
+- Google Drive LIVE sync: **SYNC FAILED** — no Google Drive/Docs connector is exposed in this runtime; no LIVE document read/write or folder metadata verification is claimed.
