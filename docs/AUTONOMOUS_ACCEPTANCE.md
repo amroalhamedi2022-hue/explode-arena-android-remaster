@@ -570,11 +570,12 @@ Updated: 2026-10-23 (native migration first code slice)
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is available in this runtime; no LIVE read/write or folder metadata verification is claimed.
 
 
-## 2026-10-27 N40 — terminal-round retry-only input isolation (CI pending)
+## 2026-10-27 N40 — terminal-round retry-only input isolation
 
-- **Production change:** LOST/DRAW handling now precedes stage navigation. Terminal rounds accept an explicit retry only; navigation and remote input are ignored, and a combined retry/navigation frame produces only a retry decision.
-- **Regression coverage:** both LOST and DRAW; touch + keyboard navigation; retry precedence; 40 repeated terminal navigation frames proving the fixed-step clock and a live bomb fuse remain unchanged.
-- **Plan:** `docs/N40_TERMINAL_RETRY_INPUT_ISOLATION_PLAN.md`.
-- **CI:** pending exact source/test and docs-head checks; results will be appended after the workflow completes.
-- **Artifacts:** expected zero by the source-only workflow; no APK build requested.
-- **Device / EKA2L1:** **NOT TESTED**. No merge, main write, release, auto-merge or original asset upload.
+- **Production source + tests SHA:** `9cca4668966f18d1a300ffb336df4d56fb93f6db`.
+- **PASS — Native Kotlin/JUnit:** [Actions run #40465366401](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40465366401), `:core:test`, **BUILD SUCCESSFUL in 58s**. This run checks source/tests only; no Android packaging.
+- **PASS — Mainline JS/Python:** [Actions run #40465366403](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40465366403).
+- **Artifacts: 0 confirmed** on both runs.
+- Regression coverage: LOST and DRAW navigation-only frames; retry priority when navigation/remote input are simultaneous; 40 repeated terminal navigation attempts prove clock ticks stay at 0, fuse is unchanged, and result state remains stable.
+- Docs-updated PR-head recheck will be verified after this ledger update and recorded in the PR discussion.
+- **NOT TESTED:** Xiaomi Pad 5, actual Android rendering/input, Symbian/EKA2L1 parity, full 41-stage playable parity. No merge, main write, release, auto-merge or original asset upload.
