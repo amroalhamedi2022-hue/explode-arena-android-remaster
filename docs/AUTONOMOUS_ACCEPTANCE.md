@@ -597,3 +597,15 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Artifacts: 0** confirmed by workflow design; no APK task exists in `native-kotlin-validation.yml`.
 - Xiaomi Pad 5, actual game/audio/rendering and Symbian/EKA2L1 parity: **NOT TESTED**.
 - Google Drive LIVE sync: **SYNC FAILED** — this runtime exposes no Drive/Docs connector; no Drive document or folder metadata was read or written.
+
+## 2026-10-27 N42 — terminal presentation clock freeze
+
+- **Engineering question documented first:** can terminal rounds stop render-time animation/blink advancement while preserving the WON victory-hold clock?
+- **Production change:** `NativeRoundFlow.advancesPresentationClock` is true only in PLAYING/WON; `ExplodeArenaNativeGame` increments `animationSeconds` only when that gate is true.
+- **Regression:** `NativeRoundFlowTest.presentationClockAdvancesOnlyDuringPlayAndVictoryHold` covers PLAYING, WON, LOST, DRAW, ADVANCING and COMPLETE, including one-time transition and final-stage completion.
+- **Exact source/test SHA:** `206031007a0b3dc2d60ea9f5249758ca10b0c5cd`.
+- **PASS — native Kotlin/JUnit:** [run #40469429756](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40469429756), `:core:test`, **BUILD SUCCESSFUL in 35s**.
+- **PASS — Mainline JS/Python:** [run #40469429841](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40469429841), source validation successful.
+- **Artifacts: 0 confirmed** for both runs; no APK packaging, signing or upload occurred. The docs-updated PR head must be rechecked separately.
+- **NOT TESTED:** Xiaomi Pad 5 visual freeze, actual Android rendering, original Symbian/EKA2L1 parity, full HD/gameplay completeness.
+- No merge, main write, release, auto-merge or new copyrighted assets. Google Drive LIVE sync remains **SYNC FAILED** because no Drive/Docs connector is exposed; no LIVE read/write or folder metadata verification is claimed.
