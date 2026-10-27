@@ -519,3 +519,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Artifacts: 0** confirmed; no APK packaging or upload.
 - **NOT TESTED:** Xiaomi Pad 5/device play, actual audio/visual behavior, full human-played campaign, Symbian/EKA2L1 parity.
 - **Google Drive LIVE sync:** SYNC FAILED — this runtime exposes no Google Drive/Docs connector; no document read/write or folder metadata verification is claimed.
+
+
+## 2026-10-27 N36 — Bot final-flame outcome integration (SOURCE/JVM PASS)
+
+- Added a production-path integration regression using `NativeArenaTick.advance`, `NativeOpponentRoster`, `NativeBombSimulation`, `NativeVitality` and `NativeRoundFlow` together. A bot-owned timed bomb is followed through detonation and final-flame damage; the player survives, victory resolves, and the stage-advance signal is one-shot.
+- Added the same final-flame scenario with `hasNextStage=false`; the final arena reaches `COMPLETE` without wrapping or emitting an advance signal.
+- Exact source/test PR head: `8b49f7666061d534efe27afcfa9948e01cd3ff33`; test blob: `c1e306815556e6f7bd99138118d9a44990c3bb48`.
+- **PASS:** Native Kotlin/JUnit source-only [CI #40446349623](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40446349623), `:core:test`; **PASS:** Mainline JS/Python/resource checks [CI #40446349648](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40446349648).
+- Artifacts: **0**. No APK packaging, upload, release, merge, main write or auto-merge.
+- Xiaomi Pad 5, Android play, audio/visual behavior, and original Symbian/EKA2L1 parity: **NOT TESTED**. Movement/fuse/AI semantics remain provisional.
+- Google Drive LIVE sync: **SYNC FAILED** — no Google Drive/Docs connector is exposed in this runtime; LIVE documents and target-folder metadata were not read or written.
