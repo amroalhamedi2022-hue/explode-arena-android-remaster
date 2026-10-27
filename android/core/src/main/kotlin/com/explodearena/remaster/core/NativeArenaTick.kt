@@ -29,6 +29,16 @@ internal object NativeArenaTick {
         hasNextStage: Boolean,
         playerSpeed: Double = 77.0,
     ): Result {
+        // Validate the complete tick contract before moving the player or
+        // touching any mutable subsystem. In a multi-spawn arena an invalid
+        // tick previously moved the player before a bot controller rejected it;
+        // in a solo arena no controller existed to reject it at all.
+        require(tick >= 0L) { "Invalid arena tick" }
+        require(
+            dx.isFinite() && dy.isFinite() &&
+                dx in -1.0..1.0 && dy in -1.0..1.0
+        ) { "Arena input must be finite and normalized" }
+
         var playerWalking = false
         var bombsPlaced = 0
         var bombsDetonated = 0
