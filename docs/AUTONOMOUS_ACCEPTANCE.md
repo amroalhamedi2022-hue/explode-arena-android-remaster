@@ -763,3 +763,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - Xiaomi Pad 5, real gameplay and Symbian/EKA2L1 parity: **NOT TESTED**.
 - No new assets/dependencies; no merge, main write or auto-merge. Google Drive LIVE sync remains **SYNC FAILED** because no Drive/Docs connector is available in this runtime; no Drive read/write or folder metadata verification is claimed.
 
+
+## 2026-10-27 — N56 canonical arena tick input validation
+
+- **Production change:** NativeArenaTick validates a non-negative tick and finite normalized input axes before moving the player or mutating any subsystem. This closes a partial-mutation path where a negative tick could move the player before a bot controller rejected it, and prevents solo arenas from silently accepting invalid ticks.
+- **Integration regressions:** NativeArenaTickInputValidationTest verifies negative ticks leave player/bot positions, health, bombs, flames and round state unchanged; NaN, infinity and out-of-range vectors are rejected atomically even with no bots.
+- Production commit: `d63cda61015f893a04d8e1b9365636d778a0c40d`; test commit: `386df8575d43891ba276f1bba895a036560420a4`.
+- **PASS — Native Kotlin/JUnit on PR head `2b3d8cc558d36192c26bfe2adb888f24ddd945a8`:** [CI #40581633764](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40581633764).
+- **PASS — Mainline JS/Python on the same head:** [CI #40581633692](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40581633692).
+- Documentation updates create a new PR head; final-head CI recheck is tracked in the PR conversation.
+- Xiaomi Pad 5, gameplay, and Symbian/EKA2L1 parity: **NOT TESTED**. APK artifacts: **0**. No copyrighted assets/dependencies added; no merge, main write, or auto-merge.
+- Google Drive LIVE sync: **SYNC FAILED** — this runtime has no Google Drive/Docs connector; no Drive read/write or folder metadata verification is claimed.
