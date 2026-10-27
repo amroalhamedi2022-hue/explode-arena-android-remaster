@@ -731,3 +731,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - **PASS — documentation-updated head before the final evidence-note commit:** `ef3df9c83b39ab012f81baf15255496cb093c04a`; Native [CI #40556342390](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40556342390) and Mainline [CI #40556342373](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40556342373).
 - Device rendering and Symbian/EKA2L1 parity: **NOT TESTED**. APK artifacts: **0 expected**.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime.
+
+## 2026-10-27 N53 — deterministic AI tick phase per arena attempt
+
+- Production/source + regression-test SHA: `3212f031d2dd1c20bb036060f9c083d495bfa957`.
+- Added a round-local tick sequence to each fresh `NativeArenaRoundState`; the native renderer now passes that tick to bot planning instead of the process-wide frame-clock count.
+- Regression tests verify tick zero and independent counters across factory-created attempts for all 41 original arena records (18 one-spawn, 2 two-spawn, 21 four-spawn).
+- **PASS:** Native Kotlin/JUnit [CI #40559115392](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40559115392) and Mainline JS/Python [CI #40559115582](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40559115582). Both succeeded; artifacts 0.
+- Docs-updated PR-head recheck pending; device/EKA2L1 parity NOT TESTED. No APK build/package/upload, assets, dependency, merge or main write.
+- Google Drive LIVE sync: **SYNC FAILED** — connector unavailable; no LIVE read/write claimed.
+
