@@ -38,7 +38,9 @@ class NativeOpponentRosterAllArenasIntegrationTest {
             // for any early-placed default-fuse bomb to detonate. All simulation
             // steps are fixed 60Hz source steps; no rendering/device is involved.
             repeat(120) { tick ->
-                roster.advance(stage, player, simulation, tick.toLong(), applyDamage = false)
+                val tickResult = roster.advanceSimulationTick(stage, player, simulation, tick.toLong())
+                assertTrue("$label negative bomb placement count", tickResult.bombsPlaced >= 0)
+                assertTrue("$label negative detonation count", tickResult.bombsDetonated >= 0)
                 for (slot in roster.bots.filterNot { it.vitality.defeated }) {
                     assertFalse(
                         "$label ${slot.owner} entered terrain or a blocking bomb at tick $tick",
@@ -62,8 +64,6 @@ class NativeOpponentRosterAllArenasIntegrationTest {
                     }
                 }
 
-                simulation.tick()
-                roster.applyDamageForLastTick(simulation)
             }
         }
     }
