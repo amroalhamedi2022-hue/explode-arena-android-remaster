@@ -33,6 +33,7 @@ This is a correction to project-owned Kotlin simulation ordering. No external AI
 - **Exact source/test SHA:** `6ba42eb14fa92c62ece1807fa3396f9cd69a90f2`.
 - **PASS — Native Kotlin/JUnit:** [CI #40545607851](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40545607851), `:core:test`; source-only workflow, no APK packaging.
 - **PASS — Mainline JS/Python:** [CI #40545607886](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40545607886), same PR head; all existing mainline checks passed.
+- **PASS — documentation-updated PR-head recheck:** head `be37932eb9b6ab14280d1aa9e054e9982a53a469`, [Native CI #40545892255](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40545892255) and [Mainline CI #40545892333](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40545892333) both PASS. The final recheck after this verification-note commit will be recorded in the PR comment; no further repository edits are planned.
 - The new regression `sameTickPlacementsRefreshThreatContextBeforeMovement` passed; the existing roster-order and all-41-arena/1-2-4-spawn integration suites passed in the same Native run.
 - Device and Symbian/EKA2L1: **NOT TESTED**.
 - APK artifacts: **0 expected**.
