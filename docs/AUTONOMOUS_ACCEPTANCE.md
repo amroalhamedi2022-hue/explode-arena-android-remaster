@@ -562,6 +562,9 @@ Updated: 2026-10-23 (native migration first code slice)
 - Engineering question and acceptance criteria recorded in `docs/N39_TERMINAL_ROUND_FREEZE_PLAN.md` before source-only CI.
 - Production change: `NativeFrameCommands.resolve` now freezes retryable LOST/DRAW frames while preserving explicit retry and WON victory-hold advancement.
 - Regression: LOST and DRAW states; idle and remote-only frames; explicit retry arbitration; 40 frozen clock attempts per state.
-- Exact source/test SHA and Native/Mainline CI results will be recorded after the PR-head recheck.
-- No APK packaging, upload, release, merge or main write. Device and EKA2L1 parity: **NOT TESTED**.
-- Google Drive LIVE sync: **SYNC FAILED** unless the Drive/Docs connector is available and read-back plus folder metadata are verified.
+- Production change: `da96445e8f4a6e87cae80a88824a2d397dde2cf3`; regression-test change: `85bc363130ab702cecc94c2fb27e7568943b9f7c`; exact tested source/test head: `c52d0992c35765f53019f524ed41db0c3f72ab7b`.
+- **PASS — Native Kotlin/JUnit:** [CI #40458040272](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40458040272), `:core:test`.
+- **PASS — Mainline JS/Python:** [CI #40458040217](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40458040217).
+- **Artifacts: 0 confirmed**; no APK packaging/upload.
+- No release, merge or main write. Device and Symbian/EKA2L1 parity: **NOT TESTED**.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is available in this runtime; no LIVE read/write or folder metadata verification is claimed.
