@@ -15,6 +15,7 @@ class NativeBombSimulation(
     private val bombFuseSeconds: Double = 1.6,
     private val blastLifetimeSeconds: Double = 0.45,
     private val bombRange: Int = 3,
+    initialBombId: Long = 1L,
 ) {
     data class Bomb(val id: Long, val owner: String, val x: Double, val y: Double, val remaining: Double?, val remote: Boolean = false)
     data class Flame(val cells: List<Spawn>, val remaining: Double)
@@ -24,9 +25,10 @@ class NativeBombSimulation(
     // cells during that tick's damage sample. Rendering only uses activeFlames.
     private var expiredFlamesDuringLastTick: List<Flame> = emptyList()
     private val remoteOwners = mutableSetOf<String>()
-    private var nextId = 1L
+    private var nextId = initialBombId
 
     init {
+        require(initialBombId > 0L) { "Invalid initial bomb id" }
         require(bombLimit in 1..8 && bombRange in 1..12)
         require(bombFuseSeconds.isFinite() && bombFuseSeconds in 0.1..20.0)
         require(blastLifetimeSeconds.isFinite() && blastLifetimeSeconds in 0.05..5.0)
@@ -60,6 +62,9 @@ class NativeBombSimulation(
         val y = cellCenter(actor.y)
         if (StageCollision.blocked(stage, x, y, 3.0) ||
             activeBombs.any { it.x == x && it.y == y }) return false
+        // Reserve Long.MAX_VALUE as the exhausted sentinel: post-incrementing
+        // it would wrap the next bomb identity to a negative value.
+        check(nextId < Long.MAX_VALUE) { "Bomb ID counter exhausted" }
         val remote = owner in remoteOwners
         val bomb = Bomb(nextId++, owner, x, y, if (remote) null else bombFuseSeconds, remote)
         activeBombs.add(bomb)
