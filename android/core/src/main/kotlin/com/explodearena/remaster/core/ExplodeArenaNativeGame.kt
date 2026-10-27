@@ -202,16 +202,16 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
                 // Move all actors against the same pre-tick world, then advance
                 // fuses/flames and sample damage at the tick boundary. This keeps
                 // player and bot damage consistent on a flame's final active tick.
-                repeat(opponents.advance(stage, actor, bombSimulation, clock.ticks, applyDamage = false)) {
-                    placeSound.play(0.45f)
-                }
-                if (bombSimulation.tick() > 0) explosionSound.play(0.75f)
+                val tickResult = opponents.advanceSimulationTick(
+                    stage, actor, bombSimulation, clock.ticks,
+                )
+                repeat(tickResult.bombsPlaced) { placeSound.play(0.45f) }
+                if (tickResult.bombsDetonated > 0) explosionSound.play(0.75f)
                 vitality.tick(
                     bombSimulation.isBurningDuringLastTick(
                         actor.x, actor.y, radius = StageCollision.ACTOR_RADIUS,
                     ),
                 )
-                opponents.applyDamageForLastTick(bombSimulation)
             } else {
                 walking = false
                 opponents.stopWalking()
