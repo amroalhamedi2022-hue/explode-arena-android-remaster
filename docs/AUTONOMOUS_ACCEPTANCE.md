@@ -609,3 +609,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Artifacts: 0 confirmed** for both runs; no APK packaging, signing or upload occurred. The docs-updated PR head must be rechecked separately.
 - **NOT TESTED:** Xiaomi Pad 5 visual freeze, actual Android rendering, original Symbian/EKA2L1 parity, full HD/gameplay completeness.
 - No merge, main write, release, auto-merge or new copyrighted assets. Google Drive LIVE sync remains **SYNC FAILED** because no Drive/Docs connector is exposed; no LIVE read/write or folder metadata verification is claimed.
+
+## 2026-10-27 N42 validation update — PASS (supersedes earlier N42 source SHA)
+
+- Independent render-loop review found and fixed a transition-tick gap: LOST/DRAW intentionally stop future frame ticks, so bot `walking` state must be cleared on the same tick that first latches the outcome. `NativeArenaTick.advance` now calls `opponents.stopWalking()` immediately after round resolution when latched.
+- Added `botsStopWalkingOnTheExactTickThatLatchesLoss`: the fixture first proves the equivalent live AI tick moves a bot, then burns the player on the final-flame sample and asserts LOST plus all bot walking flags cleared before return.
+- Combined N42 source/test SHA: `908ceb1240a1b1ad96879bd7244a1cac0df99823`.
+- **PASS — native Kotlin/JUnit:** [run #40470037543](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40470037543), `:core:test`, **BUILD SUCCESSFUL in 44s**.
+- **PASS — Mainline JS/Python:** [run #40470037541](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40470037541).
+- **Artifacts: 0 confirmed** on both runs. No APK packaging/signing/upload. Docs-updated PR-head recheck is pending and will be reported in the PR discussion without another source change.
+- **NOT TESTED:** Xiaomi Pad 5 visual state, actual Android rendering/audio, Symbian/EKA2L1 parity and full game completeness.
+- No merge, main write, release, auto-merge or new copyrighted assets. Google Drive LIVE sync remains **SYNC FAILED** because no Drive/Docs connector is exposed; no LIVE read/write or folder metadata verification is claimed.
