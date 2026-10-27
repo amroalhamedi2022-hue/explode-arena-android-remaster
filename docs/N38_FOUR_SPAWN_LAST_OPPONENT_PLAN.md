@@ -31,8 +31,11 @@ In a four-spawn arena, do already-defeated opponents stop blocking space without
 ## Verification ledger
 
 - Engineering question and acceptance criteria recorded before source-only CI.
-- Native Kotlin/JUnit: **PENDING**.
-- Mainline source checks: **PENDING**.
+- **PASS — exact source/test SHA:** `df96e41790cb521eaab15e130284b718bcf31294`.
+- **PASS — Native Kotlin/JUnit:** [run #40452935519](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40452935519), `:core:test`, BUILD SUCCESSFUL in 33s.
+- **PASS — Mainline source checks:** [run #40452935490](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40452935490).
+- **Artifacts: 0 confirmed**; no APK packaging/upload.
+
 - APK/artifacts: **NOT RUN / 0 expected**.
 - Physical device and Symbian/EKA2L1 parity: **NOT TESTED**.
-- Google Drive LIVE sync: **SYNC FAILED** if no Drive/Docs connector is exposed; no LIVE read/write or folder metadata verification is claimed.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed; no LIVE handoff/index read/write or folder metadata verification is claimed.

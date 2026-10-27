@@ -543,12 +543,15 @@ Updated: 2026-10-23 (native migration first code slice)
 - Google Drive LIVE sync: **SYNC FAILED** — this runtime has no Drive/Docs connector; no LIVE handoff/index read/write or folder metadata verification is claimed.
 
 
-## 2026-10-27 — N38 four-spawn last-opponent outcome integration (CI pending)
+## 2026-10-27 — N38 four-spawn last-opponent outcome integration (CI PASS)
 
 - **Engineering question:** in a four-spawn arena, can two already-defeated bots stop blocking space without prematurely winning the round, while the final living bot's timed bomb still resolves the round and emits exactly one next-stage signal?
 - **Integration test:** added `fourSpawnRoundWaitsForLastLivingBotBeforeAdvancingExactlyOnce` through `NativeArenaTick.advance`, real `NativeOpponentRoster`, timed bomb/fuse/flame simulation, vitality and round flow. The fixture includes three independent bot identities; the last living bot is defeated by its own timed bomb.
 - **Acceptance:** no outcome before the last living bot is defeated; dead bots do not block; player survives; final bot dies; exactly one advance signal; state becomes `ADVANCING`.
 - **Source/license review:** project-owned Kotlin/JUnit only; no external source, assets, dependencies or services. Native AI/fuse/damage rules remain provisional pending EKA2L1 comparison.
-- **Native Kotlin/JUnit and Mainline CI:** PENDING. APK artifacts: 0 expected; no APK packaging requested.
+- **PASS — exact source/test SHA:** `df96e41790cb521eaab15e130284b718bcf31294`.
+- **PASS — Native Kotlin/JUnit:** [run #40452935519](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40452935519), `:core:test`, BUILD SUCCESSFUL in 33s.
+- **PASS — Mainline:** [run #40452935490](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40452935490).
+- **Artifacts: 0 confirmed**; no APK packaging/upload.
 - **Xiaomi Pad 5, real gameplay and Symbian/EKA2L1 parity:** NOT TESTED.
-- **Google Drive LIVE sync:** SYNC FAILED if the Drive/Docs connector is unavailable; no LIVE read/write or folder metadata verification may be claimed.
+- **Google Drive LIVE sync:** SYNC FAILED — no Drive/Docs connector is exposed; no LIVE handoff/index read/write or folder metadata verification is claimed.
