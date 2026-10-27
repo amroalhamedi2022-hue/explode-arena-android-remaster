@@ -256,4 +256,79 @@ class NativeArenaTickAllArenasIntegrationTest {
         assertTrue("A draw must allow retry", round.canRetry)
         assertEquals("A draw must never advance the stage", 0, advanceSignals)
     }
+
+    @Test fun fourSpawnRoundWaitsForLastLivingBotBeforeAdvancingExactlyOnce() {
+        val stage = StageData(
+            id = 0, image = "test.png", width = 128, height = 128,
+            obstacleX = 0, obstacleY = 0, grid = List(16) { IntArray(16) },
+            spawns = listOf(
+                Spawn(40.0, 88.0),
+                Spawn(40.0, 40.0),
+                Spawn(56.0, 40.0),
+                Spawn(72.0, 40.0),
+            ),
+        )
+        val player = Actor(40.0, 88.0)
+        val alreadyDefeated = listOf(
+            NativeOpponentRoster.BotSlot(
+                owner = "bot", actor = Actor(40.0, 40.0),
+                vitality = NativeVitality(1, 0.0, 0.0),
+            ),
+            NativeOpponentRoster.BotSlot(
+                owner = "bot2", actor = Actor(56.0, 40.0),
+                vitality = NativeVitality(1, 0.0, 0.0),
+            ),
+        )
+        val finalBot = NativeOpponentRoster.BotSlot(
+            owner = "bot3", actor = Actor(72.0, 40.0),
+            vitality = NativeVitality(1, 0.0, 0.0),
+        )
+        val roster = NativeOpponentRoster(alreadyDefeated + finalBot)
+        alreadyDefeated.forEach { assertTrue("Fixture bot must be defeated", it.vitality.tick(true)) }
+        assertEquals(1, roster.aliveCount)
+        assertFalse(roster.allDefeated)
+        assertEquals(1, roster.blockingActors().size)
+
+        val simulation = NativeBombSimulation(
+            stage, bombLimit = 1, bombFuseSeconds = 0.1,
+            blastLifetimeSeconds = 0.05, bombRange = 1,
+        )
+        assertTrue("The last living bot's timed bomb must be accepted", simulation.place(finalBot.actor, finalBot.owner))
+        val playerVitality = NativeVitality(
+            initialHealth = 3, initialInvulnerabilitySeconds = 0.0,
+            hitInvulnerabilitySeconds = 0.0,
+        )
+        val round = NativeRoundFlow(victoryHoldTicks = 1)
+        var prematureOutcome = false
+        var finalBotDefeatedTick = -1
+        var advanceSignals = 0
+
+        repeat(16) { tick ->
+            val result = NativeArenaTick.advance(
+                stage = stage,
+                player = player,
+                playerVitality = playerVitality,
+                opponents = roster,
+                simulation = simulation,
+                roundFlow = round,
+                tick = tick.toLong(),
+                dx = 0.0,
+                dy = 0.0,
+                hasNextStage = true,
+            )
+            if (!finalBot.vitality.defeated && round.state != NativeRoundFlow.State.PLAYING) {
+                prematureOutcome = true
+            }
+            if (finalBot.vitality.defeated && finalBotDefeatedTick < 0) finalBotDefeatedTick = tick
+            if (result.advanceStage) advanceSignals++
+        }
+
+        assertFalse("One or two defeated bots must not win a four-spawn arena", prematureOutcome)
+        assertTrue("The final living bot must be defeated by its timed bomb", finalBot.vitality.defeated)
+        assertTrue("The final bot should be defeated inside the integration window", finalBotDefeatedTick in 0..15)
+        assertFalse("The distant player must survive", playerVitality.defeated)
+        assertEquals("A four-spawn victory emits one transition only", 1, advanceSignals)
+        assertEquals(NativeRoundFlow.State.ADVANCING, round.state)
+    }
+
 }
