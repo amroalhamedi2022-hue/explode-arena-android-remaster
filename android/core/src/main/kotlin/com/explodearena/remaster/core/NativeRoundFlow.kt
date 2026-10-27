@@ -18,6 +18,10 @@ class NativeRoundFlow(private val victoryHoldTicks: Int = 90) {
     val canRetry: Boolean get() = state == State.LOST || state == State.DRAW
     val isPlaying: Boolean get() = state == State.PLAYING
 
+    /** Presentation-time animation runs during play and the victory hold only. */
+    val advancesPresentationClock: Boolean
+        get() = state == State.PLAYING || state == State.WON
+
     /**
      * A latched outcome/transition cannot be changed by another gameplay tick.
      * WON is deliberately excluded: its victory-hold counter must keep ticking.
