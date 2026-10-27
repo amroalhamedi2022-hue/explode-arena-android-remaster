@@ -654,3 +654,15 @@ Updated: 2026-10-23 (native migration first code slice)
 - **SYNC FAILED:** Google Drive LIVE handoff/index cannot be updated in this runtime because no Drive/Docs connector is exposed; no LIVE read/write or folder metadata verification is claimed.
 - **PASS — docs-only PR-head recheck:** [CI #40492056720](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40492056720) on documentation-updated head `3f84c0a1651bd8e961b1e8c693b549727b357d37`; `:core:test` passed, zero artifacts. The source/test SHA remains `8993ddfa9cce684850e8cf2f464531524e62c2de`.
 - PR #2 remains Draft/open; PR #1 collision remains separate. No merge, main write, release, auto-merge, or new copyrighted assets.
+
+
+## 2026-10-27 N46 — Victory transition latch
+
+- **Source/test SHA:** `b9ce78cb67bb2100566da6468b5d4b45be4fcf13`.
+- **PASS — Native Kotlin/JUnit:** [CI #40501242584](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40501242584), exact PR head; source-only `:core:test`, no APK.
+- **PASS — Mainline JS/Python:** [CI #40501242588](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40501242588), exact PR head.
+- Production change: `NativeRoundFlow` now captures `hasNextStage` on the first `WON` tick and uses that latched value after the victory hold. A bidirectional unit regression covers next-stage availability changing both ways; a canonical `NativeArenaTick` integration test proves the final arena remains `COMPLETE` if the flag later changes to true.
+- **Artifacts: 0 confirmed.** No APK packaging/signing/upload or new assets.
+- Xiaomi Pad 5 and Symbian/EKA2L1 parity: **NOT TESTED**.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime; no LIVE document read/write or folder metadata verification is claimed.
+- PR #2 remains Draft/open; PR #1 collision remains separate. No merge, main write, release or auto-merge.

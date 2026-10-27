@@ -3,7 +3,7 @@
 **Date:** 2026-10-27  
 **Repository:** `amroalhamedi2022-hue/explode-arena-android-remaster`  
 **PR:** #2 — remain Draft; no merge.  
-**Status:** source and regression tests committed; CI pending.
+**Status:** SOURCE/JVM/INTEGRATION PASS; docs-head recheck pending.
 
 ## Engineering question
 
@@ -31,8 +31,10 @@ This is a local state-transition correction in existing Kotlin code. No third-pa
 
 ## Evidence
 
-- Source/test SHA: pending.
-- Native Kotlin/JUnit CI: pending.
-- Mainline CI: pending.
+- **Source/test commit SHA:** `b9ce78cb67bb2100566da6468b5d4b45be4fcf13`.
+- **PASS — Native Kotlin/JUnit:** [CI #40501242584](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40501242584), step `gradle --project-dir android :core:test --stacktrace --no-daemon` completed successfully.
+- **PASS — Mainline source CI:** [CI #40501242588](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40501242588).
+- **Artifacts: 0 confirmed**; the native workflow ran `:core:test` only, with no APK packaging or upload.
+- Docs-head recheck: pending.
 - Xiaomi Pad 5 and Symbian/EKA2L1: **NOT TESTED**.
 - Original game asset provenance is unchanged; no new assets uploaded.
