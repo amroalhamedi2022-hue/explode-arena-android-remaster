@@ -167,7 +167,8 @@ internal class NativeOpponentRoster(
                 }
             }
             if (applyDamage) {
-                slot.vitality.tick(
+                tickDamage(
+                    slot,
                     simulation.isBurning(actor.x, actor.y, StageCollision.ACTOR_RADIUS),
                 )
             }
@@ -196,10 +197,21 @@ internal class NativeOpponentRoster(
         return SimulationTickResult(placed, detonated)
     }
 
+    /**
+     * A defeat is also an animation-state transition. Clear walking on the same
+     * damage sample that removes the bot from gameplay; waiting for the next
+     * fixed tick can render one stale walking frame during a terminal hold.
+     */
+    private fun tickDamage(slot: BotSlot, burning: Boolean) {
+        slot.vitality.tick(burning)
+        if (slot.vitality.defeated) slot.walking = false
+    }
+
     /** Apply damage after tick(), including flame cells that expired at its boundary. */
     fun applyDamageForLastTick(simulation: NativeBombSimulation) {
         for (slot in bots) {
-            slot.vitality.tick(
+            tickDamage(
+                slot,
                 simulation.isBurningDuringLastTick(
                     slot.actor.x, slot.actor.y, StageCollision.ACTOR_RADIUS,
                 ),
