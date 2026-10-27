@@ -66,9 +66,12 @@ class NativeReplaySession(
     spawn: Spawn,
     bombLimit: Int = 1,
     initialTick: Long = 0L,
+    initialBombId: Long = 1L,
 ) {
     private val actor: Actor
-    private val bombSimulation = NativeBombSimulation(stage, bombLimit = bombLimit)
+    private val bombSimulation = NativeBombSimulation(
+        stage, bombLimit = bombLimit, initialBombId = initialBombId,
+    )
     private val vitality = NativeVitality()
     private var ticks = initialTick
 
