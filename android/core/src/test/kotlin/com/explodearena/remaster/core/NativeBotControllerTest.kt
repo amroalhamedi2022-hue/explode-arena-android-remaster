@@ -283,4 +283,56 @@ class NativeBotControllerTest {
         val choice = NativeBotController().decide(arena, bot, Actor(56.0, 40.0), sim, 60)
         assertFalse(choice.placeBomb)
     }
+
+    @Test fun isolatedRemoteBombDoesNotInterruptBotPursuit() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena, bombLimit = 2)
+        assertTrue(sim.setRemoteDetonator("player", true))
+        assertTrue(sim.place(Actor(120.0, 120.0), "player"))
+        val choice = NativeBotController().decide(
+            arena, Actor(24.0, 24.0), Actor(88.0, 24.0), sim, 0,
+        )
+        assertEquals(1.0, choice.dx, 0.0)
+        assertEquals(0.0, choice.dy, 0.0)
+        assertFalse(choice.placeBomb)
+    }
+
+    @Test fun ownedRemoteBombIsNeverSelectedAsAnAutomaticFuseEscapeTarget() {
+        val remote = NativeBombSimulation.Bomb(
+            id = 7, owner = "bot", x = 40.0, y = 40.0, remaining = null, remote = true,
+        )
+        assertNull(selectOwnedTimedBomb(listOf(remote), "bot"))
+    }
+
+    @Test fun ownedTimedBombRemainsEscapeTargetWhenRemoteBombAlsoExists() {
+        val remote = NativeBombSimulation.Bomb(
+            id = 7, owner = "bot", x = 40.0, y = 40.0, remaining = null, remote = true,
+        )
+        val timed = NativeBombSimulation.Bomb(
+            id = 8, owner = "bot", x = 56.0, y = 40.0, remaining = 0.5, remote = false,
+        )
+        assertEquals(timed, selectOwnedTimedBomb(listOf(remote, timed), "bot"))
+    }
+
+    @Test fun remoteBombReachedByTimedChainRemainsAnEscapeThreat() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena, bombLimit = 2)
+        assertTrue(sim.setRemoteDetonator("player2", true))
+        val bot = Actor(72.0, 40.0)
+        assertTrue(sim.place(bot, "player2"))
+        assertTrue(sim.place(Actor(40.0, 40.0), "player"))
+        repeat(60) { sim.tick() }
+        assertTrue(
+            "Timed blast must schedule the remote bomb through the chain",
+            sim.predictedTimedChainThreats(0.75).any {
+                it.bomb.owner == "player2" && it.bomb.remote
+            },
+        )
+        val refuge = NativeBotEscapeRoute.firstDirection(arena, bot, sim, 72.0, 40.0)
+        assertNotNull("A refuge exists outside both predicted blast footprints", refuge)
+        val choice = NativeBotController().decide(arena, bot, Actor(104.0, 40.0), sim, 60)
+        assertFalse(choice.placeBomb)
+        assertFalse("The bot must not continue directly into the timed chain", choice.dx == 1.0 && choice.dy == 0.0)
+    }
+
 }

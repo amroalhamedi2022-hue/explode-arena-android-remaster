@@ -7,6 +7,17 @@ import kotlin.math.floor
  * against the same collision and live-flame model as the Kotlin simulation.
  * This is NOT a reconstruction of original Symbian AI or game modes.
  */
+/**
+ * Only a bomb with an automatic fuse is an owned-bomb escape target.
+ * Isolated remote bombs have no deadline; a remote bomb reached by a timed
+ * chain is still represented by [NativeBotThreatContext] and remains a threat.
+ */
+internal fun selectOwnedTimedBomb(
+    bombs: List<NativeBombSimulation.Bomb>,
+    owner: String,
+): NativeBombSimulation.Bomb? =
+    bombs.firstOrNull { it.owner == owner && !it.remote && it.remaining != null }
+
 class NativeBotController(private val owner: String = "bot") {
     init { require(owner in setOf("bot", "bot2", "bot3")) }
     data class Decision(val dx: Double, val dy: Double, val placeBomb: Boolean)
@@ -65,7 +76,7 @@ class NativeBotController(private val owner: String = "bot") {
                 }
             }
             .minByOrNull { it.threat.secondsUntilBlast }?.threat?.bomb
-        val ownBomb = simulation.bombs.firstOrNull { it.owner == owner }
+        val ownBomb = selectOwnedTimedBomb(simulation.bombs, owner)
         val escapeBomb = ownBomb ?: imminentBomb
         // Standing in an active flame is an escape emergency even after the
         // detonating bomb has disappeared. Do not freeze until flame expiry.
