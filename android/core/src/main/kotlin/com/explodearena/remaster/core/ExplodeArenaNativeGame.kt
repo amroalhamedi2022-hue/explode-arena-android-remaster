@@ -189,7 +189,9 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         // Navigation, retry and pause consume the frame: never simulate a
         // fractional tick in an arena that was just replaced or resumed.
         pauseGate.advance(clock, if (commands.advanceWorld) Gdx.graphics.deltaTime.toDouble() else 0.0) {
-            animationSeconds += FixedStepClock.STEP_SECONDS
+            if (roundFlow.advancesPresentationClock) {
+                animationSeconds += FixedStepClock.STEP_SECONDS
+            }
             val result = NativeArenaTick.advance(
                 stage = stage,
                 player = actor,
