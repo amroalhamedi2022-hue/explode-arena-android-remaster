@@ -189,4 +189,27 @@ class NativeBombSimulationTest {
         assertEquals(nextIdBefore, sim.nextBombId)
     }
 
+
+    @Test fun bombIdentityExhaustionFailsBeforeMutatingActorOrBombList() {
+        val sim = NativeBombSimulation(stage(), initialBombId = Long.MAX_VALUE)
+        val actor = Actor(24.0, 24.0)
+        val before = sim.bombs
+
+        val failure = assertThrows(IllegalStateException::class.java) {
+            sim.place(actor)
+        }
+
+        assertEquals("Bomb ID counter exhausted", failure.message)
+        assertEquals(before, sim.bombs)
+        assertNull(actor.passBomb)
+        assertEquals(Long.MAX_VALUE, sim.nextBombId)
+    }
+
+    @Test fun bombSimulationRejectsNonPositiveInitialIdentity() {
+        for (initialId in listOf(0L, -1L)) {
+            assertThrows(IllegalArgumentException::class.java) {
+                NativeBombSimulation(stage(), initialBombId = initialId)
+            }
+        }
+    }
 }
