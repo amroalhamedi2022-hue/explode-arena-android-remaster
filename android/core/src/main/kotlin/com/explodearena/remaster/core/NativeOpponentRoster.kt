@@ -88,11 +88,34 @@ internal class NativeOpponentRoster(
             }
         }
 
-        // Candidate movements all use the same actor snapshot, but see every
-        // bomb committed above. No candidate is allowed to use a peer's already
-        // committed movement as an accidental extra turn of information.
+        // If any placement succeeded, the pre-placement decisions are stale for
+        // escape planning: a peer's newly committed bomb may now cut across a
+        // cached refuge. Replan movement once against the complete bomb set.
+        // The second pass is movement-only and carries pass-bomb grace forward;
+        // it cannot add another bomb after the deterministic placement phase.
+        val movementDecisions = if (placed == 0) {
+            decisions
+        } else {
+            val postPlacementContext = threatContextFactory(simulation)
+            living.associateWith { slot ->
+                val start = actorsAtStart.getValue(slot)
+                slot.controller.decideWithContext(
+                    stage = stage,
+                    bot = Actor(start.x, start.y, slot.actor.passBomb),
+                    target = playerAtStart,
+                    simulation = simulation,
+                    tick = tick,
+                    otherActors = blockersAtStart.getValue(slot),
+                    threatContext = postPlacementContext,
+                    allowBombPlacement = false,
+                )
+            }
+        }
+
+        // Candidate movements all use the same actor snapshot and complete bomb
+        // set. No candidate uses a peer's already committed movement as extra info.
         val candidates = living.associateWith { slot ->
-            val decision = decisions.getValue(slot)
+            val decision = movementDecisions.getValue(slot)
             Actor(slot.actor.x, slot.actor.y, slot.actor.passBomb).also { candidate ->
                 StageCollision.move(
                     stage, candidate, decision.dx, decision.dy,
@@ -135,7 +158,7 @@ internal class NativeOpponentRoster(
             actor.passBomb = candidate.passBomb
             slot.walking = actor.x != oldX || actor.y != oldY
             if (slot.walking) {
-                val decision = decisions.getValue(slot)
+                val decision = movementDecisions.getValue(slot)
                 slot.facing = when {
                     decision.dx > 0 -> 3
                     decision.dx < 0 -> 1
