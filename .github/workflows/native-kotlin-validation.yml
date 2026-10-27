@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'android/**'
+      - 'docs/**'
+      - 'README_AR.md'
       - '.github/workflows/native-kotlin-validation.yml'
   workflow_dispatch:
 
