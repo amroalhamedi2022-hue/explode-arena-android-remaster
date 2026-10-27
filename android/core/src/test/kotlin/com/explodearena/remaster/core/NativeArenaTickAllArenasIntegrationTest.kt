@@ -195,4 +195,65 @@ class NativeArenaTickAllArenasIntegrationTest {
         assertEquals("Final arena must not emit a next-stage signal", 0, outcome.advanceSignals)
         assertEquals(NativeRoundFlow.State.COMPLETE, outcome.finalState)
     }
+
+    @Test fun simultaneousFinalFlameDefeatResolvesDrawWithoutStageAdvance() {
+        val stage = StageData(
+            id = 0, image = "test.png", width = 128, height = 128,
+            obstacleX = 0, obstacleY = 0, grid = List(16) { IntArray(16) },
+            spawns = listOf(Spawn(40.0, 40.0), Spawn(72.0, 40.0)),
+        )
+        val player = Actor(40.0, 40.0)
+        val playerVitality = NativeVitality(
+            initialHealth = 1, initialInvulnerabilitySeconds = 0.0,
+            hitInvulnerabilitySeconds = 0.0,
+        )
+        val botVitality = NativeVitality(
+            initialHealth = 1, initialInvulnerabilitySeconds = 0.0,
+            hitInvulnerabilitySeconds = 0.0,
+        )
+        val roster = NativeOpponentRoster(
+            listOf(
+                NativeOpponentRoster.BotSlot(
+                    owner = "bot",
+                    actor = Actor(72.0, 40.0),
+                    vitality = botVitality,
+                ),
+            ),
+        )
+        val simulation = NativeBombSimulation(
+            stage, bombLimit = 1, bombFuseSeconds = 0.1,
+            blastLifetimeSeconds = 0.05, bombRange = 2,
+        )
+        assertTrue("Player's timed bomb must be accepted", simulation.place(player, "player"))
+        val round = NativeRoundFlow(victoryHoldTicks = 1)
+        var playerDefeatedTick = -1
+        var botDefeatedTick = -1
+        var advanceSignals = 0
+
+        repeat(12) { tick ->
+            val result = NativeArenaTick.advance(
+                stage = stage,
+                player = player,
+                playerVitality = playerVitality,
+                opponents = roster,
+                simulation = simulation,
+                roundFlow = round,
+                tick = tick.toLong(),
+                dx = 0.0,
+                dy = 0.0,
+                hasNextStage = true,
+            )
+            if (playerVitality.defeated && playerDefeatedTick < 0) playerDefeatedTick = tick
+            if (botVitality.defeated && botDefeatedTick < 0) botDefeatedTick = tick
+            if (result.advanceStage) advanceSignals++
+        }
+
+        assertTrue("Player must be defeated by the timed blast", playerVitality.defeated)
+        assertTrue("The final living bot must be defeated by the same blast", botVitality.defeated)
+        assertTrue("Both deaths must occur during the integration window", playerDefeatedTick in 0..11)
+        assertEquals("Mutual final-flame deaths must share one canonical tick", playerDefeatedTick, botDefeatedTick)
+        assertEquals(NativeRoundFlow.State.DRAW, round.state)
+        assertTrue("A draw must allow retry", round.canRetry)
+        assertEquals("A draw must never advance the stage", 0, advanceSignals)
+    }
 }
