@@ -480,11 +480,15 @@ Updated: 2026-10-23 (native migration first code slice)
 - Google Drive LIVE handoff/index sync: **SYNC FAILED** — no Google Drive/Docs connector is exposed in this runtime. No sync is claimed.
 
 
-## 2026-10-27 N33 — all-41-arena opponent roster integration (CI PENDING)
+## 2026-10-27 N33 — all-41-arena opponent roster integration
 
 - **Test-only integration change:** added `NativeOpponentRosterAllArenasIntegrationTest.kt` against the real `web/assets/stages.js` catalog.
 - The test asserts ordered stage IDs 0..40 and the 18/2/21 spawn-count distribution, then executes 120 production fixed-step roster/simulation ticks per arena. It checks independent owner/controller/actor instances, terrain/bomb collision safety, and player/bot/bot separation after each movement step.
 - No production behavior or assets changed in this milestone. This is native-source integration evidence, not device or Symbian parity.
-- Exact source/test SHA and `:core:test` CI: **PENDING**.
-- No APK build, artifacts, release, merge, auto-merge or main write. Android device, EKA2L1/Symbian parity, graphics/audio and complete human-played rounds remain **NOT TESTED**.
+- **PASS — exact source/test SHA:** `f75588927aa633a0941f0816646413576697a420`.
+- **PASS — Native Kotlin/JUnit:** [run #40429833635](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40429833635), `:core:test`, **BUILD SUCCESSFUL in 52s**, 4 actionable tasks.
+- **PASS — Mainline:** [run #40429833469](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40429833469) on the same SHA.
+- **Artifacts: 0 confirmed**; no APK or Android packaging occurred.
+- Android device, EKA2L1/Symbian parity, graphics/audio and complete human-played rounds remain **NOT TESTED**.
+- A docs-only follow-up head will be rechecked through Mainline CI and recorded in the PR thread without another source edit.
 - Google Drive LIVE handoff/index sync: **SYNC FAILED** — this runtime exposes no Google Drive/Docs connector; no sync is claimed.

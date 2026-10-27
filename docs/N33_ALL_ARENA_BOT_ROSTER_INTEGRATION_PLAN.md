@@ -28,5 +28,9 @@ Synthetic arena tests and source inspection cannot prove interactions across the
 
 - Added `NativeOpponentRosterAllArenasIntegrationTest.kt`.
 - The test runs each real stage through roster construction, independent bot planning, fixed-step movement, bomb updates, and post-tick damage for 120 ticks, asserting terrain and actor separation at every tick.
-- Source/test SHA and CI: **PENDING** until GitHub Actions completes.
+- **PASS — exact source/test SHA:** `f75588927aa633a0941f0816646413576697a420`.
+- **PASS — Native Kotlin/JUnit:** [run #40429833635](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40429833635), job `native-source-check`, `:core:test`, **BUILD SUCCESSFUL in 52s**, 4 actionable tasks.
+- **PASS — Mainline:** [run #40429833469](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40429833469) on the same SHA.
+- **Artifacts: 0 confirmed**; no Android/ APK packaging occurred.
 - Android device, EKA2L1 parity, graphics/audio and complete human-played rounds: **NOT TESTED**.
+- A docs-only follow-up head will be rechecked through Mainline CI and recorded in the PR thread without another source edit.
