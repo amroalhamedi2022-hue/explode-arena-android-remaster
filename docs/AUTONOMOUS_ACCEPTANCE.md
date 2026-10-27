@@ -738,6 +738,6 @@ Updated: 2026-10-23 (native migration first code slice)
 - Added a round-local tick sequence to each fresh `NativeArenaRoundState`; the native renderer now passes that tick to bot planning instead of the process-wide frame-clock count.
 - Regression tests verify tick zero and independent counters across factory-created attempts for all 41 original arena records (18 one-spawn, 2 two-spawn, 21 four-spawn).
 - **PASS:** Native Kotlin/JUnit [CI #40559115392](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40559115392) and Mainline JS/Python [CI #40559115582](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40559115582). Both succeeded; artifacts 0.
-- Docs-updated PR-head recheck pending; device/EKA2L1 parity NOT TESTED. No APK build/package/upload, assets, dependency, merge or main write.
+- Docs-updated PR-head recheck **PASS** on `2dd795074c7bc8c7338b2e154e00e667dd903652`: Native [CI #40559674506](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40559674506) and Mainline [CI #40559674298](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40559674298) both passed. Device/EKA2L1 parity NOT TESTED. No APK build/package/upload, assets, dependency, merge or main write.
 - Google Drive LIVE sync: **SYNC FAILED** — connector unavailable; no LIVE read/write claimed.
 
