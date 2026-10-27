@@ -25,6 +25,14 @@ class NativeBotController(private val owner: String = "bot") {
     private var cachedDirection = 0
     private var lastPlanTick = Long.MIN_VALUE
     private var wasEscaping = false
+    private data class ThreatKey(
+        val id: Long,
+        val owner: String,
+        val x: Double,
+        val y: Double,
+        val remote: Boolean,
+    )
+    private var lastThreatKeys: List<ThreatKey>? = null
 
     /** Last path-planning tick, exposed internally for deterministic scheduling regressions. */
     internal val lastPlannedTick: Long get() = lastPlanTick
@@ -64,6 +72,14 @@ class NativeBotController(private val owner: String = "bot") {
         // shared context computed before any bot plans or places a bomb.
         val threatContext = providedContext ?: NativeBotThreatContext.create(simulation)
         val imminentIndex = threatContext.imminentIndex
+        // Compare threat identity/geometry, not countdown values: fuses change
+        // every tick, but a newly appearing/disappearing chain threat must
+        // invalidate the cached escape plan immediately.
+        val threatKeys = threatContext.threatFootprints.map { footprint ->
+            val bomb = footprint.threat.bomb
+            ThreatKey(bomb.id, bomb.owner, bomb.x, bomb.y, bomb.remote)
+        }.sortedBy { it.id }
+        val threatSetChanged = lastThreatKeys != threatKeys
         // Keep expensive bounded escape/path searches at 10Hz while stable.
         // The live threat index and next-step safety check still run every tick,
         // so a newly unsafe cached step triggers an immediate replan.
@@ -99,7 +115,7 @@ class NativeBotController(private val owner: String = "bot") {
                 (escapingFlame || !simulation.isBurning(nx, ny, StageCollision.ACTOR_RADIUS)) &&
                 (escaping || !isImminent(nx, ny))
         }
-        if (escaping != wasEscaping ||
+        if (escaping != wasEscaping || threatSetChanged ||
             lastPlanTick == Long.MIN_VALUE || tick < lastPlanTick ||
             tick - lastPlanTick >= REPLAN_TICKS || !canStep(cachedDirection)) {
             // While our bomb is live, seek a refuge outside its predicted
@@ -113,6 +129,7 @@ class NativeBotController(private val owner: String = "bot") {
             } else plan(stage, bot, target, simulation, otherActors, imminentIndex)
             lastPlanTick = tick
             wasEscaping = escaping
+            lastThreatKeys = threatKeys
         }
         if (!canStep(cachedDirection)) cachedDirection = 0
         val near = kotlin.math.abs(bot.x - target.x) <= 20.0 &&

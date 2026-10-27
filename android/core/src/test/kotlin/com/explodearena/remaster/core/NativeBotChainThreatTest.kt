@@ -124,6 +124,27 @@ class NativeBotChainThreatTest {
         assertEquals(67L, controller.lastPlannedTick)
     }
 
+    @Test fun newlyAddedTimedThreatInvalidatesCachedEscapePlanImmediately() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena)
+        assertTrue(sim.setRemoteDetonator("player", true))
+        assertTrue(sim.place(Actor(56.0, 24.0), "player"))
+        assertTrue(sim.place(Actor(24.0, 24.0), "player2"))
+        repeat(60) { sim.tick() }
+
+        val bot = Actor(88.0, 24.0)
+        val controller = NativeBotController()
+        controller.decide(arena, bot, Actor(120.0, 24.0), sim, 60)
+        assertEquals(60L, controller.lastPlannedTick)
+
+        // Add a new timed threat under the bot after the first plan. Its
+        // countdown changes over time, but its new identity must invalidate
+        // the cached route on the very next decision.
+        assertTrue(sim.place(Actor(88.0, 24.0), "bot2"))
+        controller.decide(arena, bot, Actor(120.0, 24.0), sim, 61)
+        assertEquals(61L, controller.lastPlannedTick)
+    }
+
     @Test fun chainedRemoteThreatUsesTimedFuseTravelDeadline() {
         val arena = stage()
         val sim = NativeBombSimulation(arena)
