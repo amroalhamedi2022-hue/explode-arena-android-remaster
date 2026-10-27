@@ -698,3 +698,12 @@ Updated: 2026-10-23 (native migration first code slice)
 - The earlier c308fb8 first pass was superseded after review added immediate invalidation when the timed-threat identity/geometry set changes. The final SHA above contains that follow-up and the additional regression.
 - **Artifacts: 0**; no APK packaging/signing/upload. Xiaomi Pad 5 and Symbian/EKA2L1: **NOT TESTED**.
 - Google Drive LIVE sync: **SYNC FAILED** because no Drive/Docs connector is exposed in this runtime; no LIVE read/write or folder metadata verification is claimed.
+
+
+## 2026-10-27 N50 — shared bot threat-key snapshot (verification pending)
+
+- Canonical bomb identity/geometry keys are now built once in the immutable per-tick NativeBotThreatContext and shared by all living bots. The controller no longer maps/sorts a separate key list per bot decision. Direction and grid-neighbor vectors are static controller tables rather than per-decision/per-plan arrays.
+- Added a regression proving countdown-only changes preserve the key set while a later timed threat changes it; existing N49 tests continue to cover immediate invalidation and six-tick replanning.
+- Source/test SHA and CI: **PENDING**.
+- Android device and Symbian/EKA2L1 parity: **NOT TESTED**. Artifacts: **0 expected**; no APK task.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed; no LIVE read/write or folder metadata verification is claimed.

@@ -13,7 +13,16 @@ internal class NativeBotThreatContext private constructor(
     val cells: List<Spawn>,
     val imminentIndex: TimedBlastIndex,
     val threatFootprints: List<NativeBombSimulation.TimedThreatFootprint>,
+    val threatKeys: List<ThreatKey>,
 ) {
+    /** Canonical threat identity/geometry shared by every bot in this tick. */
+    data class ThreatKey(
+        val id: Long,
+        val owner: String,
+        val x: Double,
+        val y: Double,
+        val remote: Boolean,
+    )
     companion object {
         const val DEFAULT_HORIZON_SECONDS = 0.75
 
@@ -24,7 +33,13 @@ internal class NativeBotThreatContext private constructor(
             val snapshot = simulation.predictedTimedThreatSnapshot(horizonSeconds)
             val cells = snapshot.cells.map { it.cell }
             val index = TimedBlastIndex.fromCells(cells)
-            return NativeBotThreatContext(snapshot, cells, index, snapshot.threatFootprints)
+            val threatKeys = snapshot.threatFootprints.map { footprint ->
+                val bomb = footprint.threat.bomb
+                ThreatKey(bomb.id, bomb.owner, bomb.x, bomb.y, bomb.remote)
+            }.sortedBy { it.id }
+            return NativeBotThreatContext(
+                snapshot, cells, index, snapshot.threatFootprints, threatKeys,
+            )
         }
     }
 }

@@ -25,14 +25,7 @@ class NativeBotController(private val owner: String = "bot") {
     private var cachedDirection = 0
     private var lastPlanTick = Long.MIN_VALUE
     private var wasEscaping = false
-    private data class ThreatKey(
-        val id: Long,
-        val owner: String,
-        val x: Double,
-        val y: Double,
-        val remote: Boolean,
-    )
-    private var lastThreatKeys: List<ThreatKey>? = null
+    private var lastThreatKeys: List<NativeBotThreatContext.ThreatKey>? = null
 
     /** Last path-planning tick, exposed internally for deterministic scheduling regressions. */
     internal val lastPlannedTick: Long get() = lastPlanTick
@@ -75,16 +68,13 @@ class NativeBotController(private val owner: String = "bot") {
         // Compare threat identity/geometry, not countdown values: fuses change
         // every tick, but a newly appearing/disappearing chain threat must
         // invalidate the cached escape plan immediately.
-        val threatKeys = threatContext.threatFootprints.map { footprint ->
-            val bomb = footprint.threat.bomb
-            ThreatKey(bomb.id, bomb.owner, bomb.x, bomb.y, bomb.remote)
-        }.sortedBy { it.id }
+        // The roster builds this canonical list once per simulation tick and
+        // shares it with every controller, avoiding per-bot map/sort churn.
+        val threatKeys = threatContext.threatKeys
         val threatSetChanged = lastThreatKeys != threatKeys
         // Keep expensive bounded escape/path searches at 10Hz while stable.
         // The live threat index and next-step safety check still run every tick,
         // so a newly unsafe cached step triggers an immediate replan.
-        val dx = doubleArrayOf(0.0, 1.0, 0.0, -1.0, 0.0)
-        val dy = doubleArrayOf(0.0, 0.0, 1.0, 0.0, -1.0)
         // Threat owners and timestamped cells come from the same prediction.
         // The roster shares that immutable prediction across all living bots.
         // Remote bombs are excluded: they have no countdown.
@@ -107,8 +97,8 @@ class NativeBotController(private val owner: String = "bot") {
             imminentIndex.contains(x, y, StageCollision.ACTOR_RADIUS)
         }
         val canStep = { direction: Int ->
-            val nx = bot.x + dx[direction] * SPEED * FixedStepClock.STEP_SECONDS
-            val ny = bot.y + dy[direction] * SPEED * FixedStepClock.STEP_SECONDS
+            val nx = bot.x + DIRECTION_X[direction] * SPEED * FixedStepClock.STEP_SECONDS
+            val ny = bot.y + DIRECTION_Y[direction] * SPEED * FixedStepClock.STEP_SECONDS
             !StageCollision.blocked(stage, nx, ny, StageCollision.ACTOR_RADIUS,
                 simulation.bombs, bot.passBomb) &&
                 !StageCollision.blockedByActors(nx, ny, otherActors) &&
@@ -146,7 +136,7 @@ class NativeBotController(private val owner: String = "bot") {
         // the cached chase direction here spent the first fuse tick moving
         // toward the target, despite having just verified a different refuge.
         val movement = if (place) requireNotNull(refuge) else cachedDirection
-        return Decision(dx[movement], dy[movement], place)
+        return Decision(DIRECTION_X[movement], DIRECTION_Y[movement], place)
     }
 
     private fun plan(
@@ -177,15 +167,13 @@ class NativeBotController(private val owner: String = "bot") {
         var best = start
         var bestDistance = distanceSq(bot.x, bot.y, target.x, target.y)
         // Deterministic tie-break: right, down, left, up.
-        val cols = intArrayOf(1, 0, -1, 0)
-        val rows = intArrayOf(0, 1, 0, -1)
         while (head < tail) {
             val cell = queue[head++]
             val col = cell % w
             val row = cell / w
             for (i in 0..3) {
-                val nc = col + cols[i]
-                val nr = row + rows[i]
+                val nc = col + GRID_COLS[i]
+                val nr = row + GRID_ROWS[i]
                 if (nc !in 0 until w || nr !in 0 until h) continue
                 val index = nr * w + nc
                 if (seen[index]) continue
@@ -216,5 +204,11 @@ class NativeBotController(private val owner: String = "bot") {
         const val SPEED = 54.0
         private const val REPLAN_TICKS = 6L
         private const val MAX_GRID_CELLS = 20_000L
+
+        // Shared direction tables avoid arrays per bot decision at 60 Hz.
+        private val DIRECTION_X = doubleArrayOf(0.0, 1.0, 0.0, -1.0, 0.0)
+        private val DIRECTION_Y = doubleArrayOf(0.0, 0.0, 1.0, 0.0, -1.0)
+        private val GRID_COLS = intArrayOf(1, 0, -1, 0)
+        private val GRID_ROWS = intArrayOf(0, 1, 0, -1)
     }
 }

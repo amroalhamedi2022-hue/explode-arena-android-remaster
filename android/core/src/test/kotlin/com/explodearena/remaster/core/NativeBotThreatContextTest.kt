@@ -175,4 +175,32 @@ class NativeBotThreatContextTest {
         assertEquals(nextIdBefore, simulation.nextBombId)
     }
 
+    @Test fun canonicalThreatKeysIgnoreFuseCountdownButChangeWithThreatSet() {
+        val stage = arena()
+        val simulation = NativeBombSimulation(stage)
+        assertTrue(simulation.place(Actor(56.0, 24.0), "player"))
+        repeat(60) { simulation.tick() }
+
+        val first = NativeBotThreatContext.create(simulation)
+        assertTrue(first.threatKeys.isNotEmpty())
+        assertEquals(
+            first.snapshot.threatFootprints.map { footprint ->
+                val bomb = footprint.threat.bomb
+                NativeBotThreatContext.ThreatKey(bomb.id, bomb.owner, bomb.x, bomb.y, bomb.remote)
+            }.sortedBy { it.id },
+            first.threatKeys,
+        )
+        val stableKeys = first.threatKeys.toList()
+        simulation.tick()
+        val second = NativeBotThreatContext.create(simulation)
+        assertEquals(stableKeys, second.threatKeys)
+        assertEquals(stableKeys, first.threatKeys)
+
+        assertTrue(simulation.place(Actor(120.0, 120.0), "bot2"))
+        repeat(55) { simulation.tick() }
+        val later = NativeBotThreatContext.create(simulation)
+        assertTrue(later.threatKeys.any { it.owner == "bot2" })
+        assertNotEquals(stableKeys, later.threatKeys)
+    }
+
 }
