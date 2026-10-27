@@ -492,3 +492,16 @@ Updated: 2026-10-23 (native migration first code slice)
 - Android device, EKA2L1/Symbian parity, graphics/audio and complete human-played rounds remain **NOT TESTED**.
 - A docs-only follow-up head will be rechecked through Mainline CI and recorded in the PR thread without another source edit.
 - Google Drive LIVE handoff/index sync: **SYNC FAILED** — this runtime exposes no Google Drive/Docs connector; no sync is claimed.
+
+
+## 2026-10-27 N34 — canonical opponent simulation tick
+
+- **Production change:** added NativeOpponentRoster.advanceSimulationTick to perform roster movement/planning, exactly one bomb/fuse tick, then bot damage sampling for the just-finished interval. It returns placement/detonation counts for sound playback.
+- **Game-loop integration:** ExplodeArenaNativeGame now uses that entry point; removed the separate bomb tick and separate bot-damage call to prevent accidental double ticking or incorrect order.
+- **Integration test:** the real web/assets/stages.js 41-arena catalog runs 120 fixed-step ticks per arena through the same canonical production method, while checking independent bot state, collision safety and actor separation.
+- **PASS — exact source/test head:** f81c88c8504ac52487b0adc83e096ec1653cdc98.
+- **PASS — Native Kotlin/JUnit:** [run #40434769974](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40434769974), :core:test, BUILD SUCCESSFUL in 50s.
+- **PASS — Mainline:** [run #40434769977](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40434769977) on the same source/test head.
+- **Artifacts: 0 confirmed**; no APK packaging or Android build occurred.
+- **NOT TESTED:** physical-device play, Xiaomi Pad 5, EKA2L1/Symbian parity, audio/visual behavior, complete human-played rounds and independent device recheck.
+- **Google Drive LIVE sync: SYNC FAILED** — no Drive/Docs connector is available in this runtime; no Drive write or read-back is claimed.
