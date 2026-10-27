@@ -26,8 +26,10 @@ Can the real libGDX loop and an integration test share one production fixed-step
 
 This refactors the project's own Kotlin/libGDX simulation; no third-party source, assets, dependencies, permissions, or external service were added. Original art/audio were not copied or newly uploaded. All mechanics remain provisional pending independent Symbian/EKA2L1 observation.
 
-## Status
+## Verified result
 
-- Source and integration CI: pending until the updated PR head is checked.
-- Physical device, Xiaomi Pad 5, audio/visual play, and EKA2L1 parity: NOT TESTED.
-- Artifacts/APK: none permitted for this milestone.
+- **PASS — exact source/test/PR head:** `89ed813b842e709006d0b1b1cf829da5a8c917cc`.
+- **PASS — Native Kotlin/JUnit:** [run #40441599482](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40441599482), `:core:test`, job `native-source-check` completed successfully.
+- **PASS — Mainline:** [run #40441599504](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40441599504), full source/stage/resource checks passed on the same head.
+- **Artifacts: 0** confirmed; no APK packaging occurred.
+- Physical device, Xiaomi Pad 5, audio/visual play, and EKA2L1 parity: **NOT TESTED**.
