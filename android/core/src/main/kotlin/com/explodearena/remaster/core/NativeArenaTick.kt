@@ -74,6 +74,9 @@ internal object NativeArenaTick {
             opponents.present,
             hasNextStage,
         )
+        // LOST/DRAW stop scheduling subsequent gameplay ticks in the render loop,
+        // so clear bot animation state on the exact tick that latches the outcome.
+        if (roundFlow.isLatched) opponents.stopWalking()
         return Result(playerWalking, bombsPlaced, bombsDetonated, advanceStage)
     }
 }
