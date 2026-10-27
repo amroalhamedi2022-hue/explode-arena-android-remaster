@@ -27,3 +27,11 @@ Can a malformed tick or movement vector partially mutate gameplay before the eng
 - New integration regression: NativeArenaTickInputValidationTest.kt.
 - Physical Android play and Symbian/EKA2L1 parity remain NOT TESTED.
 - Google Drive LIVE sync must be verified separately; GitHub documentation is not proof of Drive sync.
+
+## Verification ledger — source/test head
+
+- Production commit: d63cda61015f893a04d8e1b9365636d778a0c40d.
+- Integration-test commit: 386df8575d43891ba276f1bba895a036560420a4.
+- **PASS — Native Kotlin/JUnit on PR head 2b3d8cc558d36192c26bfe2adb888f24ddd945a8:** [CI #40581633764](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40581633764); job completed successfully, no APK packaging.
+- **PASS — Mainline JS/Python on the same PR head:** [CI #40581633692](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40581633692).
+- The docs/acceptance-ledger append creates a new PR head; final-head recheck will be recorded in the PR conversation.
