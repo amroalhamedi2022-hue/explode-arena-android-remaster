@@ -719,3 +719,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - Regression: `sameTickPlacementsRefreshThreatContextBeforeMovement` verifies the post-placement context sees the complete committed bomb set, retains pass-bomb grace, and leaves bots out of blocking bomb collisions. Existing roster order-independence and 41-arena 1/2/4-spawn integration suites pass.
 - **NOT TESTED:** Xiaomi Pad 5, Android runtime, Symbian/EKA2L1 parity, FPS/RAM. Artifacts: 0 expected; no APK packaging.
 - Google Drive LIVE handoff/index: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime; no sync claimed.
+
+
+## 2026-10-27 N52 — immediate defeated-bot animation stop
+
+- Production change: both direct and canonical post-tick damage paths now share `tickDamage`; when the damage sample defeats a bot, `walking` is cleared immediately instead of waiting for the next fixed tick.
+- Regression: `botReceivesDamageWhenFlameExpiresAtTickBoundary` now starts with `walking = true`, confirms the boundary flame still defeats the bot, and asserts the walking flag is false immediately afterward.
+- Exact source/test SHA: `8fc53afe1ffd4c0c87945a55a2cca2f6305bc3d7`.
+- **PASS — Native Kotlin/JUnit:** [CI #40555838259](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40555838259), `:core:test`, source-only.
+- **PASS — Mainline JS/Python:** [CI #40555838370](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40555838370).
+- Device rendering and Symbian/EKA2L1 parity: **NOT TESTED**. APK artifacts: **0 expected**.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime.
