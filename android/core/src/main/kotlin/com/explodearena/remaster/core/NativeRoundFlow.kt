@@ -14,6 +14,9 @@ class NativeRoundFlow(private val victoryHoldTicks: Int = 90) {
     var state: State = State.PLAYING
         private set
     private var winTicks = 0
+    // Lock campaign progression when victory begins; later caller changes must not
+    // turn a final arena into a next-stage transition (or vice versa).
+    private var hasNextStageAtVictory: Boolean? = null
 
     val canRetry: Boolean get() = state == State.LOST || state == State.DRAW
     val isPlaying: Boolean get() = state == State.PLAYING
@@ -47,12 +50,16 @@ class NativeRoundFlow(private val victoryHoldTicks: Int = 90) {
                     opponentPresent && opponentDefeated -> State.WON
                     else -> State.PLAYING
                 }
+                if (state == State.WON) hasNextStageAtVictory = hasNextStage
             }
             State.WON -> {
                 winTicks++
                 if (winTicks >= victoryHoldTicks) {
-                    state = if (hasNextStage) State.ADVANCING else State.COMPLETE
-                    return hasNextStage
+                    val shouldAdvance = checkNotNull(hasNextStageAtVictory) {
+                        "Victory must capture stage availability before the hold begins"
+                    }
+                    state = if (shouldAdvance) State.ADVANCING else State.COMPLETE
+                    return shouldAdvance
                 }
             }
             else -> Unit

@@ -103,4 +103,21 @@ class NativeRoundFlowTest {
         assertEquals(NativeRoundFlow.State.LOST, previous.state)
         assertEquals(NativeRoundFlow.State.PLAYING, next.state)
     }
+
+    @Test fun victoryLatchesWhetherAnotherStageExistsAtTheStartOfTheHold() {
+        val finalArena = NativeRoundFlow(victoryHoldTicks = 2)
+        assertFalse(finalArena.tick(false, true, true, false))
+        assertEquals(NativeRoundFlow.State.WON, finalArena.state)
+        assertFalse(finalArena.tick(false, true, true, true))
+        assertFalse(finalArena.tick(false, true, true, true))
+        assertEquals(NativeRoundFlow.State.COMPLETE, finalArena.state)
+
+        val campaignArena = NativeRoundFlow(victoryHoldTicks = 2)
+        assertFalse(campaignArena.tick(false, true, true, true))
+        assertFalse(campaignArena.tick(false, true, true, false))
+        assertTrue(campaignArena.tick(false, true, true, false))
+        assertEquals(NativeRoundFlow.State.ADVANCING, campaignArena.state)
+        assertFalse(campaignArena.tick(false, true, true, true))
+    }
+
 }

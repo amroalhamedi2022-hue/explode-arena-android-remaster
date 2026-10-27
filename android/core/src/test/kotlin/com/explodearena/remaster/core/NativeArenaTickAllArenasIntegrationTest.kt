@@ -331,4 +331,54 @@ class NativeArenaTickAllArenasIntegrationTest {
         assertEquals(NativeRoundFlow.State.ADVANCING, round.state)
     }
 
+
+    @Test fun canonicalTickKeepsFinalArenaFinalWhenNextStageFlagChangesDuringVictoryHold() {
+        val stage = StageData(
+            id = 40,
+            image = "test.png",
+            width = 64,
+            height = 64,
+            obstacleX = 0,
+            obstacleY = 0,
+            grid = List(8) { IntArray(8) },
+            spawns = listOf(Spawn(24.0, 24.0), Spawn(40.0, 40.0)),
+        )
+        val state = NativeArenaRoundStateFactory.create(stage)
+        val bot = state.opponents.bots.single()
+        repeat(350) { bot.vitality.tick(burning = true) }
+        assertTrue("precondition: last opponent is defeated", bot.vitality.defeated)
+
+        val victory = NativeArenaTick.advance(
+            stage = stage,
+            player = state.player,
+            playerVitality = state.playerVitality,
+            opponents = state.opponents,
+            simulation = state.simulation,
+            roundFlow = state.roundFlow,
+            tick = 0L,
+            dx = 0.0,
+            dy = 0.0,
+            hasNextStage = false,
+        )
+        assertFalse(victory.advanceStage)
+        assertEquals(NativeRoundFlow.State.WON, state.roundFlow.state)
+
+        repeat(90) { index ->
+            val result = NativeArenaTick.advance(
+                stage = stage,
+                player = state.player,
+                playerVitality = state.playerVitality,
+                opponents = state.opponents,
+                simulation = state.simulation,
+                roundFlow = state.roundFlow,
+                tick = index.toLong() + 1L,
+                dx = 0.0,
+                dy = 0.0,
+                hasNextStage = true,
+            )
+            assertFalse("final arena must not signal a transition at hold tick $index", result.advanceStage)
+        }
+        assertEquals(NativeRoundFlow.State.COMPLETE, state.roundFlow.state)
+    }
+
 }
