@@ -513,6 +513,9 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Production change:** added `NativeArenaTick.advance` and routed the render-loop fixed-step through it. It owns player movement, opponent/bomb tick, both damage samples, and round resolution; rendering/audio consumes its result.
 - **Integration tests:** 120 fixed ticks for each of the 41 real stage records through the canonical method, checking player/bot terrain and bomb safety and actor separation; added a final-flame player damage/round-loss regression.
 - **Source/license review:** project-owned Kotlin refactor only; no external code, assets, dependencies, permissions or paid services added.
-- **CI:** pending exact updated PR-head run; no APK build/package/artifact.
+- **PASS — exact source/test/PR head:** `89ed813b842e709006d0b1b1cf829da5a8c917cc`.
+- **PASS — Native Kotlin/JUnit:** [run #40441599482](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40441599482), `:core:test`, job completed successfully.
+- **PASS — Mainline:** [run #40441599504](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40441599504) on the same head.
+- **Artifacts: 0** confirmed; no APK packaging or upload.
 - **NOT TESTED:** Xiaomi Pad 5/device play, actual audio/visual behavior, full human-played campaign, Symbian/EKA2L1 parity.
 - **Google Drive LIVE sync:** SYNC FAILED — this runtime exposes no Google Drive/Docs connector; no document read/write or folder metadata verification is claimed.
