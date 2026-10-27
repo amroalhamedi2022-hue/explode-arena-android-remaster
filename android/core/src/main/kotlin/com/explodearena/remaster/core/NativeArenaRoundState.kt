@@ -13,6 +13,7 @@ internal data class NativeArenaRoundState(
     val playerVitality: NativeVitality,
     val opponents: NativeOpponentRoster,
     val roundFlow: NativeRoundFlow,
+    val tickClock: NativeRoundTickClock = NativeRoundTickClock(),
 )
 
 /** Builds every mutable gameplay subsystem from the selected stage's spawn data. */
@@ -29,6 +30,7 @@ internal object NativeArenaRoundStateFactory {
             playerVitality = vitality,
             opponents = opponents,
             roundFlow = NativeRoundFlow(),
+            tickClock = NativeRoundTickClock(),
         )
     }
 }
