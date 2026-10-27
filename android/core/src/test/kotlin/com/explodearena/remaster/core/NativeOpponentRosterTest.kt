@@ -67,6 +67,22 @@ class NativeOpponentRosterTest {
         assertFalse(bot.walking)
     }
 
+    @Test fun negativeTickCannotAdvanceSoloArenaBombFuses() {
+        val arena = stage(1)
+        val player = Actor(24.0, 24.0)
+        val roster = NativeOpponentRoster(emptyList())
+        val simulation = NativeBombSimulation(arena, bombFuseSeconds = 1.0)
+        assertTrue(simulation.place(Actor(40.0, 40.0), "player"))
+        val remainingBefore = simulation.bombs.single().remaining
+
+        assertThrows(IllegalArgumentException::class.java) {
+            roster.advanceSimulationTick(arena, player, simulation, -1L)
+        }
+
+        assertEquals(remainingBefore, simulation.bombs.single().remaining)
+        assertTrue(simulation.flames.isEmpty())
+    }
+
     @Test fun rejectsUnsupportedAndOverlappingSpawns() {
         assertThrows(IllegalArgumentException::class.java) {
             NativeOpponentRoster.create(stage(3), Actor(24.0, 24.0))
