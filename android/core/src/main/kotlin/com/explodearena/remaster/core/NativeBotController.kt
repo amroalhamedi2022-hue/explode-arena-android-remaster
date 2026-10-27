@@ -37,7 +37,7 @@ class NativeBotController(private val owner: String = "bot") {
         simulation: NativeBombSimulation,
         tick: Long,
         otherActors: List<Actor> = emptyList(),
-    ): Decision = decideInternal(stage, bot, target, simulation, tick, otherActors, null)
+    ): Decision = decideInternal(stage, bot, target, simulation, tick, otherActors, null, true)
 
     /** Roster-only entry point: every bot in one tick shares the same read-only context. */
     internal fun decideWithContext(
@@ -48,7 +48,8 @@ class NativeBotController(private val owner: String = "bot") {
         tick: Long,
         otherActors: List<Actor>,
         threatContext: NativeBotThreatContext,
-    ): Decision = decideInternal(stage, bot, target, simulation, tick, otherActors, threatContext)
+        allowBombPlacement: Boolean = true,
+    ): Decision = decideInternal(stage, bot, target, simulation, tick, otherActors, threatContext, allowBombPlacement)
 
     private fun decideInternal(
         stage: StageData,
@@ -58,6 +59,7 @@ class NativeBotController(private val owner: String = "bot") {
         tick: Long,
         otherActors: List<Actor>,
         providedContext: NativeBotThreatContext?,
+        allowBombPlacement: Boolean,
     ): Decision {
         require(bot.x.isFinite() && bot.y.isFinite() && target.x.isFinite() && target.y.isFinite())
         require(tick >= 0)
@@ -129,7 +131,7 @@ class NativeBotController(private val owner: String = "bot") {
         val refuge = if (near && !escaping && bot.passBomb == null) {
             NativeBotEscapeRoute.firstDirection(stage, bot, simulation, bot.x, bot.y, otherActors)
         } else null
-        val place = near && refuge != null && refuge != 0 && bot.passBomb == null &&
+        val place = allowBombPlacement && near && refuge != null && refuge != 0 && bot.passBomb == null &&
             !escaping && canStep(refuge) &&
             !simulation.isBurning(bot.x, bot.y, StageCollision.ACTOR_RADIUS)
         // A bomb must be followed by the escape plan immediately. Returning
