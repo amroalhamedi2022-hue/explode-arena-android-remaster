@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-27  
 **PR:** #2 — Native Kotlin/libGDX; keep Draft, no merge.  
-**Status at source commit:** implementation and regression added; CI pending.
+**Status:** source/test CI PASS; independent docs-head recheck pending.
 
 ## Engineering question
 
@@ -27,6 +27,11 @@ Does the production input arbiter continue feeding fixed-step ticks after the la
 
 This is a focused correction to existing project logic. No external implementation or dependency was copied or added; no original game art/audio files changed.
 
-## Verification
+## Verified result
 
-Pending source-only CI. Device, visual freeze, Android runtime behavior, and Symbian/EKA2L1 parity remain **NOT TESTED**.
+- **PASS — exact source/test SHA:** `8993ddfa9cce684850e8cf2f464531524e62c2de`.
+- **PASS — Native Kotlin/JUnit:** [run #40491767525](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40491767525), `:core:test`, BUILD SUCCESSFUL in 57s.
+- **PASS — Mainline JS/Python:** [run #40491767514](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40491767514).
+- **Artifacts: 0**; no APK packaging, signing or upload.
+- Device, visual freeze, Android runtime behavior, and Symbian/EKA2L1 parity remain **NOT TESTED**.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime.

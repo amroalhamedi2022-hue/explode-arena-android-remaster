@@ -641,3 +641,15 @@ Updated: 2026-10-23 (native migration first code slice)
 - **NOT TESTED:** Xiaomi Pad 5/HyperOS, Android stage texture swap, Symbian/EKA2L1 parity, device performance/audio. The port remains provisional and no original assets were added.
 - PR #2 remains Draft/open, PR #1 collision remains separate. No merge, main write or release.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime; no LIVE read/write or folder metadata verification is claimed.
+
+## 2026-10-27 N45 — Freeze final-arena fixed-step clock
+
+- **Production change:** `NativeFrameCommands.resolve` now accepts an explicit `advancesClock` gate; the real libGDX loop supplies `roundFlow.advancesPresentationClock`. PLAYING and the provisional WON hold continue ticking, while LOST/DRAW/ADVANCING/COMPLETE cannot keep the fixed-step clock running. Bomb/remote commands remain gated by `isPlaying`.
+- **Integration regression:** `completedFinalArenaFreezesClockWhileVictoryHoldStillAdvances` proves WON advances one tick, final-stage victory reaches COMPLETE, and 40 subsequent idle frames add no ticks.
+- **PASS — exact source/test SHA:** `8993ddfa9cce684850e8cf2f464531524e62c2de`.
+- **PASS — Native Kotlin/JUnit:** [CI #40491767525](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40491767525), `:core:test`, BUILD SUCCESSFUL in 57s.
+- **PASS — Mainline JS/Python:** [CI #40491767514](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40491767514), same source/test SHA.
+- **Artifacts: 0 confirmed** on both runs; source-only validation, no APK packaging/signing/upload.
+- **NOT TESTED:** Xiaomi Pad 5/HyperOS final-arena presentation, actual Android runtime, Symbian/EKA2L1 parity and full game completeness.
+- **SYNC FAILED:** Google Drive LIVE handoff/index cannot be updated in this runtime because no Drive/Docs connector is exposed; no LIVE read/write or folder metadata verification is claimed.
+- PR #2 remains Draft/open; PR #1 collision remains separate. No merge, main write, release, auto-merge, or new copyrighted assets.
