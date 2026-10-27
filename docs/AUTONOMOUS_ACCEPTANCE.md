@@ -741,3 +741,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - Docs-updated PR-head recheck **PASS** on `2dd795074c7bc8c7338b2e154e00e667dd903652`: Native [CI #40559674506](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40559674506) and Mainline [CI #40559674298](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40559674298) both passed. Device/EKA2L1 parity NOT TESTED. No APK build/package/upload, assets, dependency, merge or main write.
 - Google Drive LIVE sync: **SYNC FAILED** — connector unavailable; no LIVE read/write claimed.
 
+
+
+## 2026-10-27 N54 — fail-closed replay tick exhaustion
+
+- Production change: `NativeReplaySession` now accepts a non-negative initial replay tick for checkpoint-oriented tests and checks counter exhaustion before any simulation mutation. A wrapped/negative replay sequence is prevented.
+- Regression tests cover negative initial ticks and `Long.MAX_VALUE` exhaustion with a before/after trace equality assertion; existing replay comparison tests remain in the same suite.
+- Source + regression-test commit: `e2364165398de10eaab6240b4af39ad8e4a8a8fe`.
+- **PASS — Mainline JS/Python:** [CI #40563943359](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40563943359).
+- Native Kotlin/JUnit [CI #40563943582](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40563943582) was pending at the time of this entry; final docs-head results will be added to the PR conversation after recheck.
+- Device/EKA2L1 parity: **NOT TESTED**. APK artifacts: **0**. No new dependencies/assets, merge or main write.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime; no LIVE read/write or folder metadata verification is claimed.
