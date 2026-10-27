@@ -478,3 +478,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - No APK/build artifact, release, merge, auto-merge or main-branch write. Android device and Symbian/EKA2L1 parity remain **NOT TESTED**. This commit is a provisional native timing consistency fix, not proof of original-game timing.
 - The docs-updated PR head will receive a Mainline CI recheck; the native workflow is path-filtered to Android source/workflow changes, so the source/JUnit PASS above is tied to the exact production/test commit.
 - Google Drive LIVE handoff/index sync: **SYNC FAILED** — no Google Drive/Docs connector is exposed in this runtime. No sync is claimed.
+
+
+## 2026-10-27 N33 — all-41-arena opponent roster integration (CI PENDING)
+
+- **Test-only integration change:** added `NativeOpponentRosterAllArenasIntegrationTest.kt` against the real `web/assets/stages.js` catalog.
+- The test asserts ordered stage IDs 0..40 and the 18/2/21 spawn-count distribution, then executes 120 production fixed-step roster/simulation ticks per arena. It checks independent owner/controller/actor instances, terrain/bomb collision safety, and player/bot/bot separation after each movement step.
+- No production behavior or assets changed in this milestone. This is native-source integration evidence, not device or Symbian parity.
+- Exact source/test SHA and `:core:test` CI: **PENDING**.
+- No APK build, artifacts, release, merge, auto-merge or main write. Android device, EKA2L1/Symbian parity, graphics/audio and complete human-played rounds remain **NOT TESTED**.
+- Google Drive LIVE handoff/index sync: **SYNC FAILED** — this runtime exposes no Google Drive/Docs connector; no sync is claimed.
