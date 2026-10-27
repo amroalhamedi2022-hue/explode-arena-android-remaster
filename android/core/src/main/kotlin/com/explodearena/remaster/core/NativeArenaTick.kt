@@ -33,6 +33,14 @@ internal object NativeArenaTick {
         var bombsPlaced = 0
         var bombsDetonated = 0
 
+        // LOST/DRAW must remain retry-only; ADVANCING/COMPLETE are consumed
+        // by the outer render loop. Do not run AI, move actors, age fuses or
+        // re-resolve a latched outcome during catch-up ticks.
+        if (roundFlow.isLatched) {
+            opponents.stopWalking()
+            return Result(false, 0, 0, false)
+        }
+
         if (roundFlow.isPlaying) {
             val oldX = player.x
             val oldY = player.y
