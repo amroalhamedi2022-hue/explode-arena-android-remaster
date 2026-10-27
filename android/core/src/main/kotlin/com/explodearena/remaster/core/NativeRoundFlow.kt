@@ -18,6 +18,16 @@ class NativeRoundFlow(private val victoryHoldTicks: Int = 90) {
     val canRetry: Boolean get() = state == State.LOST || state == State.DRAW
     val isPlaying: Boolean get() = state == State.PLAYING
 
+    /**
+     * A latched outcome/transition cannot be changed by another gameplay tick.
+     * WON is deliberately excluded: its victory-hold counter must keep ticking.
+     */
+    val isLatched: Boolean
+        get() = when (state) {
+            State.LOST, State.DRAW, State.ADVANCING, State.COMPLETE -> true
+            State.PLAYING, State.WON -> false
+        }
+
     /** Returns true only once when the caller must load the next arena. */
     fun tick(
         playerDefeated: Boolean,
