@@ -152,6 +152,27 @@ internal class NativeOpponentRoster(
         return placed
     }
 
+    data class SimulationTickResult(val bombsPlaced: Int, val bombsDetonated: Int)
+
+    /**
+     * Canonical fixed-step order for bot gameplay: plan/move against the pre-tick
+     * world, advance fuses and flames once, then sample bot damage against the
+     * entire just-finished interval (including flames expiring at this boundary).
+     * The game loop and all-arena integration tests share this entry point so
+     * callers cannot accidentally sample bot damage before the bomb update.
+     */
+    fun advanceSimulationTick(
+        stage: StageData,
+        player: Actor,
+        simulation: NativeBombSimulation,
+        tick: Long,
+    ): SimulationTickResult {
+        val placed = advance(stage, player, simulation, tick, applyDamage = false)
+        val detonated = simulation.tick()
+        applyDamageForLastTick(simulation)
+        return SimulationTickResult(placed, detonated)
+    }
+
     /** Apply damage after tick(), including flame cells that expired at its boundary. */
     fun applyDamageForLastTick(simulation: NativeBombSimulation) {
         for (slot in bots) {
