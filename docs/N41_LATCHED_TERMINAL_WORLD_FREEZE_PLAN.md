@@ -25,6 +25,7 @@ After a round enters LOST or DRAW, can any subsequent catch-up tick still move a
 ## Status
 
 - Source/test SHA: `240a539b8da45db783f5dd66d51930f47798441f`.
-- CI: **PENDING** at plan creation; update this section only after the exact run is observed.
+- **PASS — exact source/test SHA:** Native Kotlin/JUnit [run #40467325784](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40467325784), `:core:test`, successful; Mainline JS/Python [run #40467325594](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40467325594), successful.
+- **PASS — docs-updated PR head `91ca494e7a4f4063bc8eb9b568a68b9c4e8ecd00`:** Native [run #40467466189](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40467466189) and Mainline [run #40467466030](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40467466030), both successful. A subsequent docs-only ledger update will trigger one more PR-head recheck; its result will be recorded in the PR discussion.
 - Xiaomi Pad 5, human-played rounds and Symbian/EKA2L1 parity: **NOT TESTED**.
 - Google Drive LIVE sync: **SYNC FAILED** if no Drive/Docs connector is available; no sync claim without read-back and folder metadata verification.
