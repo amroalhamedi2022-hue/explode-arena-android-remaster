@@ -19,3 +19,11 @@
 - The new trace covers all 41 stage records and their real 1/2/4-spawn layouts; 180-tick four-spawn determinism and invalid-input atomicity passed.
 - APK artifacts/build: 0. Device gameplay, audio, HD art fidelity, and Symbian/EKA2L1 parity remain NOT TESTED.
 - No external or unlicensed game assets were added.
+
+
+## 2026-10-28 — N59 pause-gate frame-time contract (CI pending)
+
+- Production: NativePauseGate.advance now rejects NaN, infinity and negative frame deltas before the paused fast path, so pause state cannot mask malformed frame timing.
+- Regression: NativePauseGateTest.pausedGateRejectsInvalidFrameDeltasBeforeThePauseShortCircuit verifies invalid inputs do not tick or invoke callbacks while backgrounded.
+- Plan: docs/N59_PAUSE_GATE_DELTA_VALIDATION_PLAN.md; final PR-head source/JUnit and Mainline CI: PENDING.
+- Android lifecycle/device and Symbian/EKA2L1 parity: NOT TESTED; APK artifacts: 0. No assets/dependencies added, no merge or main write.

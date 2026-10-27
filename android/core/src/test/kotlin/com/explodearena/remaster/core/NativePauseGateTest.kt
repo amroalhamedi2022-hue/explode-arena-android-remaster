@@ -128,4 +128,25 @@ class NativePauseGateTest {
         })
         assertEquals(NativeRoundFlow.State.WON, flow.state)
     }
+    
+    @Test fun pausedGateRejectsInvalidFrameDeltasBeforeThePauseShortCircuit() {
+        val gate = NativePauseGate()
+        val clock = FixedStepClock()
+        gate.onBackground(clock)
+        val invalidDeltas = listOf(
+            Double.NaN,
+            Double.POSITIVE_INFINITY,
+            Double.NEGATIVE_INFINITY,
+            -0.001,
+        )
+        for (delta in invalidDeltas) {
+            assertThrows(IllegalArgumentException::class.java) {
+                gate.advance(clock, delta) { fail("paused invalid delta must not tick") }
+            }
+        }
+        assertTrue(gate.isPaused)
+        assertEquals(0L, clock.ticks)
+        assertEquals(0, gate.advance(clock, 0.0) { fail("paused valid delta must not tick") })
+        assertEquals(0L, clock.ticks)
+    }
 }

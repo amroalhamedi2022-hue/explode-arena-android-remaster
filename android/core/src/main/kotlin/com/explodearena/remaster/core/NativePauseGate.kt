@@ -33,6 +33,8 @@ class NativePauseGate {
     }
 
     fun advance(clock: FixedStepClock, deltaSeconds: Double, tick: () -> Unit): Int {
+        // Validate before the paused fast path; otherwise pause masks malformed timing input.
+        require(deltaSeconds.isFinite() && deltaSeconds >= 0.0) { "Invalid frame time" }
         return if (isPaused) 0 else clock.advance(deltaSeconds, tick)
     }
 }
