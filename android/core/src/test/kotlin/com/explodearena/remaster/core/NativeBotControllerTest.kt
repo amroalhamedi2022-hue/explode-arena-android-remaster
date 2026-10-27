@@ -332,7 +332,7 @@ class NativeBotControllerTest {
                 it.bomb.owner == "player2" && it.bomb.remote
             },
         )
-        val refuge = NativeBotEscapeRoute.firstDirection(arena, bot, sim, 72.0, 40.0)
+        val refuge = NativeBotEscapeRoute.firstDirection(arena, bot, sim, 64.0, 40.0)
         assertNotNull("A refuge exists outside both predicted blast footprints", refuge)
         val choice = NativeBotController().decide(arena, bot, Actor(104.0, 40.0), sim, 60)
         assertFalse(choice.placeBomb)
