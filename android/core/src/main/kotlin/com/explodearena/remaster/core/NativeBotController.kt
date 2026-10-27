@@ -26,6 +26,9 @@ class NativeBotController(private val owner: String = "bot") {
     private var lastPlanTick = Long.MIN_VALUE
     private var wasEscaping = false
 
+    /** Last path-planning tick, exposed internally for deterministic scheduling regressions. */
+    internal val lastPlannedTick: Long get() = lastPlanTick
+
     fun decide(
         stage: StageData,
         bot: Actor,
@@ -61,7 +64,9 @@ class NativeBotController(private val owner: String = "bot") {
         // shared context computed before any bot plans or places a bomb.
         val threatContext = providedContext ?: NativeBotThreatContext.create(simulation)
         val imminentIndex = threatContext.imminentIndex
-        // Replan at 10Hz, immediately if the cached move becomes unsafe.
+        // Keep expensive bounded escape/path searches at 10Hz while stable.
+        // The live threat index and next-step safety check still run every tick,
+        // so a newly unsafe cached step triggers an immediate replan.
         val dx = doubleArrayOf(0.0, 1.0, 0.0, -1.0, 0.0)
         val dy = doubleArrayOf(0.0, 0.0, 1.0, 0.0, -1.0)
         // Threat owners and timestamped cells come from the same prediction.
@@ -94,7 +99,7 @@ class NativeBotController(private val owner: String = "bot") {
                 (escapingFlame || !simulation.isBurning(nx, ny, StageCollision.ACTOR_RADIUS)) &&
                 (escaping || !isImminent(nx, ny))
         }
-        if (escaping || escaping != wasEscaping ||
+        if (escaping != wasEscaping ||
             lastPlanTick == Long.MIN_VALUE || tick < lastPlanTick ||
             tick - lastPlanTick >= REPLAN_TICKS || !canStep(cachedDirection)) {
             // While our bomb is live, seek a refuge outside its predicted

@@ -679,3 +679,12 @@ Updated: 2026-10-23 (native migration first code slice)
 - Xiaomi Pad 5 and Symbian/EKA2L1 AI parity: **NOT TESTED**.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime; no LIVE read/write or folder metadata verification is claimed.
 - Detailed plan: [N48 chained remote-bomb refuge regression](N48_CHAINED_REMOTE_BOMB_REFUGE_REGRESSION_PLAN.md).
+
+
+## 2026-10-27 N49 — bounded escape replanning
+
+- Production change: stop rerunning bounded bot escape BFS on every 60 Hz tick; retain the 10 Hz planning cadence while rechecking the live threat index and cached next step every tick.
+- Regression covers plan reuse at ticks 61/65, periodic replan at tick 66, and immediate replan when the next step becomes blocked at tick 67.
+- Exact source/test SHA and CI results pending.
+- Device/Symbian parity **NOT TESTED**; no APK/artifacts, merge, main write, or new game assets.
+- Google Drive LIVE sync **SYNC FAILED** if no Drive/Docs connector is available; no sync is claimed without verification.

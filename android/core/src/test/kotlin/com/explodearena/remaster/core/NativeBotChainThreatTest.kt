@@ -92,6 +92,38 @@ class NativeBotChainThreatTest {
         assertFalse(decision.placeBomb)
     }
 
+    @Test fun escapePlanIsThrottledButUnsafeCachedStepReplansImmediately() {
+        val arena = stage()
+        val sim = NativeBombSimulation(arena)
+        assertTrue(sim.setRemoteDetonator("player", true))
+        assertTrue(sim.place(Actor(56.0, 24.0), "player"))
+        assertTrue(sim.place(Actor(24.0, 24.0), "player2"))
+        repeat(60) { sim.tick() }
+
+        val bot = Actor(88.0, 24.0)
+        val target = Actor(120.0, 24.0)
+        val controller = NativeBotController()
+        val first = controller.decide(arena, bot, target, sim, 60)
+        assertEquals(60L, controller.lastPlannedTick)
+        assertFalse(first.placeBomb)
+
+        // A stable, still-safe escape direction is reused between 10Hz plans.
+        assertEquals(first, controller.decide(arena, bot, target, sim, 61))
+        controller.decide(arena, bot, target, sim, 65)
+        assertEquals(60L, controller.lastPlannedTick)
+
+        // The six-tick budget expires at 60Hz tick 66.
+        controller.decide(arena, bot, target, sim, 66)
+        assertEquals(66L, controller.lastPlannedTick)
+
+        // This actor does not overlap the bot now, but blocks the cached next step.
+        controller.decide(
+            arena, bot, target, sim, 67,
+            otherActors = listOf(Actor(88.0, 34.5)),
+        )
+        assertEquals(67L, controller.lastPlannedTick)
+    }
+
     @Test fun chainedRemoteThreatUsesTimedFuseTravelDeadline() {
         val arena = stage()
         val sim = NativeBombSimulation(arena)
