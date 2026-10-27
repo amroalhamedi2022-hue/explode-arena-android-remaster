@@ -505,3 +505,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Artifacts: 0 confirmed**; no APK packaging or Android build occurred.
 - **NOT TESTED:** physical-device play, Xiaomi Pad 5, EKA2L1/Symbian parity, audio/visual behavior, complete human-played rounds and independent device recheck.
 - **Google Drive LIVE sync: SYNC FAILED** — no Drive/Docs connector is available in this runtime; no Drive write or read-back is claimed.
+
+
+## 2026-10-27 N35 — canonical full-arena simulation tick
+
+- **Engineering question:** can the real libGDX loop and all-arena integration tests share one fixed-step entry point without diverging on player movement, bot movement, bomb advancement, damage boundaries or round transitions? Source inspection alone cannot prove the shared Kotlin path compiles and runs against all 41 catalog records.
+- **Production change:** added `NativeArenaTick.advance` and routed the render-loop fixed-step through it. It owns player movement, opponent/bomb tick, both damage samples, and round resolution; rendering/audio consumes its result.
+- **Integration tests:** 120 fixed ticks for each of the 41 real stage records through the canonical method, checking player/bot terrain and bomb safety and actor separation; added a final-flame player damage/round-loss regression.
+- **Source/license review:** project-owned Kotlin refactor only; no external code, assets, dependencies, permissions or paid services added.
+- **CI:** pending exact updated PR-head run; no APK build/package/artifact.
+- **NOT TESTED:** Xiaomi Pad 5/device play, actual audio/visual behavior, full human-played campaign, Symbian/EKA2L1 parity.
+- **Google Drive LIVE sync:** SYNC FAILED — this runtime exposes no Google Drive/Docs connector; no document read/write or folder metadata verification is claimed.
