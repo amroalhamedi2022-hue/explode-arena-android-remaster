@@ -24,3 +24,9 @@ N41 freezes simulation state after LOST/DRAW/ADVANCING/COMPLETE, but the render 
 ## Evidence boundary
 
 This tests the native source clock contract only. Android rendering, player-visible behavior on Xiaomi Pad 5, and Symbian/EKA2L1 parity remain NOT TESTED.
+
+## Independent review refinement
+
+Review of the actual render-loop arbitration found that LOST/DRAW frames intentionally stop scheduling later world ticks. Therefore the transition tick itself must also clear bot walking state; relying only on the next latched tick is insufficient for the real UI path.
+
+Additional acceptance: when the production tick changes PLAYING to LOST, all bot `walking` flags are false before that tick returns. A fixture must first demonstrate that the same arena/tick would otherwise produce a moving bot.
