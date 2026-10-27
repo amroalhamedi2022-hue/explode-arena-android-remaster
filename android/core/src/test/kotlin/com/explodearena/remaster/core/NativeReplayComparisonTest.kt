@@ -163,4 +163,26 @@ class NativeReplayComparisonTest {
         assertEquals(NativeReplayComparison.MAX_TRACE_FRAMES, actual.consumed())
     }
 
+
+    @Test fun exhaustedReplayTickFailsBeforeMutatingSimulation() {
+        val session = NativeReplaySession(
+            stage(), Spawn(24.0, 24.0), initialTick = Long.MAX_VALUE,
+        )
+        val before = session.snapshot().traceLine()
+
+        val failure = assertThrows(IllegalStateException::class.java) {
+            session.step(NativeReplayInput(placeBomb = true, dx = 1.0))
+        }
+
+        assertEquals("Replay tick counter exhausted", failure.message)
+        assertEquals("exhaustion must be checked before world mutation", before, session.snapshot().traceLine())
+        assertTrue(session.snapshot().bombs.isEmpty())
+    }
+
+    @Test fun replaySessionRejectsNegativeInitialTick() {
+        assertThrows(IllegalArgumentException::class.java) {
+            NativeReplaySession(stage(), Spawn(24.0, 24.0), initialTick = -1L)
+        }
+    }
+
 }
