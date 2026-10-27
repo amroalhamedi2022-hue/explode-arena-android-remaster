@@ -57,12 +57,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     override fun create() {
         stages = StageCatalog.parse(Gdx.files.internal("assets/stages.js").readString("UTF-8"))
         stage = stages.first()
-        val safe = NativeSpawnLayout.resolve(stage).first()
-        actor = Actor(safe.x, safe.y)
-        bombSimulation = NativeBombSimulation(stage)
-        vitality = NativeVitality()
-        resetOpponents(stage)
-        roundFlow = NativeRoundFlow()
+        installFreshRound(NativeArenaRoundStateFactory.create(stage), quarantineInput = false)
         // Keep Android Back inside the native game to open/close pause.
         Gdx.input.setCatchKey(Input.Keys.BACK, true)
         arena = Texture(Gdx.files.internal(stage.image))
@@ -98,44 +93,36 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         val target = (index + stages.size) % stages.size
         if (target == stageIndex) return
         val next = stages[target]
-        val safe = NativeSpawnLayout.resolve(next).first()
+        // Construct the entire next simulation before replacing the current
+        // texture/state, so a malformed stage cannot leave a half-reset round.
+        val freshRound = NativeArenaRoundStateFactory.create(next)
         val texture = Texture(Gdx.files.internal(next.image))
         arena.dispose()
         arena = texture
         stageIndex = target
         stage = next
-        actor = Actor(safe.x, safe.y)
-        bombSimulation = NativeBombSimulation(next)
-        vitality = NativeVitality()
-        resetOpponents(next)
-        roundFlow = NativeRoundFlow()
-        facing = 2
-        walking = false
-        animationSeconds = 0.0
-        clock.clearPending()
-        // A held finger from the previous arena cannot control the new round.
-        touchControls.suppressUntilRelease()
+        installFreshRound(freshRound, quarantineInput = true)
         viewport = FitViewport(next.width.toFloat(), next.height.toFloat(), camera)
         viewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
     }
 
     private fun retryStage() {
-        val safe = NativeSpawnLayout.resolve(stage).first()
-        actor = Actor(safe.x, safe.y)
-        bombSimulation = NativeBombSimulation(stage)
-        vitality = NativeVitality()
-        resetOpponents(stage)
-        roundFlow = NativeRoundFlow()
+        installFreshRound(NativeArenaRoundStateFactory.create(stage), quarantineInput = true)
+    }
+
+    /** Install all gameplay subsystems together; no mutable round state is reused. */
+    private fun installFreshRound(fresh: NativeArenaRoundState, quarantineInput: Boolean) {
+        actor = fresh.player
+        bombSimulation = fresh.simulation
+        vitality = fresh.playerVitality
+        opponents = fresh.opponents
+        roundFlow = fresh.roundFlow
         facing = 2
         walking = false
         animationSeconds = 0.0
         clock.clearPending()
         // A held finger from the previous arena cannot control the new round.
-        touchControls.suppressUntilRelease()
-    }
-
-    private fun resetOpponents(current: StageData) {
-        opponents = NativeOpponentRoster.create(current, actor)
+        if (quarantineInput) touchControls.suppressUntilRelease()
     }
 
     override fun render() {
