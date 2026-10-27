@@ -316,11 +316,12 @@ class NativeBotControllerTest {
 
     @Test fun remoteBombReachedByTimedChainRemainsAnEscapeThreat() {
         val arena = stage()
-        val sim = NativeBombSimulation(arena, bombLimit = 2)
+        // Short range keeps a safe refuge reachable inside the remaining fuse window.
+        val sim = NativeBombSimulation(arena, bombLimit = 2, bombRange = 1)
         assertTrue(sim.setRemoteDetonator("player2", true))
         val bot = Actor(72.0, 40.0)
         assertTrue(sim.place(bot, "player2"))
-        assertTrue(sim.place(Actor(40.0, 40.0), "player"))
+        assertTrue(sim.place(Actor(56.0, 40.0), "player"))
         repeat(60) { sim.tick() }
         assertTrue(
             "Timed blast must schedule the remote bomb through the chain",
