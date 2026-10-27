@@ -319,7 +319,7 @@ class NativeBotControllerTest {
         // Short range keeps a safe refuge reachable inside the remaining fuse window.
         val sim = NativeBombSimulation(arena, bombLimit = 2, bombRange = 1)
         assertTrue(sim.setRemoteDetonator("player2", true))
-        val bot = Actor(72.0, 40.0)
+        val bot = Actor(64.0, 40.0)
         assertTrue(sim.place(bot, "player2"))
         assertTrue(sim.place(Actor(56.0, 40.0), "player"))
         repeat(60) { sim.tick() }
@@ -329,7 +329,7 @@ class NativeBotControllerTest {
                 it.bomb.owner == "player2" && it.bomb.remote
             },
         )
-        val refuge = NativeBotEscapeRoute.firstDirection(arena, bot, sim, 72.0, 40.0)
+        val refuge = NativeBotEscapeRoute.firstDirection(arena, bot, sim, 64.0, 40.0)
         assertNotNull("A refuge exists outside both predicted blast footprints", refuge)
         val choice = NativeBotController().decide(arena, bot, Actor(104.0, 40.0), sim, 60)
         assertFalse(choice.placeBomb)
