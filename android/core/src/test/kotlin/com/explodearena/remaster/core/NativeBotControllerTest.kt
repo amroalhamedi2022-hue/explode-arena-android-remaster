@@ -338,6 +338,8 @@ class NativeBotControllerTest {
         val expectedDx = when (refuge) { 1 -> 1.0; 3 -> -1.0; else -> 0.0 }
         val expectedDy = when (refuge) { 2 -> 1.0; 4 -> -1.0; else -> 0.0 }
         val choice = NativeBotController().decide(arena, bot, Actor(120.0, 40.0), sim, 60)
+        assertEquals("Controller must follow the independently computed refuge", expectedDx, choice.dx, 0.0)
+        assertEquals("Controller must follow the independently computed refuge", expectedDy, choice.dy, 0.0)
         assertFalse(choice.placeBomb)
         assertFalse("The bot must not continue directly into the timed chain", choice.dx == 1.0 && choice.dy == 0.0)
     }
