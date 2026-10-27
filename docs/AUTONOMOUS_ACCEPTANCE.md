@@ -728,5 +728,6 @@ Updated: 2026-10-23 (native migration first code slice)
 - Exact source/test SHA: `8fc53afe1ffd4c0c87945a55a2cca2f6305bc3d7`.
 - **PASS — Native Kotlin/JUnit:** [CI #40555838259](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40555838259), `:core:test`, source-only.
 - **PASS — Mainline JS/Python:** [CI #40555838370](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40555838370).
+- **PASS — documentation-updated head before the final evidence-note commit:** `ef3df9c83b39ab012f81baf15255496cb093c04a`; Native [CI #40556342390](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40556342390) and Mainline [CI #40556342373](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40556342373).
 - Device rendering and Symbian/EKA2L1 parity: **NOT TESTED**. APK artifacts: **0 expected**.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime.
