@@ -26,7 +26,7 @@ Can a direct caller advance bomb fuses on an invalid negative tick in a solo are
 - Production commit: `83ce94da22374e7a516f8cc446a820c9f6c8bcac`.
 - Integration regression commit: `4f329e943e1c2d8297224ecd20f4808de0e7cd6d`.
 - Test: `NativeOpponentRosterTest.negativeTickCannotAdvanceSoloArenaBombFuses`.
-- CI on the final docs-updated head: **PENDING**.
+- **PASS on this docs-updated head:** Native Kotlin/JUnit [run 40590981279](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40590981279) and Mainline JS/Python [run 40590981370](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40590981370). Native log: `BUILD SUCCESSFUL in 48s`; artifacts: **0**. This verification-ledger update creates a new head; its recheck will be recorded in PR #2 conversation to avoid an endless docs/CI commit loop.
 - Android device play and Symbian/EKA2L1 parity: **NOT TESTED**.
 - Copyrighted art/audio were not added or modified.
 - Google Drive LIVE sync must be independently verified; GitHub documentation is not proof of Drive sync.
