@@ -588,3 +588,12 @@ Updated: 2026-10-23 (native migration first code slice)
 - Exact source/JUnit CI and Mainline checks: **PENDING**.
 - Artifacts: 0 expected; no APK build requested. Device/Xiaomi Pad 5 and Symbian/EKA2L1 remain **NOT TESTED**.
 - Drive LIVE sync: **SYNC FAILED** if connector unavailable; no Drive read/write or folder metadata verification is claimed.
+
+## 2026-10-27 N41 validation update — PASS
+
+- Exact production/test SHA `240a539b8da45db783f5dd66d51930f47798441f`: **PASS** — Native Kotlin/JUnit [#40467325784](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40467325784), `:core:test`; Mainline JS/Python [#40467325594](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40467325594).
+- Docs-updated head `91ca494e7a4f4063bc8eb9b568a68b9c4e8ecd00`: **PASS** — Native [#40467466189](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40467466189); Mainline [#40467466030](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40467466030).
+- N41 source/test behavior: LOST/DRAW/ADVANCING/COMPLETE latch before world mutation; WON victory hold remains tick-driven. The all-arena regression covers 41 stage records, 120 LOST ticks each, a DRAW fuse freeze, and transition-state latching.
+- **Artifacts: 0** confirmed by workflow design; no APK task exists in `native-kotlin-validation.yml`.
+- Xiaomi Pad 5, actual game/audio/rendering and Symbian/EKA2L1 parity: **NOT TESTED**.
+- Google Drive LIVE sync: **SYNC FAILED** — this runtime exposes no Drive/Docs connector; no Drive document or folder metadata was read or written.
