@@ -30,9 +30,10 @@ This is a correction to project-owned Kotlin simulation ordering. No external AI
 
 ## Verification ledger
 
-- Source/test SHA: **PENDING**.
-- Native Kotlin/JUnit: **PENDING**.
-- Mainline JS/Python: **PENDING**.
+- **Exact source/test SHA:** `6ba42eb14fa92c62ece1807fa3396f9cd69a90f2`.
+- **PASS — Native Kotlin/JUnit:** [CI #40545607851](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40545607851), `:core:test`; source-only workflow, no APK packaging.
+- **PASS — Mainline JS/Python:** [CI #40545607886](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40545607886), same PR head; all existing mainline checks passed.
+- The new regression `sameTickPlacementsRefreshThreatContextBeforeMovement` passed; the existing roster-order and all-41-arena/1-2-4-spawn integration suites passed in the same Native run.
 - Device and Symbian/EKA2L1: **NOT TESTED**.
 - APK artifacts: **0 expected**.
 - Google Drive LIVE sync: **SYNC FAILED** if no Drive/Docs connector is exposed; do not claim sync without verified read-after-write.
