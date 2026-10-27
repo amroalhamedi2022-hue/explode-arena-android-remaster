@@ -530,3 +530,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - Artifacts: **0**. No APK packaging, upload, release, merge, main write or auto-merge.
 - Xiaomi Pad 5, Android play, audio/visual behavior, and original Symbian/EKA2L1 parity: **NOT TESTED**. Movement/fuse/AI semantics remain provisional.
 - Google Drive LIVE sync: **SYNC FAILED** — no Google Drive/Docs connector is exposed in this runtime; LIVE documents and target-folder metadata were not read or written.
+
+## 2026-10-27 — N37 mutual final-flame draw integration
+
+- **Engineering question:** when the player's and last bot's one-health actors are hit by the same bomb's final active-flame interval, does the canonical production tick resolve DRAW without a stage transition?
+- **Production integration regression:** added `simultaneousFinalFlameDefeatResolvesDrawWithoutStageAdvance` to `NativeArenaTickAllArenasIntegrationTest.kt`. It uses the real `NativeArenaTick.advance`, bot roster, bomb/fuse/flame simulation, both vitality objects and round flow; it asserts both deaths occur on the same tick, DRAW, retry availability, and zero advance signals.
+- **PASS — source/test SHA:** `b2daf1b9fecd3376ccf3480e79961d8ed40bc457`.
+- **PASS — Native Kotlin/JUnit:** [run #40447501558](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40447501558), `:core:test`, BUILD SUCCESSFUL in 38s.
+- **PASS — Mainline:** [run #40447501612](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40447501612).
+- **Artifacts: 0**; no APK packaging, release, merge, main write or auto-merge.
+- Xiaomi Pad 5, human-played gameplay, audio/visual acceptance and independent Symbian/EKA2L1 parity remain **NOT TESTED**. All native combat timing and AI remain provisional until those comparisons.
+- Google Drive LIVE sync: **SYNC FAILED** — this runtime has no Drive/Docs connector; no LIVE handoff/index read/write or folder metadata verification is claimed.
