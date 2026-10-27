@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-27  
 **PR:** #2 — Native Kotlin/libGDX; keep Draft, no merge.  
-**Status:** source/test CI PASS; independent docs-head recheck pending.
+**Status:** source/test CI PASS; docs-only PR-head recheck PASS on `3f84c0a1651bd8e961b1e8c693b549727b357d37` (run #40492056720).
 
 ## Engineering question
 

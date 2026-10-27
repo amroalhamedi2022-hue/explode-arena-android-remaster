@@ -652,4 +652,5 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Artifacts: 0 confirmed** on both runs; source-only validation, no APK packaging/signing/upload.
 - **NOT TESTED:** Xiaomi Pad 5/HyperOS final-arena presentation, actual Android runtime, Symbian/EKA2L1 parity and full game completeness.
 - **SYNC FAILED:** Google Drive LIVE handoff/index cannot be updated in this runtime because no Drive/Docs connector is exposed; no LIVE read/write or folder metadata verification is claimed.
+- **PASS — docs-only PR-head recheck:** [CI #40492056720](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40492056720) on documentation-updated head `3f84c0a1651bd8e961b1e8c693b549727b357d37`; `:core:test` passed, zero artifacts. The source/test SHA remains `8993ddfa9cce684850e8cf2f464531524e62c2de`.
 - PR #2 remains Draft/open; PR #1 collision remains separate. No merge, main write, release, auto-merge, or new copyrighted assets.
