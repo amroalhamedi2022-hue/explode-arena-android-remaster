@@ -579,3 +579,12 @@ Updated: 2026-10-23 (native migration first code slice)
 - Regression coverage: LOST and DRAW navigation-only frames; retry priority when navigation/remote input are simultaneous; 40 repeated terminal navigation attempts prove clock ticks stay at 0, fuse is unchanged, and result state remains stable.
 - Docs-updated PR-head recheck will be verified after this ledger update and recorded in the PR discussion.
 - **NOT TESTED:** Xiaomi Pad 5, actual Android rendering/input, Symbian/EKA2L1 parity, full 41-stage playable parity. No merge, main write, release, auto-merge or original asset upload.
+
+## 2026-10-27 N41 — latched terminal world freeze (validation pending)
+
+- Production source changed: `NativeRoundFlow.isLatched` explicitly identifies LOST/DRAW/ADVANCING/COMPLETE, while WON remains tick-driven; `NativeArenaTick.advance` returns before AI/movement/bomb/fuse/damage/round resolution when latched.
+- Added `NativeTerminalWorldFreezeIntegrationTest.kt`: all 41 source arenas, 120 post-LOST ticks each with a live bomb and bots, plus DRAW fuse freeze and WON/ADVANCING/COMPLETE latch behavior.
+- Source/test SHA: `240a539b8da45db783f5dd66d51930f47798441f`.
+- Exact source/JUnit CI and Mainline checks: **PENDING**.
+- Artifacts: 0 expected; no APK build requested. Device/Xiaomi Pad 5 and Symbian/EKA2L1 remain **NOT TESTED**.
+- Drive LIVE sync: **SYNC FAILED** if connector unavailable; no Drive read/write or folder metadata verification is claimed.
