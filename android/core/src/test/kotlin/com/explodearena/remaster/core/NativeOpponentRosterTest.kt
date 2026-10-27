@@ -98,6 +98,43 @@ class NativeOpponentRosterTest {
         assertTrue(bot.vitality.defeated)
     }
 
+    @Test fun sameTickPlacementsRefreshThreatContextBeforeMovement() {
+        val arena = stage(4)
+        val player = Actor(80.0, 80.0)
+        val bots = listOf(
+            NativeOpponentRoster.BotSlot("bot", Actor(64.0, 80.0)),
+            NativeOpponentRoster.BotSlot("bot2", Actor(96.0, 80.0)),
+        )
+        val observedBombCounts = mutableListOf<Int>()
+        val roster = NativeOpponentRoster(bots) { simulation ->
+            observedBombCounts += simulation.bombs.size
+            NativeBotThreatContext.create(simulation)
+        }
+        val simulation = NativeBombSimulation(arena)
+
+        val placed = roster.advance(arena, player, simulation, 0, applyDamage = false)
+
+        assertTrue("nearby bots with open escape corridors should place at least one bomb", placed > 0)
+        assertEquals(placed, simulation.bombs.size)
+        assertEquals(
+            "the second shared context must be built only after every placement is committed",
+            listOf(0, placed), observedBombCounts,
+        )
+        for (slot in roster.bots) {
+            val ownBomb = simulation.bombs.singleOrNull { it.owner == slot.owner }
+            if (ownBomb != null) {
+                assertEquals("placer must retain pass-bomb grace", ownBomb.id, slot.actor.passBomb)
+            }
+            assertFalse(
+                "${slot.owner} ended the tick inside a blocking bomb",
+                StageCollision.blocked(
+                    arena, slot.actor.x, slot.actor.y, StageCollision.ACTOR_RADIUS,
+                    simulation.bombs, slot.actor.passBomb,
+                ),
+            )
+        }
+    }
+
     private data class BotState(
         val owner: String,
         val x: Double,
