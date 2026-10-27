@@ -65,13 +65,15 @@ class NativeReplaySession(
     private val stage: StageData,
     spawn: Spawn,
     bombLimit: Int = 1,
+    initialTick: Long = 0L,
 ) {
     private val actor: Actor
     private val bombSimulation = NativeBombSimulation(stage, bombLimit = bombLimit)
     private val vitality = NativeVitality()
-    private var ticks = 0L
+    private var ticks = initialTick
 
     init {
+        require(initialTick >= 0L) { "Invalid replay tick" }
         require(spawn.x.isFinite() && spawn.y.isFinite()) { "Invalid replay spawn" }
         val safe = StageCollision.nearestFree(stage, spawn.x, spawn.y)
             ?: throw IllegalArgumentException("Stage has no valid replay spawn")
@@ -103,6 +105,9 @@ class NativeReplaySession(
             input.dx in -1.0..1.0 && input.dy in -1.0..1.0) {
             "Replay direction must be finite and normalized"
         }
+        // Check exhaustion before any bomb, movement, fuse or health mutation.
+        // A wrapped tick would make a deterministic trace look like a new round.
+        check(ticks < Long.MAX_VALUE) { "Replay tick counter exhausted" }
         if (!vitality.defeated) {
             if (input.placeBomb) bombSimulation.place(actor)
             if (input.remoteDetonate) bombSimulation.detonateRemote()
