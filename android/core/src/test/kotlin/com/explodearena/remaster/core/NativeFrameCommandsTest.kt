@@ -70,6 +70,39 @@ class NativeFrameCommandsTest {
                 NativeFrameCommands.Keys(), false, false, false))
     }
 
+    @Test fun lostAndDrawnRoundsFreezeClockUntilExplicitRetry() {
+        val terminalStates = listOf(
+            NativeRoundFlow(victoryHoldTicks = 1).also { it.tick(true, false, true, true) },
+            NativeRoundFlow(victoryHoldTicks = 1).also { it.tick(true, true, true, true) },
+        )
+        for (round in terminalStates) {
+            assertTrue(round.canRetry)
+            assertFalse(round.isPlaying)
+            val idle = NativeFrameCommands.resolve(
+                none, NativeFrameCommands.Keys(), false, round.canRetry, round.isPlaying,
+            )
+            assertEquals(NativeFrameCommands.Decision(), idle)
+            val remoteOnly = NativeFrameCommands.resolve(
+                NativeTouchControls.Frame(detonateRemote = true),
+                NativeFrameCommands.Keys(), false, round.canRetry, round.isPlaying,
+            )
+            assertEquals(NativeFrameCommands.Decision(), remoteOnly)
+            assertEquals(NativeFrameCommands.Decision(retry = true),
+                NativeFrameCommands.resolve(
+                    NativeTouchControls.Frame(placeBomb = true),
+                    NativeFrameCommands.Keys(), false, round.canRetry, round.isPlaying,
+                ))
+
+            val clock = FixedStepClock()
+            val gate = NativePauseGate()
+            repeat(40) {
+                assertEquals(0, gate.advance(clock, if (idle.advanceWorld) 0.25 else 0.0) {})
+            }
+            assertEquals(0L, clock.ticks)
+            assertEquals(round.state, if (round.canRetry) round.state else NativeRoundFlow.State.PLAYING)
+        }
+    }
+
     @Test fun heldTouchAfterArenaSwapRequiresFullReleaseBeforeNewBombOrNavigation() {
         val controls = NativeTouchControls()
         val l = controls.layout(1200, 800)
