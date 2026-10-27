@@ -32,7 +32,7 @@ This optimizes project-owned Kotlin logic. No third-party AI code, game assets, 
 - **Exact source/test SHA:** `86a72d66d332c48592accc543a8473e02fca350d`.
 - **PASS — Native Kotlin/JUnit:** [CI #40536070449](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40536070449), `:core:test`, no APK packaging.
 - **PASS — Mainline JS/Python:** [CI #40536070458](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40536070458), same source/test SHA.
-- Native run artifact list: **0**. Documentation-updated PR-head recheck: **PENDING**.
+- Native run artifact list: **0**. - **PASS — documentation-updated PR head** `0b3914860dd66e0515e9a269987aafd430830f29`: Native Kotlin/JUnit [CI #40536753328](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40536753328) and Mainline JS/Python [CI #40536753032](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40536753032) both **PASS**. The exact source/test SHA remains `86a72d66d332c48592accc543a8473e02fca350d`; the newer commit only updated verification documentation.
 - Xiaomi Pad 5 and Symbian/EKA2L1 parity: **NOT TESTED**.
 - Artifacts: **0 expected**.
 - Google Drive LIVE sync: **SYNC FAILED** if no Drive/Docs connector is exposed; do not claim sync without verified read-after-write.
