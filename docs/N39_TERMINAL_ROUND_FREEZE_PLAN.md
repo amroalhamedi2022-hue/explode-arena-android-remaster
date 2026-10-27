@@ -22,6 +22,15 @@ After the production round flow enters LOST or DRAW, do idle frames and remote-o
 - Added a JVM integration-style regression for both LOST and DRAW that checks idle/remote-only frames, the retry command, and 40 frozen frame attempts against `FixedStepClock`.
 - Existing victory-hold tests continue to require clock advancement for non-retryable WON frames.
 
+## Verification ledger
+
+- Production change commit: `da96445e8f4a6e87cae80a88824a2d397dde2cf3`.
+- Integration-test commit: `85bc363130ab702cecc94c2fb27e7568943b9f7c`; final assertion hardening/source-test head: `c52d0992c35765f53019f524ed41db0c3f72ab7b`.
+- **PASS — Native Kotlin/JUnit:** [CI #40458040272](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40458040272), `:core:test`, completed successfully on exact head `c52d0992c35765f53019f524ed41db0c3f72ab7b`.
+- **PASS — Mainline JS/Python source checks:** [CI #40458040217](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40458040217) on the same head.
+- **Artifacts: 0 confirmed**; neither workflow packages or uploads APKs.
+
 ## Scope and evidence boundaries
 
 This is native input/clock safety, not a claim about original Symbian menu behavior. It changes no movement, bomb, AI, collision, fuse, blast or damage rules. Physical device and Symbian/EKA2L1 parity remain **NOT TESTED**.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is available in this runtime; no LIVE read/write or folder metadata verification is claimed.
