@@ -631,3 +631,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Artifacts:** zero. No APK build/package/upload.
 - **NOT TESTED:** Xiaomi Pad 5 / HyperOS lifecycle and sound behavior; Symbian/EKA2L1 parity remains unverified.
 - No merge, main write, auto-merge, or new copyrighted assets.
+
+
+## 2026-10-27 N44 — Fresh arena round state
+- Production source changed: YES. Added NativeArenaRoundStateFactory and routed native initialization, stage changes and retry through one fresh-state installer.
+- Regression coverage: original 41 stage records/IDs/spawn counts, distinct bot identity, and a retry after a live bomb plus latched LOST outcome; fresh round has no bombs/flames and returns to PLAYING.
+- **PASS — exact source/test SHA:** ac8edd6404619707088d4989887fadc76477c2f9. Native Kotlin/JUnit [run #40484435074](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40484435074) and Mainline JS/Python [run #40484435050](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40484435050) succeeded.
+- **Artifacts: 0 confirmed**; source-only native workflow does not package or upload APKs.
+- **NOT TESTED:** Xiaomi Pad 5/HyperOS, Android stage texture swap, Symbian/EKA2L1 parity, device performance/audio. The port remains provisional and no original assets were added.
+- PR #2 remains Draft/open, PR #1 collision remains separate. No merge, main write or release.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime; no LIVE read/write or folder metadata verification is claimed.
