@@ -49,7 +49,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     private lateinit var vitality: NativeVitality
     private var roundFlow = NativeRoundFlow()
     private val pauseGate = NativePauseGate()
-    private val lifecycleCallbacks = NativeLifecycleCallbacks(pauseGate, clock)
+    private val lifecycleCallbacks = NativeLifecycleCallbacks(pauseGate, clock, touchControls)
     // Independent provisional bots for each additional arena spawn (1/2/4).
     // Original Symbian AI, game modes and palettes remain unverified.
     private lateinit var opponents: NativeOpponentRoster
@@ -84,19 +84,6 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         placeSound = Gdx.audio.newSound(Gdx.files.internal("assets/sfx/bomb_place.wav"))
         explosionSound = Gdx.audio.newSound(Gdx.files.internal("assets/sfx/bomb_explode1.wav"))
         viewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
-    }
-
-    /**
-     * libGDX forwards Android Activity background/resume events through these
-     * ApplicationListener callbacks. Returning to foreground stays paused
-     * until the player explicitly resumes from the native controls.
-     */
-    override fun pause() {
-        lifecycleCallbacks.onPause()
-    }
-
-    override fun resume() {
-        lifecycleCallbacks.onResume()
     }
 
     override fun resize(width: Int, height: Int) {
@@ -324,8 +311,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
     override fun pause() {
         // Android Home, lock screen and incoming calls must freeze the entire
         // native simulation. Returning requires a deliberate pause-button tap.
-        pauseGate.onBackground(clock)
-        touchControls.suppressUntilRelease()
+        lifecycleCallbacks.onPause()
         walking = false
         if (::placeSound.isInitialized) placeSound.stop()
         if (::explosionSound.isInitialized) explosionSound.stop()
@@ -336,7 +322,7 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         // The user resumes play with the on-screen pause control or Back/P.
         // Keep the pause-time touch quarantine until an empty touch frame.
         // Resetting here would turn an old held pointer into a new button press.
-        pauseGate.onForeground(clock)
+        lifecycleCallbacks.onResume()
     }
 
     override fun dispose() {

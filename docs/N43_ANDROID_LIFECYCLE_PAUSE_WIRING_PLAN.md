@@ -5,13 +5,13 @@
 
 ## Engineering question
 
-The native core already had a tested `NativePauseGate`, but `ExplodeArenaNativeGame` did not override libGDX's `ApplicationListener.pause()` / `resume()`. Thus the lifecycle safety contract was implemented in isolation rather than wired to Android's actual libGDX callbacks. Could an app background/resume cycle leave a bomb fuse or bot simulation running without an explicit player resume?
+The game already overrode libGDX `pause()` / `resume()` and called the pause gate. Review found that the callback contract lacked a focused combined regression covering the fixed-step clock, bomb fuse, and held-touch quarantine together. Can this existing lifecycle path be extracted behind a pure test seam so those linked safety guarantees remain protected?
 
 ## Source review
 
 - Reviewed the official libGDX lifecycle guide: https://libgdx.com/wiki/app/the-life-cycle
 - The guide states that Android invokes `pause()` on backgrounding and `resume()` when the app returns; `ApplicationAdapter` provides default implementations.
-- No third-party code copied; this connects the project's existing tested pause gate to the standard libGDX callbacks.
+- No third-party code copied. The lifecycle hooks already existed; this milestone makes their combined behavior independently testable without an Android device.
 
 ## Acceptance criteria
 
@@ -24,12 +24,12 @@ The native core already had a tested `NativePauseGate`, but `ExplodeArenaNativeG
 
 ## Implementation
 
-- Added `NativeLifecycleCallbacks` as a small adapter over the existing pause gate and fixed-step clock.
-- Wired the game's libGDX `pause()` / `resume()` overrides to that adapter.
-- Added a JVM integration test that exercises the callback adapter with a live bomb fuse and confirms an explicit resume is required.
+- Added `NativeLifecycleCallbacks` as a pure adapter over the existing pause gate, fixed-step clock, and touch quarantine.
+- The game's existing libGDX `pause()` / `resume()` overrides now delegate to that adapter while preserving walking-animation and sound cleanup.
+- Added a JVM integration test that exercises the linked callback path with a live bomb fuse and a held bomb touch; it verifies no catch-up and requires a full release frame plus explicit resume.
 
 ## Evidence boundaries
 
-- Source/JUnit CI can prove the core lifecycle state transition and compile the libGDX game source.
+- Source/JUnit CI can prove the callback adapter's fixed-step, fuse, and held-touch behavior and compile the libGDX game source.
 - Physical Android Home/app-switch behavior and Xiaomi Pad 5 / HyperOS remain **NOT TESTED**.
 - No APK build, signing, artifact upload, release, merge, main write, or copyrighted asset upload.
