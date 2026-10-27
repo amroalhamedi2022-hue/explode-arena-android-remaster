@@ -784,3 +784,10 @@ Updated: 2026-10-23 (native migration first code slice)
 - Native Kotlin/JUnit + Mainline JS/Python on the final docs-updated PR head: **PENDING**; do not call this milestone CI-PASS until both complete.
 - Android device and Symbian/EKA2L1 parity: **NOT TESTED**. APK artifacts: **0**. No asset/dependency change, merge, main write, or auto-merge.
 - Google Drive LIVE sync: **SYNC FAILED** — no Google Drive/Docs connector is exposed in this runtime; no LIVE document read/write or folder metadata verification is claimed.
+
+## 2026-10-27 — N57 verification follow-up
+
+- **PASS — source, integration tests, and current docs-updated PR head `f0fdb8ace2d5efe9dfda5bfab6cc7b24c16468f1`:** Native Kotlin/JUnit [CI #40590981279](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40590981279) completed `BUILD SUCCESSFUL in 48s`; Mainline JS/Python [CI #40590981370](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40590981370) passed.
+- Artifact query for Native CI #40590981279 returned **0 artifacts**; no APK packaging/upload occurred.
+- This follow-up append creates a new PR head. Its final-head CI result is reported in PR #2 conversation; no further ledger edit is made solely to chase the new head.
+- Android device and Symbian/EKA2L1 parity: **NOT TESTED**. Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime.
