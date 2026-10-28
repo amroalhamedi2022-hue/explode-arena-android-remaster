@@ -812,9 +812,10 @@ Updated: 2026-10-23 (native migration first code slice)
 - Source/test/docs commit: ff5e64f46c92f1fedbc72d048521523e5c19c7f5. Native Kotlin/JUnit CI #40598732190 PASS; Mainline JS/Python CI #40598732425 PASS on the same SHA. Artifact query: 0. Device lifecycle and EKA2L1 parity: NOT TESTED. Final docs-head recheck: PENDING.
 
 
-## 2026-10-28 N60 — fixed-step tick exhaustion safety (source/test PASS; final docs-head CI pending)
+## 2026-10-28 N60 — fixed-step tick exhaustion safety (source/test and docs-head CI PASS)
 - Engineering question: can the process-wide fixed-step clock reach Long.MAX_VALUE without wrapping, and can it reject the next tick before calling code that mutates the arena? Source inspection showed ticks++ had no exhaustion guard.
 - Production source: FixedStepClock now checks the counter before the callback; NativeRoundTickClock exposes an internal initial-tick seam while preserving its existing fail-closed next-tick guard.
 - Regressions: last representable fixed tick succeeds once; the next tick throws before callback; zero delta remains a no-op at exhaustion; negative test-injected counters are rejected.
 - Source/test commit: cdd56104db6c886102c6e31afb32946f5d997abb. Native Kotlin/JUnit CI #40605994566 PASS (BUILD SUCCESSFUL in 53s); Mainline JS/Python CI #40605994534 PASS. Native artifact query: 0.
-- Final docs-head CI: PENDING. APK packaging/artifacts: 0. Android device lifecycle, full gameplay, and Symbian/EKA2L1 parity: NOT TESTED.
+- Docs-head commit cc975afb85df5b3b4b07a9c5aaa3c9e00f2d2386: Native Kotlin/JUnit CI #40606358590 PASS; Mainline JS/Python CI #40606358711 PASS. Artifact query: 0.
+- APK packaging/artifacts: 0. Android device lifecycle, full gameplay, and Symbian/EKA2L1 parity: NOT TESTED.
