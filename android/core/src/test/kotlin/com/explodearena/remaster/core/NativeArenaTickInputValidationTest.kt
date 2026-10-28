@@ -351,4 +351,91 @@ class NativeArenaTickInputValidationTest {
         assertEquals(NativeRoundFlow.State.PLAYING, round.state)
     }
 
+
+    @Test fun playerCannotStartInsideAnotherOwnersBombAndCanRetryTheSameTickAfterRepair() {
+        val stage = stage()
+        val player = Actor(24.0, 24.0)
+        val bot = NativeOpponentRoster.BotSlot("bot", Actor(72.0, 24.0))
+        val roster = NativeOpponentRoster(listOf(bot))
+        val simulation = NativeBombSimulation(stage)
+        assertTrue(simulation.place(Actor(24.0, 24.0), owner = "bot"))
+        val bombBefore = simulation.bombs.single()
+        val playerVitality = NativeVitality()
+        val round = NativeRoundFlow()
+
+        assertThrows(IllegalArgumentException::class.java) {
+            NativeArenaTick.advance(
+                stage, player, playerVitality, roster, simulation, round,
+                tick = 12L, dx = 1.0, dy = 0.0, hasNextStage = true,
+            )
+        }
+
+        assertEquals(24.0, player.x, 0.0)
+        assertEquals(24.0, player.y, 0.0)
+        assertEquals(72.0, bot.actor.x, 0.0)
+        assertEquals(24.0, bot.actor.y, 0.0)
+        assertEquals(bombBefore.remaining!!, simulation.bombs.single().remaining!!, 0.0)
+        assertEquals(NativeRoundFlow.State.PLAYING, round.state)
+
+        // Move outside the bomb's strict hitbox. The rejected request must not
+        // consume either canonical clock, so the exact same tick can be retried.
+        player.x = 16.0
+        player.y = 16.0
+        NativeArenaTick.advance(
+            stage, player, playerVitality, roster, simulation, round,
+            tick = 12L, dx = 0.0, dy = 0.0, hasNextStage = true,
+        )
+        assertTrue(simulation.bombs.single().remaining!! < bombBefore.remaining!!)
+    }
+
+    @Test fun opponentCannotStartInsidePlayersBombWithoutItsOwnExitGrace() {
+        val stage = stage()
+        val player = Actor(16.0, 16.0)
+        val bot = NativeOpponentRoster.BotSlot("bot", Actor(72.0, 24.0))
+        val roster = NativeOpponentRoster(listOf(bot))
+        val simulation = NativeBombSimulation(stage)
+        assertTrue(simulation.place(Actor(72.0, 24.0), owner = "player"))
+        val bombBefore = simulation.bombs.single()
+        val round = NativeRoundFlow()
+
+        assertThrows(IllegalArgumentException::class.java) {
+            NativeArenaTick.advance(
+                stage, player, NativeVitality(), roster, simulation, round,
+                tick = 4L, dx = 0.0, dy = 0.0, hasNextStage = true,
+            )
+        }
+
+        assertEquals(72.0, bot.actor.x, 0.0)
+        assertEquals(24.0, bot.actor.y, 0.0)
+        assertEquals(bombBefore.remaining!!, simulation.bombs.single().remaining!!, 0.0)
+        assertEquals(NativeRoundFlow.State.PLAYING, round.state)
+
+        bot.actor.x = 64.0
+        bot.actor.y = 16.0
+        NativeArenaTick.advance(
+            stage, player, NativeVitality(), roster, simulation, round,
+            tick = 4L, dx = 0.0, dy = 0.0, hasNextStage = true,
+        )
+        assertTrue(simulation.bombs.single().remaining!! < bombBefore.remaining!!)
+    }
+
+    @Test fun ownerMayLeaveItsOwnBombWhenMatchingExitGraceIsPresent() {
+        val stage = stage()
+        val player = Actor(24.0, 24.0)
+        val simulation = NativeBombSimulation(stage)
+        assertTrue(simulation.place(player, owner = "player"))
+        val bomb = simulation.bombs.single()
+        assertEquals(bomb.id, player.passBomb)
+        val round = NativeRoundFlow()
+
+        val result = NativeArenaTick.advance(
+            stage, player, NativeVitality(), NativeOpponentRoster(emptyList()),
+            simulation, round, tick = 0L, dx = 1.0, dy = 0.0, hasNextStage = false,
+        )
+
+        assertTrue(result.playerWalking)
+        assertEquals(bomb.id, player.passBomb)
+        assertTrue(simulation.bombs.single().remaining!! < bomb.remaining!!)
+    }
+
 }

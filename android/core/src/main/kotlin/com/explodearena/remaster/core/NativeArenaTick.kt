@@ -55,8 +55,8 @@ internal object NativeArenaTick {
             // Finite coordinates alone are not enough: an actor already inside
             // solid terrain or beyond the arena edge could otherwise make a
             // zero-input tick advance bombs and AI from an invalid world state.
-            // Deliberately omit bombs here: an actor may legally be exiting its
-            // owner-grace bomb, and terrain validity is the invariant checked.
+            // Bomb occupancy is part of the starting-world contract. An actor may
+            // overlap only the bomb it owns while carrying that bomb's exit grace.
             require(!StageCollision.blocked(
                 stage, player.x, player.y, StageCollision.ACTOR_RADIUS,
             )) { "Invalid player terrain position" }
@@ -65,6 +65,17 @@ internal object NativeArenaTick {
                     stage, blocker.x, blocker.y, StageCollision.ACTOR_RADIUS,
                 )
             }) { "Invalid opponent terrain position" }
+            fun overlapsUnauthorizedBomb(actor: Actor, owner: String): Boolean =
+                simulation.bombs.any { bomb ->
+                    StageCollision.touchesBomb(bomb, actor.x, actor.y) &&
+                        !(actor.passBomb == bomb.id && bomb.owner == owner)
+                }
+            require(!overlapsUnauthorizedBomb(player, "player")) {
+                "Invalid player bomb position"
+            }
+            require(opponents.bots.filterNot { it.vitality.defeated }.none { slot ->
+                overlapsUnauthorizedBomb(slot.actor, slot.owner)
+            }) { "Invalid opponent bomb position" }
             // Validate the complete starting roster before reserving the tick.
             // Movement prevents new overlaps, but a malformed/replayed starting
             // state must not advance bombs or AI merely because input is zero.
