@@ -20,6 +20,9 @@ internal class NativeOpponentRoster(
     }
 
     init {
+        require(bots.all { it.owner == it.controller.ownerId }) {
+            "Opponent controller owner must match its roster owner"
+        }
         require(bots.map { it.owner }.toSet().size == bots.size) {
             "Opponent owner IDs must be unique"
         }

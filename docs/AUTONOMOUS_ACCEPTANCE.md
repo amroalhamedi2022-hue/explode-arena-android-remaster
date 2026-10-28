@@ -861,3 +861,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Artifacts: 0** in the Native workflow; no APK build/package/upload.
 - Device/Xiaomi Pad 5 and Symbian/EKA2L1 parity remain **NOT TESTED**.
 - The follow-up ledger/plan commits are documentation-only and marked [skip ci]; production and test source are unchanged from the verified head.
+
+
+### N63 — Roster/controller owner identity invariant (2026-10-28)
+
+- **Production source changed: YES.** NativeBotController now exposes a read-only internal owner identity; NativeOpponentRoster rejects any slot whose owner differs from the controller owner. This closes a real mismatch where bomb placement used the slot owner but owned-timed-bomb escape logic used the controller owner.
+- Regression: NativeOpponentRosterInvariantTest.mismatchedControllerOwnerIsRejectedBeforeGameplay.
+- Acceptance: constructor rejects mismatched ownership; canonical roster independence and existing bomb/AI regressions must remain green.
+- Source/JUnit CI: **PENDING** for the exact source/test commit; no APK packaging/artifacts.
+- Android device and Symbian/EKA2L1 parity: **NOT TESTED**.
+- Google Drive LIVE sync: **SYNC FAILED** if Drive/Docs connector is unavailable; no sync claim without read-back verification.

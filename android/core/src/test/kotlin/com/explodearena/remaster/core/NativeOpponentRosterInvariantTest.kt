@@ -68,6 +68,20 @@ class NativeOpponentRosterInvariantTest {
         }
     }
 
+    @Test fun mismatchedControllerOwnerIsRejectedBeforeGameplay() {
+        assertThrows(IllegalArgumentException::class.java) {
+            NativeOpponentRoster(
+                listOf(
+                    NativeOpponentRoster.BotSlot(
+                        "bot",
+                        Actor(24.0, 24.0),
+                        controller = NativeBotController("bot2"),
+                    ),
+                ),
+            )
+        }
+    }
+
     @Test fun canonicalFourSpawnFactoryCreatesIndependentStateForEveryBot() {
         val player = Actor(24.0, 24.0)
         val roster = NativeOpponentRoster.create(fourSpawnStage(), player)

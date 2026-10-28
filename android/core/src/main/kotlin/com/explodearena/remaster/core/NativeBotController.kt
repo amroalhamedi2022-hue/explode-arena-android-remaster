@@ -20,6 +20,9 @@ internal fun selectOwnedTimedBomb(
 
 class NativeBotController(private val owner: String = "bot") {
     init { require(owner in setOf("bot", "bot2", "bot3")) }
+
+    /** Identity used when matching this controller to its owned timed bombs. */
+    internal val ownerId: String get() = owner
     data class Decision(val dx: Double, val dy: Double, val placeBomb: Boolean)
 
     private var cachedDirection = 0
