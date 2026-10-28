@@ -1,4 +1,8 @@
-plugins { id 'com.android.application' }
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
 android {
     namespace 'com.explodearena.remaster'
     compileSdk 35
@@ -9,6 +13,54 @@ android {
         versionCode 21
         versionName '0.21-mainline-alpha'
     }
-    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = '17' }
+    sourceSets { main { jniLibs.srcDirs += ['libs'] } }
 }
-dependencies { implementation 'androidx.webkit:webkit:1.11.0' }
+
+configurations { natives }
+
+dependencies {
+    // AndroidX Core 1.17 needs compileSdk 36 and AGP >=8.9.1. The existing
+    // Mainline stays on tested AGP 8.6.1 / compileSdk 35 for now. Pin the
+    // compatible AndroidX Core 1.16 API instead of silently upgrading the
+    // entire legacy build toolchain or weakening the private APK guard.
+    constraints {
+        implementation('androidx.core:core:1.16.0') {
+            version { strictly '1.16.0' }
+            because 'Android API 35 and AGP 8.6.1 compatibility'
+        }
+    }
+    implementation 'androidx.webkit:webkit:1.11.0' // Legacy Mainline until native parity
+    implementation project(':core')
+    implementation 'com.badlogicgames.gdx:gdx-backend-android:1.14.2'
+    natives 'com.badlogicgames.gdx:gdx-platform:1.14.2:natives-arm64-v8a'
+    natives 'com.badlogicgames.gdx:gdx-platform:1.14.2:natives-armeabi-v7a'
+    natives 'com.badlogicgames.gdx:gdx-platform:1.14.2:natives-x86_64'
+}
+
+// Based on the official libGDX gdx-liftoff Android backend setup.
+// Keep the ARM64 native library available on Xiaomi Pad 5.
+tasks.register('copyAndroidNatives') {
+    doFirst {
+        configurations.natives.files.each { jar ->
+            def abi = null
+            if (jar.name.endsWith('natives-arm64-v8a.jar')) abi = 'arm64-v8a'
+            if (jar.name.endsWith('natives-armeabi-v7a.jar')) abi = 'armeabi-v7a'
+            if (jar.name.endsWith('natives-x86_64.jar')) abi = 'x86_64'
+            if (abi != null) {
+                copy {
+                    from zipTree(jar)
+                    into file("libs/$abi")
+                    include '*.so'
+                }
+            }
+        }
+    }
+}
+tasks.matching { it.name.contains('merge') && it.name.contains('JniLibFolders') }.configureEach {
+    dependsOn 'copyAndroidNatives'
+}
