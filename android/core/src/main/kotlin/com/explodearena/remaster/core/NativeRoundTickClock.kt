@@ -7,8 +7,10 @@ package com.explodearena.remaster.core
  * stage swaps/retries. AI cadence must instead restart at tick zero for every
  * fresh round so its first planning deadline does not depend on prior play time.
  */
-internal class NativeRoundTickClock {
-    private var nextTick = 0L
+internal class NativeRoundTickClock(initialTick: Long = 0L) {
+    init { require(initialTick >= 0L) { "Invalid initial arena tick" } }
+
+    private var nextTick = initialTick
 
     /** Returns the current zero-based round tick, then advances exactly once. */
     fun nextTick(): Long {

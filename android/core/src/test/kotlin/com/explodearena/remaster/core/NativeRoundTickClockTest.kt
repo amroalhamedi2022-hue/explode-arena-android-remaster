@@ -2,6 +2,7 @@ package com.explodearena.remaster.core
 
 import java.io.File
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -29,6 +30,16 @@ class NativeRoundTickClockTest {
             val nextAttempt = NativeArenaRoundStateFactory.create(stage)
             assertEquals("arena ${stage.id} fresh attempt AI tick", 0L, nextAttempt.tickClock.nextTick())
         }
+    }
+
+    @Test fun roundTickCounterFailsClosedBeforeLongWraparound() {
+        val clock = NativeRoundTickClock(Long.MAX_VALUE - 1L)
+        assertEquals(Long.MAX_VALUE - 1L, clock.nextTick())
+        assertThrows(IllegalStateException::class.java) { clock.nextTick() }
+    }
+
+    @Test fun negativeInjectedInitialTickIsRejected() {
+        assertThrows(IllegalArgumentException::class.java) { NativeRoundTickClock(-1L) }
     }
 
     @Test fun roundTickClocksAreIndependentAndMonotonicWithinEachAttempt() {

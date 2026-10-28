@@ -178,14 +178,16 @@ class SeededRng(seed: Long) {
 }
 
 /** 60 Hz deterministic update independent of render frame rate. */
-class FixedStepClock {
+class FixedStepClock internal constructor(initialTicks: Long = 0L) {
+    init { require(initialTicks >= 0L) { "Invalid initial fixed-step tick" } }
+
     companion object {
         const val STEP_SECONDS = 1.0 / 60.0
         const val MAX_FRAME_SECONDS = 0.25
     }
 
     private var accumulator = 0.0
-    var ticks: Long = 0
+    var ticks: Long = initialTicks
         private set
 
     /** Discard partial frame time on pause, stage swap or restart. */
@@ -196,6 +198,8 @@ class FixedStepClock {
         accumulator += min(deltaSeconds, MAX_FRAME_SECONDS)
         var steps = 0
         while (accumulator + 1e-12 >= STEP_SECONDS && steps < 15) {
+            // Check before the callback: an unrepresentable tick must not mutate gameplay.
+            check(ticks < Long.MAX_VALUE) { "Fixed-step tick counter exhausted" }
             tick()
             accumulator -= STEP_SECONDS
             steps++
