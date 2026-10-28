@@ -1059,3 +1059,10 @@ Updated: 2026-10-23 (native migration first code slice)
 - N80 rejects mutation on a frozen terminal hold and rejects advancing ticks after terminal states; unchanged terminal holds pass. The existing full-roster and 41-stage tests remained green in the exact commit.
 - Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. No merge/main write or new assets.
 - Google Drive LIVE: **SYNC FAILED** — no Drive/Docs connector exposed in this runtime; no Drive read/write/read-back is claimed.
+
+
+## 2026-10-28 — N80 final evidence append (source/test PASS; docs-head recheck pending)
+
+- Source/test commit `763256f7e5d6f27d4c620d576e72b7f82d968c6f`: Native Kotlin/JUnit [#40735461337](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461337) PASS; Mainline JS/Python [#40735461131](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461131) PASS.
+- Prior evidence-head `98f05bb738b9f55b99a45294bfebd0484d32e06e`: Native [#40735894401](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735894401) PASS; Mainline [#40735894437](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735894437) PASS.
+- Current change is documentation-only; final-head CI will be verified after this append. Artifacts 0; no APK.

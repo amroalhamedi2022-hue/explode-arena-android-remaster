@@ -36,5 +36,5 @@ The comparator is a parser plus temporal state validator. A trace may be byte-id
 - Native artifacts: **0**. No APK build/package/upload.
 - Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**.
 - PR #2 remains Draft/open; PR #1 remains separate. No merge, `main` write, external assets, or new dependencies.
-- Final documentation-head recheck: pending after this evidence update.
+- Previous evidence-head recheck: Native [#40735894401](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735894401) PASS; Mainline [#40735894437](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735894437) PASS. The current evidence append is docs-only; its final-head recheck is pending.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed; no read/write/read-back or folder metadata verification is claimed.
