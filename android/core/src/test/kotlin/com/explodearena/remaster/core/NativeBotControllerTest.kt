@@ -132,7 +132,7 @@ class NativeBotControllerTest {
         val sim = NativeBombSimulation(corridor)
         val bot = Actor(40.0, 44.0)
         assertTrue(sim.place(bot, "bot"))
-        assertTrue(sim.place(Actor(56.0, 60.0), "player"))
+        assertTrue(sim.place(Actor(56.0, 56.0), "player"))
         val threats = sim.predictedActiveBlastCells()
         assertTrue(threats.isNotEmpty())
         assertTrue(threats.any {

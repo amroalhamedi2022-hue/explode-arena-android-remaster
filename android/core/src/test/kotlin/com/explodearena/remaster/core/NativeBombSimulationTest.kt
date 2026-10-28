@@ -101,7 +101,8 @@ class NativeBombSimulationTest {
             spawns = listOf(Spawn(24.0, 24.0)),
         )
         val sim = NativeBombSimulation(offsetStage)
-        assertTrue(sim.place(Actor(24.0, 24.0)))
+        // Keep the actor hitbox clear of the wall at x=28 while snapping to the same bomb center x=24.
+        assertTrue(sim.place(Actor(22.0, 24.0)))
         repeat(96) { sim.tick() }
         assertTrue(sim.isBurning(24.0, 24.0))
         assertFalse(sim.isBurning(40.0, 24.0))
