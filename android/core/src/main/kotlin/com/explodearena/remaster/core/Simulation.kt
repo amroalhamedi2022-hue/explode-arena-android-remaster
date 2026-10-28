@@ -22,8 +22,13 @@ data class StageData(
     val grid: List<IntArray>,
     val spawns: List<Spawn>,
 ) {
-    val gridHeight: Int get() = grid.size
-    val gridWidth: Int get() = grid.firstOrNull()?.size ?: 0
+    // Capture the intended shape once. The caller may still hold a mutable list
+    // or IntArray rows, so collision queries validate the header and only the
+    // rows they actually touch instead of rescanning the whole grid every probe.
+    private val capturedGridHeight: Int = grid.size
+    private val capturedGridWidth: Int = grid.firstOrNull()?.size ?: 0
+    val gridHeight: Int get() = capturedGridHeight
+    val gridWidth: Int get() = capturedGridWidth
 
     init {
         require(width > 0 && height > 0 && grid.isNotEmpty())
@@ -49,23 +54,39 @@ object StageCollision {
     // A corrupt/custom arena must not turn one fixed step into millions of collision probes.
     const val MAX_MOVEMENT_SUBSTEPS = 4096
 
-    private fun hasConsistentGridShape(stage: StageData): Boolean {
-        val grid = stage.grid
-        val firstRow = grid.firstOrNull() ?: return false
-        val gridWidth = firstRow.size
-        // Some focused collision fixtures intentionally use an offset grid
-        // whose footprint is not world-aligned. Validate row consistency,
-        // not a guessed full-world geometry contract.
-        return gridWidth > 0 && grid.all { it.size == gridWidth }
+    /**
+     * O(1) header validation for hot collision paths. StageData captures its
+     * expected shape at construction; validate the current list size and first
+     * row here, then validate each row immediately before reading it. This
+     * avoids scanning every row for every bot/player substep while still
+     * failing closed on any malformed row that a query actually touches.
+     */
+    private fun hasStableGridHeader(stage: StageData): Boolean {
+        if (stage.gridWidth <= 0 || stage.gridHeight <= 0) return false
+        return try {
+            val grid = stage.grid
+            grid.size == stage.gridHeight && grid[0].size == stage.gridWidth
+        } catch (_: IndexOutOfBoundsException) {
+            false
+        }
+    }
+
+    private fun rowAt(stage: StageData, row: Int): IntArray? {
+        if (row !in 0 until stage.gridHeight) return null
+        return try {
+            stage.grid[row].takeIf { it.size == stage.gridWidth }
+        } catch (_: IndexOutOfBoundsException) {
+            null
+        }
     }
 
     fun tile(stage: StageData, x: Double, y: Double): Int {
-        if (!x.isFinite() || !y.isFinite() || !hasConsistentGridShape(stage)) return -1
+        if (!x.isFinite() || !y.isFinite() || !hasStableGridHeader(stage)) return -1
         val col = floor((x - stage.obstacleX) / CELL).toInt()
         val row = floor((y - stage.obstacleY) / CELL).toInt()
         if (col !in 0 until stage.gridWidth || row !in 0 until stage.gridHeight) return -1
-        val cells = stage.grid.getOrNull(row) ?: return -1
-        if (cells.size != stage.gridWidth || col !in cells.indices) return -1
+        val cells = rowAt(stage, row) ?: return -1
+        if (col !in cells.indices) return -1
         return cells[col]
     }
 
@@ -77,7 +98,7 @@ object StageCollision {
         // tile (floor(NaN).toInt() otherwise silently aliases tile zero).
         if (!x.isFinite() || !y.isFinite() || !radius.isFinite() || radius < 0) return true
         if (x - radius < 0 || y - radius < 0 || x + radius >= stage.width || y + radius >= stage.height) return true
-        if (!hasConsistentGridShape(stage)) return true
+        if (!hasStableGridHeader(stage)) return true
         val gridWidth = stage.gridWidth
         val gridHeight = stage.gridHeight
         // A 10px actor hitbox can fully contain an 8px solid cell while all
@@ -91,8 +112,7 @@ object StageCollision {
         val bottom = floor((y + radius - stage.obstacleY) / CELL).toInt()
         if (left < 0 || top < 0 || right >= gridWidth || bottom >= gridHeight) return true
         for (row in top..bottom) {
-            val cells = stage.grid.getOrNull(row) ?: return true
-            if (cells.size != gridWidth) return true
+            val cells = rowAt(stage, row) ?: return true
             for (col in left..right) {
                 if (cells[col] != 0) return true
             }
@@ -190,17 +210,20 @@ object StageCollision {
         // The obstacle grid is not necessarily aligned to world origin.
         // Search its actual cell centers, including half-cell stage offsets.
         // A world-aligned search could miss the only walkable spawn cell.
+        if (!hasStableGridHeader(stage)) return null
         val ox = floor((bx - stage.obstacleX) / CELL).toInt()
         val oy = floor((by - stage.obstacleY) / CELL).toInt()
         val candidates = ArrayList<Pair<Int, Int>>(stage.gridWidth * stage.gridHeight)
-        for (row in 0 until stage.gridHeight) for (col in 0 until stage.gridWidth) {
-            candidates.add(col to row)
+        for (row in 0 until stage.gridHeight) {
+            val cells = rowAt(stage, row) ?: return null
+            for (col in cells.indices) candidates.add(col to row)
         }
         candidates.sortWith(compareBy<Pair<Int, Int>> {
             max(kotlin.math.abs(it.first.toLong() - ox), kotlin.math.abs(it.second.toLong() - oy))
         }.thenBy { it.second }.thenBy { it.first })
         for ((col, row) in candidates) {
-            if (stage.grid[row][col] != 0) continue
+            val cells = rowAt(stage, row) ?: return null
+            if (cells[col] != 0) continue
             val px = stage.obstacleX + col * CELL + CELL / 2.0
             val py = stage.obstacleY + row * CELL + CELL / 2.0
             if (!blocked(stage, px, py, radius)) return Spawn(px, py)
