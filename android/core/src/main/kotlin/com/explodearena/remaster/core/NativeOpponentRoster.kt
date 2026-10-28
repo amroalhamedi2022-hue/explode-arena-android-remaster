@@ -19,6 +19,27 @@ internal class NativeOpponentRoster(
         var walking = false
     }
 
+    init {
+        require(bots.map { it.owner }.toSet().size == bots.size) {
+            "Opponent owner IDs must be unique"
+        }
+        for (firstIndex in bots.indices) {
+            for (secondIndex in firstIndex + 1 until bots.size) {
+                val first = bots[firstIndex]
+                val second = bots[secondIndex]
+                require(first.actor !== second.actor) {
+                    "Each opponent must own an independent actor"
+                }
+                require(first.vitality !== second.vitality) {
+                    "Each opponent must own independent vitality"
+                }
+                require(first.controller !== second.controller) {
+                    "Each opponent must own an independent controller"
+                }
+            }
+        }
+    }
+
     val present: Boolean get() = bots.isNotEmpty()
     val aliveCount: Int get() = bots.count { !it.vitality.defeated }
     val allDefeated: Boolean get() = present && aliveCount == 0
