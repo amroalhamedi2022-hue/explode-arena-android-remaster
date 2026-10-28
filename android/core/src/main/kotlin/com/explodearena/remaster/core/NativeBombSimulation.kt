@@ -54,9 +54,17 @@ class NativeBombSimulation(
     fun hasRemoteDetonator(owner: String): Boolean = owner in remoteOwners
 
     /** Return false if owner has reached the limit or the bomb tile is blocked/occupied. */
-    fun place(actor: Actor, owner: String = "player"): Boolean {
+    fun place(
+        actor: Actor,
+        owner: String = "player",
+        otherActors: List<Actor> = emptyList(),
+    ): Boolean {
         require(owner in setOf("player", "player2", "bot", "bot2", "bot3"))
         require(actor.x.isFinite() && actor.y.isFinite())
+        require(otherActors.none { it === actor } &&
+            otherActors.all { it.x.isFinite() && it.y.isFinite() }) {
+            "Invalid bomb-placement actor blockers"
+        }
         if (activeBombs.count { it.owner == owner } >= bombLimit) return false
         val x = cellCenter(actor.x)
         val y = cellCenter(actor.y)
@@ -66,7 +74,12 @@ class NativeBombSimulation(
         // it would wrap the next bomb identity to a negative value.
         check(nextId < Long.MAX_VALUE) { "Bomb ID counter exhausted" }
         val remote = owner in remoteOwners
-        val bomb = Bomb(nextId++, owner, x, y, if (remote) null else bombFuseSeconds, remote)
+        val bomb = Bomb(nextId, owner, x, y, if (remote) null else bombFuseSeconds, remote)
+        // The bomb's 16px cell can overlap a nearby actor even when the placer
+        // itself is clear. Refuse that placement before allocating an ID; this
+        // keeps the next canonical tick from starting inside a foreign bomb.
+        if (otherActors.any { StageCollision.touchesBomb(bomb, it.x, it.y) }) return false
+        nextId++
         activeBombs.add(bomb)
         // Match provisional JS: the placing actor can leave its own bomb once.
         if (StageCollision.touchesBomb(bomb, actor.x, actor.y)) actor.passBomb = bomb.id

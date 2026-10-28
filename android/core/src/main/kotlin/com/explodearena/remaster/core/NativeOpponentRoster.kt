@@ -116,7 +116,8 @@ internal class NativeOpponentRoster(
         // owner makes bomb IDs and replay snapshots stable if roster order changes.
         var placed = 0
         for (slot in living) {
-            if (decisions.getValue(slot).placeBomb && simulation.place(slot.actor, slot.owner)) {
+            if (decisions.getValue(slot).placeBomb &&
+                simulation.place(slot.actor, slot.owner, blockersAtStart.getValue(slot))) {
                 placed++
             }
         }

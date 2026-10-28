@@ -158,7 +158,10 @@ class ExplodeArenaNativeGame : ApplicationAdapter() {
         if (commands.togglePause) pauseGate.toggle(clock)
         if (commands.stageDelta != 0) selectStage(stageIndex + commands.stageDelta)
         if (commands.retry) retryStage()
-        if (commands.placeBomb && bombSimulation.place(actor)) placeSound.play(0.65f)
+        if (commands.placeBomb &&
+            bombSimulation.place(actor, otherActors = opponents.blockingActors())) {
+            placeSound.play(0.65f)
+        }
         if (commands.detonateRemote && bombSimulation.detonateRemote()) {
             explosionSound.play(0.75f)
         }

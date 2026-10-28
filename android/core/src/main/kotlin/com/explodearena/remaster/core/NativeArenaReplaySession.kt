@@ -142,7 +142,11 @@ internal class NativeArenaReplaySession(
         check(ticksInRound < Long.MAX_VALUE) { "Arena replay tick counter exhausted" }
 
         val playing = round.roundFlow.isPlaying
-        if (playing && input.placeBomb) round.simulation.place(round.player)
+        if (playing && input.placeBomb) {
+            round.simulation.place(
+                round.player, otherActors = round.opponents.blockingActors(),
+            )
+        }
         if (playing && input.remoteDetonate) round.simulation.detonateRemote()
 
         val tick = round.tickClock.nextTick()

@@ -379,8 +379,8 @@ class NativeArenaTickInputValidationTest {
 
         // Move outside the bomb's strict hitbox. The rejected request must not
         // consume either canonical clock, so the exact same tick can be retried.
-        player.x = 16.0
-        player.y = 16.0
+        player.x = 8.0
+        player.y = 8.0
         NativeArenaTick.advance(
             stage, player, playerVitality, roster, simulation, round,
             tick = 12L, dx = 0.0, dy = 0.0, hasNextStage = true,
@@ -410,8 +410,8 @@ class NativeArenaTickInputValidationTest {
         assertEquals(bombBefore.remaining!!, simulation.bombs.single().remaining!!, 0.0)
         assertEquals(NativeRoundFlow.State.PLAYING, round.state)
 
-        bot.actor.x = 64.0
-        bot.actor.y = 16.0
+        bot.actor.x = 56.0
+        bot.actor.y = 8.0
         NativeArenaTick.advance(
             stage, player, NativeVitality(), roster, simulation, round,
             tick = 4L, dx = 0.0, dy = 0.0, hasNextStage = true,
@@ -436,6 +436,24 @@ class NativeArenaTickInputValidationTest {
         assertTrue(result.playerWalking)
         assertEquals(bomb.id, player.passBomb)
         assertTrue(simulation.bombs.single().remaining!! < bomb.remaining!!)
+    }
+
+
+    @Test fun bombPlacementRefusesNearbyActorBeforeConsumingBombId() {
+        val stage = stage()
+        val player = Actor(24.0, 24.0)
+        // Actors 11px apart do not overlap their 10px hitboxes, but the
+        // bomb's larger footprint would overlap the adjacent actor.
+        val adjacent = Actor(35.0, 24.0)
+        val simulation = NativeBombSimulation(stage)
+
+        assertFalse(simulation.place(player, owner = "player", otherActors = listOf(adjacent)))
+        assertTrue(simulation.bombs.isEmpty())
+        assertEquals(1L, simulation.nextBombId)
+        assertNull(player.passBomb)
+
+        assertTrue(simulation.place(player, owner = "player"))
+        assertEquals(1L, simulation.bombs.single().id)
     }
 
 }
