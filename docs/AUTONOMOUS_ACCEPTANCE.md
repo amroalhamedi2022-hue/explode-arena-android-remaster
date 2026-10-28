@@ -1073,3 +1073,15 @@ Updated: 2026-10-23 (native migration first code slice)
 - Added an explicit comparator regression proving both LOST and DRAW can transition to a fresh PLAYING frame at tick 0 without weakening frozen terminal holds.
 - This is test-only; production logic is unchanged from `763256f7e5d6f27d4c620d576e72b7f82d968c6f`.
 - Follow-up source/test commit and CI: PENDING.
+
+
+## 2026-10-28 — N80 final source/test verification
+
+- Complete source/test head: `7a77bba29ff53419294579788ec7d943c5b727a3` (production logic from `763256f7e5d6f27d4c620d576e72b7f82d968c6f), with an explicit LOST/DRAW retry-reset regression.
+- **PASS:** Native Kotlin/JUnit [#40736761130](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40736761130), completed successfully.
+- **PASS:** Mainline JS/Python [#40736760890](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40736760890), completed successfully.
+- Artifact queries: **0**. No APK build/package/upload.
+- The regression suite now explicitly proves terminal-frame immutability, no tick advancement after COMPLETE, unchanged terminal holds, and allowed LOST/DRAW → PLAYING tick-0 reset. Existing 41-stage/1-2-4-spawn replay tests remain green.
+- Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED. PR #2 remains Draft/open; PR #1 remains separate; no merge, main write, external assets or dependency changes.
+- This evidence update is docs-only and uses `[skip ci]`; no source/test change follows the tested head.
+- Google Drive LIVE sync: SYNC FAILED — no Drive/Docs connector exposed; no read/write/read-back or folder metadata verification is claimed.

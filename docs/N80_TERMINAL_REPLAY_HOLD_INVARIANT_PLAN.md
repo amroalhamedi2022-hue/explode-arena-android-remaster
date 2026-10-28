@@ -30,11 +30,12 @@ The comparator is a parser plus temporal state validator. A trace may be byte-id
 
 ## Verification — 2026-10-28
 
-- Production logic commit: `763256f7e5d6f27d4c620d576e72b7f82d968c6f`; retry-reset regression follow-up: pending commit.
+- Production logic commit: `763256f7e5d6f27d4c620d576e72b7f82d968c6f`; complete source/test head with explicit retry-reset regression: `7a77bba29ff53419294579788ec7d943c5b727a3`.
 - **PASS:** Native Kotlin/JUnit ` :core:test ` — [CI #40735461337](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461337), completed successfully.
 - **PASS:** Mainline JS/Python source checks — [CI #40735461131](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461131), completed successfully.
 - Native artifacts: **0**. No APK build/package/upload.
 - Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**.
 - PR #2 remains Draft/open; PR #1 remains separate. No merge, `main` write, external assets, or new dependencies.
-- Previous evidence-head recheck: Native [#40735894401](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735894401) PASS; Mainline [#40735894437](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735894437) PASS. The additional retry-reset regression changes the test head; final verification is pending.
+- Prior docs-head before the test-only follow-up: Native [#40736346101](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40736346101) PASS; Mainline [#40736346175](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40736346175) PASS.
+- Final source/test head with retry-reset regression: PASS on both CI runs above. The current commit is documentation-only and uses `[skip ci]`; no production/test content changed after the tested SHA.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed; no read/write/read-back or folder metadata verification is claimed.
