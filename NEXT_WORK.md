@@ -33,3 +33,11 @@ The debug APK is now a verified build artifact. Do not claim physical-device com
 - Bomb simulation owns detached grid/spawn data; post-construction caller mutation is rejected by stage-binding preflight before gameplay mutation, and same-tick retry passes after repair.
 - Device gameplay and Symbian/EKA2L1 parity remain NOT TESTED. No APK build/package/upload.
 - Next: validate controlled gameplay on Android and compare collision, fuse/flame timing, stage transitions and audio against EKA2L1; continue source-only work without unlicensed assets.
+
+
+## 2026-10-28 — N82 replay actor vitality validation
+
+- Source/test SHA `c64ba5e4a9604e89c25f215a41f5168aa4f1ce42`; Native Kotlin/JUnit CI #40749023210 PASS; Mainline CI #40749023219 PASS.
+- Replay comparator now enforces native health (0..99), invulnerability (0..10s), and zero-health/defeated consistency. Malformed replay frames cannot be accepted as matching traces.
+- No APK build/artifact. Android device and EKA2L1 parity remain NOT TESTED.
+- Next: keep prioritizing an actual controlled Android gameplay capture and EKA2L1 comparison before changing provisional movement, fuse, collision or AI constants; continue source work only where a testable invariant or gameplay gap is identified.
