@@ -5,10 +5,16 @@ package com.explodearena.remaster.core
  * separate provisional AI, vitality and bomb quota. Not Symbian mode parity.
  */
 internal class NativeOpponentRoster(
-    val bots: List<BotSlot>,
+    bots: List<BotSlot>,
     private val threatContextFactory: (NativeBombSimulation) -> NativeBotThreatContext =
         { simulation -> NativeBotThreatContext.create(simulation) },
 ) {
+    // Snapshot the caller-owned collection before validating roster invariants.
+    private val slots: List<BotSlot> = bots.toList()
+
+    /** A detached snapshot; callers cannot mutate validated internal membership. */
+    val bots: List<BotSlot> get() = slots.toMutableList()
+
     class BotSlot(
         val owner: String,
         val actor: Actor,
@@ -20,16 +26,16 @@ internal class NativeOpponentRoster(
     }
 
     init {
-        require(bots.all { it.owner == it.controller.ownerId }) {
+        require(slots.all { it.owner == it.controller.ownerId }) {
             "Opponent controller owner must match its roster owner"
         }
-        require(bots.map { it.owner }.toSet().size == bots.size) {
+        require(slots.map { it.owner }.toSet().size == slots.size) {
             "Opponent owner IDs must be unique"
         }
-        for (firstIndex in bots.indices) {
-            for (secondIndex in firstIndex + 1 until bots.size) {
-                val first = bots[firstIndex]
-                val second = bots[secondIndex]
+        for (firstIndex in slots.indices) {
+            for (secondIndex in firstIndex + 1 until slots.size) {
+                val first = slots[firstIndex]
+                val second = slots[secondIndex]
                 require(first.actor !== second.actor) {
                     "Each opponent must own an independent actor"
                 }
@@ -43,15 +49,15 @@ internal class NativeOpponentRoster(
         }
     }
 
-    val present: Boolean get() = bots.isNotEmpty()
-    val aliveCount: Int get() = bots.count { !it.vitality.defeated }
+    val present: Boolean get() = slots.isNotEmpty()
+    val aliveCount: Int get() = slots.count { !it.vitality.defeated }
     val allDefeated: Boolean get() = present && aliveCount == 0
 
-    fun stopWalking() { bots.forEach { it.walking = false } }
+    fun stopWalking() { slots.forEach { it.walking = false } }
 
     /** Only living opponents occupy space; dead sprites never trap the player. */
     fun blockingActors(): List<Actor> =
-        bots.filterNot { it.vitality.defeated }.map { it.actor }
+        slots.filterNot { it.vitality.defeated }.map { it.actor }
 
     /**
      * Advance one provisional 60Hz opponent tick without roster-order bias.
@@ -76,8 +82,8 @@ internal class NativeOpponentRoster(
         // Validate before touching bot animation state or taking the solo-arena
         // early return. advanceSimulationTick must not age fuses on an invalid tick.
         require(tick >= 0L) { "Invalid opponent tick" }
-        bots.filter { it.vitality.defeated }.forEach { it.walking = false }
-        val living = bots.filterNot { it.vitality.defeated }.sortedBy { it.owner }
+        slots.filter { it.vitality.defeated }.forEach { it.walking = false }
+        val living = slots.filterNot { it.vitality.defeated }.sortedBy { it.owner }
         if (living.isEmpty()) return 0
 
         val playerAtStart = Actor(player.x, player.y, player.passBomb)
@@ -90,7 +96,7 @@ internal class NativeOpponentRoster(
                 .map { actorsAtStart.getValue(it) }
         }
 
-        // One chain prediction and one immutable spatial index serve all bots.
+        // One chain prediction and one immutable spatial index serve all slots.
         // Planning is read-only, so this pre-placement context is valid for
         // every decision in this tick and cannot observe a peer's new bomb.
         val threatContext = threatContextFactory(simulation)
@@ -236,7 +242,7 @@ internal class NativeOpponentRoster(
 
     /** Apply damage after tick(), including flame cells that expired at its boundary. */
     fun applyDamageForLastTick(simulation: NativeBombSimulation) {
-        for (slot in bots) {
+        for (slot in slots) {
             tickDamage(
                 slot,
                 simulation.isBurningDuringLastTick(

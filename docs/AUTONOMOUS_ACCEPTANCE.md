@@ -881,3 +881,12 @@ Updated: 2026-10-23 (native migration first code slice)
 - **Artifacts: 0**; native workflow ran :core:test only, no APK packaging/upload.
 - **NOT TESTED:** Android device launch, Xiaomi Pad 5 input/visuals, and Symbian/EKA2L1 gameplay parity.
 - Google Drive LIVE: **SYNC FAILED**; no Drive/Docs connector was available for read/write/read-back verification.
+
+
+## 2026-10-28 N64 — opponent roster membership immutability
+- Production fix: snapshot the constructor's caller-owned roster before validating invariants; all internal tick/damage/occupancy paths use the private snapshot; the bots accessor returns a detached list.
+- Regression: mutate the original MutableList after construction and mutate a returned JVM MutableList snapshot; neither can add a duplicate owner or alter blocking actors.
+- Plan: docs/N64_ROSTER_MEMBERSHIP_IMMUTABILITY_PLAN.md.
+- Source/JUnit and final PR-head CI: PENDING at commit creation; exact SHA/run IDs will be recorded in the PR conversation after verification.
+- Android device/native launch and Symbian/EKA2L1 parity: NOT TESTED. APK build/artifacts: 0.
+- No merge, main write, or game asset upload. Google Drive LIVE sync: SYNC FAILED if no connector is available; no Drive sync is claimed.

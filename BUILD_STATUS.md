@@ -47,3 +47,10 @@
 - Source/test commit `3f831dc44adb9ac52d2e397d7243202e9ab77f6d`: Native Kotlin/JUnit CI #40611588324 PASS (`BUILD SUCCESSFUL in 49s`); Mainline JS/Python CI #40611588341 PASS. Native artifacts: 0.
 - Docs-updated head `5acb09802eb3391c54392381863e86380092820c`: Native Kotlin/JUnit CI #40611991238 PASS (`BUILD SUCCESSFUL in 50s`), Mainline JS/Python CI #40611991210 PASS; artifact count 0.
 - Android device and Symbian/EKA2L1 parity: NOT TESTED. No APK packaging or upload.
+
+
+## 2026-10-28 N64 — roster membership immutability (CI pending)
+- Prevented a retained caller MutableList from bypassing roster owner/state invariants after construction; simulation methods now use a private copied roster and the accessor returns a detached snapshot.
+- Added a regression for post-construction mutation of both the input list and a returned mutable snapshot.
+- Plan: docs/N64_ROSTER_MEMBERSHIP_IMMUTABILITY_PLAN.md. Source/test + final-head CI: pending.
+- Device gameplay and Symbian/EKA2L1 parity: NOT TESTED. APK artifacts: 0. No merge or main write.

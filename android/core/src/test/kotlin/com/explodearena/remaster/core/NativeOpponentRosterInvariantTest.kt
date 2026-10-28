@@ -96,4 +96,25 @@ class NativeOpponentRosterInvariantTest {
             }
         }
     }
+
+    @Test fun rosterMembershipCannotBeMutatedThroughInputOrReturnedList() {
+        val original = NativeOpponentRoster.BotSlot("bot", Actor(24.0, 24.0))
+        val callerOwned = mutableListOf(original)
+        val roster = NativeOpponentRoster(callerOwned)
+
+        // The constructor validated one slot; later caller changes must not
+        // silently bypass owner uniqueness or introduce a new simulation actor.
+        callerOwned.add(NativeOpponentRoster.BotSlot("bot", Actor(88.0, 24.0)))
+        assertEquals(listOf("bot"), roster.bots.map { it.owner })
+        assertEquals(1, roster.blockingActors().size)
+
+        // The public read-only Kotlin type is not a JVM immutability boundary.
+        // Even a caller that casts/mutates the returned JVM list gets a detached copy.
+        @Suppress("UNCHECKED_CAST")
+        val exposed = roster.bots as MutableList<NativeOpponentRoster.BotSlot>
+        exposed.add(NativeOpponentRoster.BotSlot("bot2", Actor(72.0, 40.0)))
+        assertEquals(listOf("bot"), roster.bots.map { it.owner })
+        assertEquals(1, roster.blockingActors().size)
+    }
+
 }
