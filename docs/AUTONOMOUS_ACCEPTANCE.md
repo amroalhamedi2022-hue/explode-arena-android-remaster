@@ -913,3 +913,5 @@ Updated: 2026-10-23 (native migration first code slice)
 - PASS: Native Kotlin/JUnit CI #40640834426 on final tested docs-head SHA bfe7fecb1dd9e125041bfe85ed9db172e91c19bb; Mainline PR CI #40640834344 PASS; Mainline push CI #40640828161 PASS on source/test SHA 5ec9c3fed00dbb465ddb45a5acbe8475bd8c1d16.
 - Native artifacts: 0; no APK packaging/upload. The earlier native run #40640828500 was cancelled by a newer push after its test step had succeeded; final docs-head run above completed PASS.
 - Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED. No APK packaging or assets added.
+
+- Google Drive LIVE handoff/index: SYNC FAILED — this runtime exposes no Google Drive/Docs connector; no LIVE read/write/read-back or folder metadata verification was possible.
