@@ -60,6 +60,55 @@ internal class NativeOpponentRoster(
         slots.filterNot { it.vitality.defeated }.map { it.actor }
 
     /**
+     * Validate the complete starting world without mutation. NativeArenaTick
+     * calls this before moving the player, and advanceSimulationTick calls it
+     * again so direct/replay callers cannot bypass the same safety contract.
+     */
+    internal fun validateStartState(
+        stage: StageData,
+        player: Actor,
+        simulation: NativeBombSimulation,
+    ) {
+        require(player.x.isFinite() && player.y.isFinite()) { "Invalid player position" }
+        val living = slots.filterNot { it.vitality.defeated }
+        require(
+            living.none { it.actor === player } &&
+                living.all { it.actor.x.isFinite() && it.actor.y.isFinite() }
+        ) { "Invalid actor collision blockers" }
+
+        require(!StageCollision.blocked(
+            stage, player.x, player.y, StageCollision.ACTOR_RADIUS,
+        )) { "Invalid player terrain position" }
+        require(living.none { slot ->
+            StageCollision.blocked(
+                stage, slot.actor.x, slot.actor.y, StageCollision.ACTOR_RADIUS,
+            )
+        }) { "Invalid opponent terrain position" }
+
+        fun overlapsUnauthorizedBomb(actor: Actor, owner: String): Boolean =
+            simulation.bombs.any { bomb ->
+                StageCollision.touchesBomb(bomb, actor.x, actor.y) &&
+                    !(actor.passBomb == bomb.id && bomb.owner == owner)
+            }
+        require(!overlapsUnauthorizedBomb(player, "player")) {
+            "Invalid player bomb position"
+        }
+        require(living.none { slot ->
+            overlapsUnauthorizedBomb(slot.actor, slot.owner)
+        }) { "Invalid opponent bomb position" }
+
+        val startingActors = listOf(player) + living.map { it.actor }
+        for (index in startingActors.indices) {
+            val actor = startingActors[index]
+            require(!StageCollision.blockedByActors(
+                actor.x,
+                actor.y,
+                startingActors.subList(index + 1, startingActors.size),
+            )) { "Overlapping actor start positions" }
+        }
+    }
+
+    /**
      * Advance one provisional 60Hz opponent tick without roster-order bias.
      *
      * Every living bot first decides from the same immutable actor-position
@@ -243,6 +292,9 @@ internal class NativeOpponentRoster(
         // or advancing bombs; the empty-opponent fast path otherwise bypasses collision checks.
         require(player.x.isFinite() && player.y.isFinite()) { "Invalid player position" }
         validateNextSimulationTick(tick)
+        // This method is also called directly by replay/integration paths. Do not
+        // depend on NativeArenaTick having preflighted the same actors first.
+        validateStartState(stage, player, simulation)
         // Reserve before mutating any actor/bomb/vitality state. If an internal
         // operation fails after partial work, the same tick cannot be replayed.
         lastSimulationTick = tick
