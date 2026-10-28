@@ -197,4 +197,77 @@ class NativeArenaTickInputValidationTest {
         assertEquals(NativeRoundFlow.State.PLAYING, round.state)
     }
 
+    @Test fun playerInsideSolidTerrainIsRejectedBeforeTickReservationAndCanRetry() {
+        val original = stage()
+        val wallGrid = original.grid.mapIndexed { row, cells ->
+            cells.copyOf().also { if (row == 3) it[3] = 1 }
+        }
+        val stage = original.copy(grid = wallGrid)
+        val player = Actor(32.0, 28.0) // overlaps the solid cell at column 3, row 3
+        val bot = NativeOpponentRoster.BotSlot("bot", Actor(72.0, 24.0))
+        val roster = NativeOpponentRoster(listOf(bot))
+        val simulation = NativeBombSimulation(stage)
+        val vitality = NativeVitality()
+        val round = NativeRoundFlow()
+
+        assertThrows(IllegalArgumentException::class.java) {
+            NativeArenaTick.advance(
+                stage, player, vitality, roster, simulation, round,
+                tick = 11L, dx = 1.0, dy = 0.0, hasNextStage = true,
+            )
+        }
+        assertEquals(32.0, player.x, 0.0)
+        assertEquals(28.0, player.y, 0.0)
+        assertEquals(72.0, bot.actor.x, 0.0)
+        assertEquals(24.0, bot.actor.y, 0.0)
+        assertTrue(simulation.bombs.isEmpty())
+        assertTrue(simulation.flames.isEmpty())
+        assertEquals(NativeRoundFlow.State.PLAYING, round.state)
+
+        // Repair the invalid start position and reuse the same tick. Rejection
+        // must not reserve the canonical clock or partially advance the world.
+        player.x = 16.0
+        player.y = 16.0
+        NativeArenaTick.advance(
+            stage, player, vitality, roster, simulation, round,
+            tick = 11L, dx = 0.0, dy = 0.0, hasNextStage = true,
+        )
+        assertEquals(NativeRoundFlow.State.PLAYING, round.state)
+    }
+
+    @Test fun opponentInsideSolidTerrainIsRejectedBeforePlayerMoves() {
+        val original = stage()
+        val wallGrid = original.grid.mapIndexed { row, cells ->
+            cells.copyOf().also { if (row == 3) it[3] = 1 }
+        }
+        val stage = original.copy(grid = wallGrid)
+        val player = Actor(16.0, 16.0)
+        val bot = NativeOpponentRoster.BotSlot("bot", Actor(32.0, 28.0))
+        val roster = NativeOpponentRoster(listOf(bot))
+        val simulation = NativeBombSimulation(stage)
+        val vitality = NativeVitality()
+        val round = NativeRoundFlow()
+
+        assertThrows(IllegalArgumentException::class.java) {
+            NativeArenaTick.advance(
+                stage, player, vitality, roster, simulation, round,
+                tick = 4L, dx = 1.0, dy = 0.0, hasNextStage = true,
+            )
+        }
+        assertEquals(16.0, player.x, 0.0)
+        assertEquals(16.0, player.y, 0.0)
+        assertEquals(32.0, bot.actor.x, 0.0)
+        assertEquals(28.0, bot.actor.y, 0.0)
+        assertTrue(simulation.bombs.isEmpty())
+        assertEquals(NativeRoundFlow.State.PLAYING, round.state)
+
+        // The same tick remains available after the offending bot is repaired.
+        bot.actor.x = 72.0
+        bot.actor.y = 24.0
+        NativeArenaTick.advance(
+            stage, player, vitality, roster, simulation, round,
+            tick = 4L, dx = 0.0, dy = 0.0, hasNextStage = true,
+        )
+        assertEquals(NativeRoundFlow.State.PLAYING, round.state)
+    }
 }

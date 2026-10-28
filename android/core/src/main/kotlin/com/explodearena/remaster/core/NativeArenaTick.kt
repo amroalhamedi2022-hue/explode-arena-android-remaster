@@ -52,6 +52,19 @@ internal object NativeArenaTick {
                 blockers.all { it.x.isFinite() && it.y.isFinite() }) {
                 "Invalid actor collision blockers"
             }
+            // Finite coordinates alone are not enough: an actor already inside
+            // solid terrain or beyond the arena edge could otherwise make a
+            // zero-input tick advance bombs and AI from an invalid world state.
+            // Deliberately omit bombs here: an actor may legally be exiting its
+            // owner-grace bomb, and terrain validity is the invariant checked.
+            require(!StageCollision.blocked(
+                stage, player.x, player.y, StageCollision.ACTOR_RADIUS,
+            )) { "Invalid player terrain position" }
+            require(blockers.none { blocker ->
+                StageCollision.blocked(
+                    stage, blocker.x, blocker.y, StageCollision.ACTOR_RADIUS,
+                )
+            }) { "Invalid opponent terrain position" }
             val requestedDistance = playerSpeed * FixedStepClock.STEP_SECONDS
             // Match StageCollision's bounded substep preflight before reserving the tick.
             StageCollision.movementStepCount(stage, requestedDistance)
