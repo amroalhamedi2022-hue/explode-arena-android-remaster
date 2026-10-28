@@ -47,47 +47,7 @@ internal object NativeArenaTick {
         roundFlow.validateCanonicalTick(tick)
         if (roundFlow.isPlaying) {
             opponents.validateNextSimulationTick(tick)
-            val blockers = opponents.blockingActors()
-            require(blockers.none { it === player } &&
-                blockers.all { it.x.isFinite() && it.y.isFinite() }) {
-                "Invalid actor collision blockers"
-            }
-            // Finite coordinates alone are not enough: an actor already inside
-            // solid terrain or beyond the arena edge could otherwise make a
-            // zero-input tick advance bombs and AI from an invalid world state.
-            // Bomb occupancy is part of the starting-world contract. An actor may
-            // overlap only the bomb it owns while carrying that bomb's exit grace.
-            require(!StageCollision.blocked(
-                stage, player.x, player.y, StageCollision.ACTOR_RADIUS,
-            )) { "Invalid player terrain position" }
-            require(blockers.none { blocker ->
-                StageCollision.blocked(
-                    stage, blocker.x, blocker.y, StageCollision.ACTOR_RADIUS,
-                )
-            }) { "Invalid opponent terrain position" }
-            fun overlapsUnauthorizedBomb(actor: Actor, owner: String): Boolean =
-                simulation.bombs.any { bomb ->
-                    StageCollision.touchesBomb(bomb, actor.x, actor.y) &&
-                        !(actor.passBomb == bomb.id && bomb.owner == owner)
-                }
-            require(!overlapsUnauthorizedBomb(player, "player")) {
-                "Invalid player bomb position"
-            }
-            require(opponents.bots.filterNot { it.vitality.defeated }.none { slot ->
-                overlapsUnauthorizedBomb(slot.actor, slot.owner)
-            }) { "Invalid opponent bomb position" }
-            // Validate the complete starting roster before reserving the tick.
-            // Movement prevents new overlaps, but a malformed/replayed starting
-            // state must not advance bombs or AI merely because input is zero.
-            val startingActors = listOf(player) + blockers
-            for (index in startingActors.indices) {
-                val actor = startingActors[index]
-                require(!StageCollision.blockedByActors(
-                    actor.x,
-                    actor.y,
-                    startingActors.subList(index + 1, startingActors.size),
-                )) { "Overlapping actor start positions" }
-            }
+            opponents.validateStartState(stage, player, simulation)
             val requestedDistance = playerSpeed * FixedStepClock.STEP_SECONDS
             // Match StageCollision's bounded substep preflight before reserving the tick.
             StageCollision.movementStepCount(stage, requestedDistance)
