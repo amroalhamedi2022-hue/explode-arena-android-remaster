@@ -1026,3 +1026,15 @@ Updated: 2026-10-23 (native migration first code slice)
 - **PASS:** Native Kotlin/JUnit CI [#40722101182](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40722101182), BUILD SUCCESSFUL in 59s; Mainline CI [#40722101594](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40722101594) PASS. Artifact count 0.
 - Device gameplay and EKA2L1 parity: NOT TESTED. PR #1 remains separate; no merge/main write.
 - Google Drive LIVE: SYNC FAILED (Drive/Docs connector unavailable; no read/write/read-back performed).
+
+
+## 2026-10-28 N79 — full-roster replay comparison
+
+- Engineering question: can full-roster traces be strictly validated and compared across the 41 stage records, including bot/hazard fields, instead of relying only on direct string equality?
+- Added `NativeArenaReplayComparison` for `EA-ARENA-PROVISIONAL-v1`, with bounded line/frame parsing, actor/bot/bomb/flame validation, first-field diagnostics, and tick-sequence validation that permits terminal holds and LOST/DRAW retry resets.
+- Integrated the comparator into the 180-tick four-spawn trace and the 41-stage / 30-tick-per-stage replay test; added bot-divergence, malformed-identical, repeated-active-tick, oversized-line and empty-trace regressions.
+- Production + regression-test SHA: `265ea6054269512917a1e8c392968ad0cc33c780`.
+- **PASS:** Native Kotlin/JUnit CI [#40732809179](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40732809179), BUILD SUCCESSFUL in 59s; Mainline JS/Python [#40732809023](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40732809023) PASS.
+- Artifact query: 0; no APK build/package/upload, assets or dependencies.
+- Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. PR #1 remains separate; no merge or `main` write.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector exposed; no Drive read/write/read-back or folder metadata verification.
