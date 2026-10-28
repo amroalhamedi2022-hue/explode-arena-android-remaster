@@ -841,3 +841,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - Android device and Symbian/EKA2L1 parity: NOT TESTED. APK packaging/artifacts: 0; no APK build requested.
 - No merge, main write, release, asset upload or auto-merge.
 - Google Drive LIVE handoff/index: SYNC FAILED if connector unavailable; no LIVE read/write or folder metadata verification is claimed.
+
+
+### N62 verification update — PASS
+
+- Exact source/test commits: 532c9d510a0659e56e31e77c4ab2545e6a055bda / 45ffd4fd17ef6511d53f3d4941b7c4d901f974f9.
+- Tested docs-updated head before this evidence append: 7338b68a05df61a97aa148370f903d1ec6b525b1.
+- **PASS:** Native Kotlin/JUnit CI #40617360936; **PASS:** Mainline JS/Python CI #40617360924.
+- Native CI artifact query: 0. No APK build/package/upload.
+- Xiaomi Pad 5, Android native launch and Symbian/EKA2L1 parity remain **NOT TESTED**. Final docs-head recheck is pending.
+- Google Drive LIVE sync remains **SYNC FAILED** because this runtime exposes no Drive/Docs connector; no read-back or folder metadata verification was possible.
