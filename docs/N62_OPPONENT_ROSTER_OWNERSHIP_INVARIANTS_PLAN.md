@@ -39,3 +39,15 @@ The invariant is enforced at roster construction, but its failure behavior and t
 - Android device / Xiaomi Pad 5 and Symbian EKA2L1 parity: NOT TESTED.
 - APK artifacts: 0 expected; no packaging requested.
 - Google Drive LIVE sync: SYNC FAILED if the Drive/Docs connector is unavailable; no sync claim without document read-back and folder metadata verification.
+
+
+## Verification update — 2026-10-28
+
+- Production source SHA: 532c9d510a0659e56e31e77c4ab2545e6a055bda.
+- Regression test SHA: 45ffd4fd17ef6511d53f3d4941b7c4d901f974f9.
+- Docs-updated head tested: 7338b68a05df61a97aa148370f903d1ec6b525b1.
+- **PASS:** Native Kotlin/JUnit CI #40617360936 — all steps succeeded, including :core:test.
+- **PASS:** Mainline JS/Python CI #40617360924.
+- **Artifacts: 0** confirmed for Native CI. No APK packaging occurred.
+- Device/Xiaomi Pad 5 and Symbian/EKA2L1 parity: **NOT TESTED**.
+- The subsequent docs-only evidence commit requires its own final-head native CI recheck.
