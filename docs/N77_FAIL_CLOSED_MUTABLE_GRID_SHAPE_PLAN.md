@@ -30,3 +30,15 @@ StageData checks row shape only in its constructor, but Kotlin's read-only List 
 
 Source/test SHA and CI: pending. Final docs-head recheck: pending.  
 Google Drive LIVE sync must be marked SYNC FAILED if the Drive/Docs connector is unavailable; never claim sync without read-back verification.
+
+
+## Source/test evidence — 2026-10-28
+
+- Exact production + regression-test head: `3c365a22e049c25dc3285937bee4b9d43851e120`.
+- Initial CI runs caught two compatibility assumptions and were corrected before acceptance: [#40713396837](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40713396837) exposed offset-grid fixtures; [#40713946085](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40713946085) showed that offset grids may extend beyond the nominal world rectangle in existing collision fixtures. The final guard validates row consistency only and preserves those established offset-grid semantics.
+- **PASS:** Native Kotlin/JUnit [#40714472657](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40714472657), `:core:test`, BUILD SUCCESSFUL in 57s.
+- **PASS:** Mainline PR CI [#40714472754](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40714472754).
+- Artifact query: **0**. No APK build/package/upload; no assets or dependencies added.
+- Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. PR #1 remains separate; no merge or main write.
+- Final documentation-head recheck: pending PR verification comment.
+- Google Drive LIVE sync: **SYNC FAILED** — no Google Drive/Docs connector is exposed in this runtime; no read/write/read-back is claimed.
