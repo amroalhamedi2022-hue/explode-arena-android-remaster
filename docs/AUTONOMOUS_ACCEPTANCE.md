@@ -1096,3 +1096,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - Artifact queries: 0. No APK build/package/upload.
 - Android gameplay and Symbian/EKA2L1 parity: NOT TESTED. PR #2 remains Draft/open; PR #1 remains separate; no merge/main write, external assets, or new dependencies.
 - Google Drive LIVE sync: SYNC FAILED — no Drive/Docs connector exposed; no Drive read/write/read-back or folder metadata verification is claimed.
+
+
+## 2026-10-28 N82 — replay actor vitality invariants (source/test PASS)
+
+- Source/test SHA: `c64ba5e4a9604e89c25f215a41f5168aa4f1ce42`; production blob `3f17d8671c788ef182848c3faaad01627b67f118`; test blob `e52e11762836f2b3c4b27b310e9541b49cc1c0a8`.
+- Replay parser now rejects impossible actor health (>99), invulnerability (>10 seconds), and disagreement between zero health and the `defeated` flag before trace comparison.
+- Regression tests cover all four malformed states and assert rejection at frame zero against a valid trace.
+- **PASS:** Native Kotlin/JUnit [CI #40749023210](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40749023210), `BUILD SUCCESSFUL in 55s`; Mainline JS/Python [CI #40749023219](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40749023219).
+- Artifacts: 0. No APK build/package/upload, new dependency, or external asset.
+- Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. PR #2 remains Draft/open; PR #1 collision remains separate. No merge/main write.
+- Google Drive LIVE sync: **SYNC FAILED** — no Google Drive/Docs connector is available in this runtime; no Drive read/write/read-back is claimed.
