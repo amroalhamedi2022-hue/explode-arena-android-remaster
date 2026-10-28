@@ -65,6 +65,18 @@ internal object NativeArenaTick {
                     stage, blocker.x, blocker.y, StageCollision.ACTOR_RADIUS,
                 )
             }) { "Invalid opponent terrain position" }
+            // Validate the complete starting roster before reserving the tick.
+            // Movement prevents new overlaps, but a malformed/replayed starting
+            // state must not advance bombs or AI merely because input is zero.
+            val startingActors = listOf(player) + blockers
+            for (index in startingActors.indices) {
+                val actor = startingActors[index]
+                require(!StageCollision.blockedByActors(
+                    actor.x,
+                    actor.y,
+                    startingActors.subList(index + 1, startingActors.size),
+                )) { "Overlapping actor start positions" }
+            }
             val requestedDistance = playerSpeed * FixedStepClock.STEP_SECONDS
             // Match StageCollision's bounded substep preflight before reserving the tick.
             StageCollision.movementStepCount(stage, requestedDistance)
