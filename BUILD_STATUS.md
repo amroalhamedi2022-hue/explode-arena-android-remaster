@@ -60,3 +60,13 @@
 - Native Kotlin/JUnit CI #40629249497 PASS; Mainline JS/Python CI #40629249500 PASS. Native task is :core:test only; artifacts 0.
 - Input MutableList and returned mutable snapshots are detached from the roster's private validated membership.
 - Android device and Symbian/EKA2L1 parity: NOT TESTED. A documentation-only final-head recheck follows.
+
+## 2026-10-28 N65 — canonical simulation tick monotonicity
+
+- Source/test/plan commit: be81a164c2ac3d86778bbe8d58d7e397f4556337.
+- PASS: native Kotlin/JUnit :core:test — CI #40634566362; Mainline JS/Python source checks — CI #40634566314 (PR) and #40634561086 (push), all on the same source/test SHA.
+- The canonical roster tick now rejects duplicate/backward tick indices before gameplay mutation and reserves each tick before mutable work. Regression verifies a live bomb fuse does not age on rejected ticks, then advances on the next greater tick.
+- Native source-test artifact query: 0. No APK packaging/build/upload was performed.
+- Device gameplay, Android lifecycle, original audio/HD fidelity and Symbian/EKA2L1 parity: NOT TESTED.
+- Google Drive LIVE sync: SYNC FAILED — no Google Drive/Docs connector is exposed in this execution environment. No LIVE read/write or folder metadata verification is claimed.
+- No external game assets added; PR #1 remains separate; no merge or main write. Documentation-only follow-up does not change source behavior.

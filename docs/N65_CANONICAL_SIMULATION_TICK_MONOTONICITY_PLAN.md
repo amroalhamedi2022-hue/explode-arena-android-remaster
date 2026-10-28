@@ -20,3 +20,12 @@ The canonical advanceSimulationTick path rejected negative ticks but accepted a 
 - CI runs gradle --project-dir android :core:test only; no APK packaging or artifact upload.
 - Android device gameplay, audio/HD fidelity, and Symbian/EKA2L1 parity remain NOT TESTED.
 - No external game assets are added; no merge or main write.
+
+
+## Verification record — 2026-10-28
+
+- Source/test SHA: be81a164c2ac3d86778bbe8d58d7e397f4556337.
+- PASS: Native Kotlin/JUnit CI #40634566362; Mainline JS/Python PR CI #40634566314 and push CI #40634561086.
+- Native test run produced 0 artifacts; no APK build/package/upload.
+- Android device and Symbian/EKA2L1 parity remain NOT TESTED.
+- Google Drive LIVE sync: SYNC FAILED (Drive/Docs connector unavailable); no synchronization is claimed.

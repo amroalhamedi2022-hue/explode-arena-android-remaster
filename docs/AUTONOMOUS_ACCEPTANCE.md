@@ -897,3 +897,10 @@ Updated: 2026-10-23 (native migration first code slice)
 - PASS — Mainline JS/Python CI #40629249500 on that exact SHA.
 - Artifacts: 0. No APK build/package/upload. Android device and Symbian/EKA2L1 parity: NOT TESTED.
 - Documentation-only final-head CI will be checked separately; no merge/main write.
+
+## N65 — Canonical simulation tick monotonicity (2026-10-28)
+
+- Acceptance: duplicate/out-of-order canonical ticks are rejected before gameplay state changes; a rejected tick does not age a live bomb; the next strictly greater tick advances once; new roster instances begin independently.
+- Source/integration tests: PASS on SHA be81a164c2ac3d86778bbe8d58d7e397f4556337.
+- Native Kotlin/JUnit CI #40634566362 PASS; Mainline JS/Python PR CI #40634566314 PASS; Mainline push CI #40634561086 PASS; native artifacts 0.
+- Device gameplay and Symbian/EKA2L1 parity: NOT TESTED. Google Drive LIVE sync: SYNC FAILED — connector unavailable.
