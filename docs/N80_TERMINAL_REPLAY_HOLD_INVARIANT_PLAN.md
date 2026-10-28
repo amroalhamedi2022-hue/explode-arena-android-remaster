@@ -28,10 +28,13 @@ The comparator is a parser plus temporal state validator. A trace may be byte-id
 6. Source-only CI; no APK packaging/upload, no external assets, no dependency changes, no merge or `main` write.
 7. Android gameplay and Symbian/EKA2L1 parity remain **NOT TESTED**.
 
-## Verification status
+## Verification — 2026-10-28
 
-- Source/test SHA: pending commit.
-- Native Kotlin/JUnit CI: PENDING.
-- Mainline JS/Python CI: PENDING.
-- Artifacts: expected 0; no APK build requested.
-- Google Drive LIVE sync: SYNC FAILED if the runtime has no Drive/Docs connector; no sync claim without read-back.
+- Production + regression source/test commit: `763256f7e5d6f27d4c620d576e72b7f82d968c6f`.
+- **PASS:** Native Kotlin/JUnit ` :core:test ` — [CI #40735461337](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461337), completed successfully.
+- **PASS:** Mainline JS/Python source checks — [CI #40735461131](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461131), completed successfully.
+- Native artifacts: **0**. No APK build/package/upload.
+- Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**.
+- PR #2 remains Draft/open; PR #1 remains separate. No merge, `main` write, external assets, or new dependencies.
+- Final documentation-head recheck: pending after this evidence update.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed; no read/write/read-back or folder metadata verification is claimed.

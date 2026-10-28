@@ -1048,3 +1048,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - Source/test + CI: PENDING until GitHub Actions runs on the exact commit are observed.
 - Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED. No APK build/package/upload, no external assets, no merge or main write.
 - Google Drive LIVE sync: SYNC FAILED unless the LIVE documents can be read, updated, and read back in the confirmed folder; no Drive sync is claimed here.
+
+
+## 2026-10-28 — N80 verification result
+
+- Production + regression source/test/docs commit: `763256f7e5d6f27d4c620d576e72b7f82d968c6f`.
+- **PASS:** Native Kotlin/JUnit `:core:test`, CI [#40735461337](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461337); job `native-source-check` completed successfully.
+- **PASS:** Mainline JS/Python source checks, CI [#40735461131](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461131); job `source-checks` completed successfully.
+- Artifact queries: **0** for both runs. No APK packaging/build/upload.
+- N80 rejects mutation on a frozen terminal hold and rejects advancing ticks after terminal states; unchanged terminal holds pass. The existing full-roster and 41-stage tests remained green in the exact commit.
+- Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. No merge/main write or new assets.
+- Google Drive LIVE: **SYNC FAILED** — no Drive/Docs connector exposed in this runtime; no Drive read/write/read-back is claimed.
