@@ -65,6 +65,18 @@ class NativeBombSimulation(
             otherActors.all { it.x.isFinite() && it.y.isFinite() }) {
             "Invalid bomb-placement actor blockers"
         }
+        // Do not rely only on the snapped bomb cell: a caller can reach this
+        // method outside the canonical tick (for example replay or AI tests),
+        // and the actor's own 10px hitbox may already overlap terrain.
+        // A passBomb exemption is valid only for the current owner.
+        val graceBomb = actor.passBomb?.let { id -> activeBombs.firstOrNull { it.id == id } }
+        if (graceBomb != null && graceBomb.owner != owner) return false
+        if (StageCollision.blocked(
+                stage, actor.x, actor.y, StageCollision.ACTOR_RADIUS,
+                activeBombs, actor.passBomb,
+            ) || StageCollision.blockedByActors(actor.x, actor.y, otherActors)) {
+            return false
+        }
         if (activeBombs.count { it.owner == owner } >= bombLimit) return false
         val x = cellCenter(actor.x)
         val y = cellCenter(actor.y)

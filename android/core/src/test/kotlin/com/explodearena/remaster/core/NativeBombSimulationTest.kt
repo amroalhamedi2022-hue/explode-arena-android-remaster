@@ -22,6 +22,40 @@ class NativeBombSimulationTest {
         assertThrows(IllegalArgumentException::class.java) { sim.place(Actor(24.0, 24.0), "unknown") }
     }
 
+    @Test fun placementRejectsActorWhoseHitboxOverlapsWallEvenWhenSnappedBombCellIsClear() {
+        val stage = stage(wallColumn = 4) // solid x=32..39
+        val sim = NativeBombSimulation(stage)
+        val actor = Actor(31.0, 24.0) // hitbox overlaps wall, but snaps to clear bomb center x=24
+
+        assertTrue(StageCollision.blocked(stage, actor.x, actor.y, StageCollision.ACTOR_RADIUS))
+        assertFalse(StageCollision.blocked(stage, 24.0, 24.0, 3.0))
+        assertFalse(sim.place(actor))
+        assertEquals(1L, sim.nextBombId)
+        assertTrue(sim.bombs.isEmpty())
+        assertNull(actor.passBomb)
+    }
+
+    @Test fun placementRejectsForeignBombGraceAndOverlappingActorBeforeAllocatingId() {
+        val sim = NativeBombSimulation(stage(), bombLimit = 2)
+        val owner = Actor(24.0, 24.0)
+        assertTrue(sim.place(owner, "player"))
+        val bombId = sim.bombs.single().id
+        val foreignGrace = Actor(35.0, 24.0, passBomb = bombId)
+
+        assertFalse(sim.place(foreignGrace, owner = "player2"))
+        assertEquals(2L, sim.nextBombId)
+        assertEquals(listOf(bombId), sim.bombs.map { it.id })
+        assertEquals(bombId, foreignGrace.passBomb)
+
+        val overlapSimulation = NativeBombSimulation(stage(), bombLimit = 2)
+        val placer = Actor(31.0, 24.0)
+        val nearbyActor = Actor(40.0, 24.0) // actors overlap, but snapped bomb center is 16px away
+        assertFalse(overlapSimulation.place(placer, otherActors = listOf(nearbyActor)))
+        assertEquals(1L, overlapSimulation.nextBombId)
+        assertTrue(overlapSimulation.bombs.isEmpty())
+        assertNull(placer.passBomb)
+    }
+
     @Test fun fuseDetonatesAt96FixedTicksAndFlamesExpire() {
         val sim = NativeBombSimulation(stage())
         assertTrue(sim.place(Actor(24.0, 24.0)))
