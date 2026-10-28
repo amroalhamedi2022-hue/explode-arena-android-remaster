@@ -69,6 +69,7 @@ internal class NativeOpponentRoster(
         player: Actor,
         simulation: NativeBombSimulation,
     ) {
+        simulation.requireStageDefinition(stage)
         require(player.x.isFinite() && player.y.isFinite()) { "Invalid player position" }
         val living = slots.filterNot { it.vitality.defeated }
         require(

@@ -34,6 +34,33 @@ class NativeBombSimulation(
         require(blastLifetimeSeconds.isFinite() && blastLifetimeSeconds in 0.05..5.0)
     }
 
+    /**
+     * Fail closed when arena movement/collision and bomb blasts were given
+     * different stage definitions. A matching stage ID alone is not enough:
+     * custom/test stages can reuse an ID with a different collision grid.
+     */
+    internal fun requireStageDefinition(candidate: StageData) {
+        val sameSpawns = stage.spawns.size == candidate.spawns.size &&
+            stage.spawns.indices.all { index ->
+                val expected = stage.spawns[index]
+                val actual = candidate.spawns[index]
+                expected.x == actual.x && expected.y == actual.y
+            }
+        require(
+            stage.id == candidate.id &&
+                stage.image == candidate.image &&
+                stage.width == candidate.width &&
+                stage.height == candidate.height &&
+                stage.obstacleX == candidate.obstacleX &&
+                stage.obstacleY == candidate.obstacleY &&
+                sameSpawns &&
+                stage.grid.size == candidate.grid.size &&
+                stage.grid.indices.all { index ->
+                    stage.grid[index].contentEquals(candidate.grid[index])
+                }
+        ) { "Bomb simulation stage does not match arena stage" }
+    }
+
     val nextBombId: Long get() = nextId
     val remoteDetonatorOwners: List<String> get() = remoteOwners.sorted()
     val bombs: List<Bomb> get() = activeBombs.toList()
