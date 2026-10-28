@@ -79,3 +79,11 @@
 - Artifact query: 0. No APK packaging/build/upload.
 - Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED. No external game assets. PR #1 remains separate; no merge or main write.
 - Google Drive LIVE sync: SYNC FAILED — no Drive/Docs connector is exposed.
+
+
+## 2026-10-28 — N69 canonical actor terrain-position preflight
+
+- Source/test SHA: b68d34d409398e2ad98889c93e8206c431b9bc36.
+- Native Kotlin/JUnit CI #40660972234 PASS; Mainline PR CI #40660972227 PASS. Native task: :core:test only; artifacts 0.
+- Player/opponent positions overlapping solid terrain are rejected before canonical tick reservation and movement; same-tick repair/retry regressions pass.
+- Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED. No APK packaging, external assets, merge or main write.

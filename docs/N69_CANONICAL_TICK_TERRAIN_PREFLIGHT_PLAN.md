@@ -19,7 +19,11 @@ NativeArenaTick validated that player/opponent coordinates were finite, but did 
 5. No APK packaging/build/upload. Android gameplay and Symbian/EKA2L1 parity remain separate NOT TESTED gates.
 
 ## Evidence
-- Source/test commit: CI pending.
+- Source/test SHA: b68d34d409398e2ad98889c93e8206c431b9bc36.
+- Native Kotlin/JUnit CI [#40660972234](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40660972234): PASS, BUILD SUCCESSFUL in 54s.
+- Mainline PR CI [#40660972227](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40660972227): PASS.
+- Native artifacts: 0; APK packaging/build/upload: NOT PERFORMED.
+- Final docs-head recheck: pending.
 - Android device gameplay: NOT TESTED.
 - Symbian/EKA2L1 parity: NOT TESTED.
 - No external assets added; PR #1 collision work remains separate; no merge or main write.

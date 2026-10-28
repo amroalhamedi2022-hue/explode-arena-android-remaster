@@ -935,3 +935,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. No third-party assets/code added; PR #1 remains separate.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime.
 - Final documentation-head CI is recorded in the PR verification comment added after this evidence update.
+
+
+## 2026-10-28 — N69 canonical actor terrain-position preflight
+
+- Source/test SHA: b68d34d409398e2ad98889c93e8206c431b9bc36.
+- Added a non-mutating terrain/bounds preflight for the player and all living opponent blockers before canonical tick reservation. The check intentionally ignores bombs so owner-exit grace is not confused with invalid terrain.
+- Regressions cover a player and a bot overlapping a solid cell; both cases reject before player movement or world mutation, then accept the same tick after the invalid position is repaired.
+- **PASS:** Native Kotlin/JUnit :core:test [#40660972234](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40660972234), BUILD SUCCESSFUL in 54s; Mainline PR CI [#40660972227](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40660972227) PASS.
+- Native artifacts: 0. APK packaging/build/upload: NOT PERFORMED.
+- Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED. PR #1 remains separate; no external assets, merge, or main write.
+- Final docs-head recheck: pending.
