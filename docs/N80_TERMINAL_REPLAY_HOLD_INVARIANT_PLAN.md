@@ -31,8 +31,8 @@ The comparator is a parser plus temporal state validator. A trace may be byte-id
 ## Verification — 2026-10-28
 
 - Production logic commit: `763256f7e5d6f27d4c620d576e72b7f82d968c6f`; complete source/test head with explicit retry-reset regression: `7a77bba29ff53419294579788ec7d943c5b727a3`.
-- **PASS:** Native Kotlin/JUnit ` :core:test ` — [CI #40735461337](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461337), completed successfully.
-- **PASS:** Mainline JS/Python source checks — [CI #40735461131](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461131), completed successfully.
+- **PASS — initial production logic head:** Native Kotlin/JUnit [CI #40735461337](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461337); Mainline JS/Python [CI #40735461131](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461131).
+- **PASS — complete source/test head including retry-reset regression `7a77bba29ff53419294579788ec7d943c5b727a3`:** Native Kotlin/JUnit [CI #40736761130](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40736761130); Mainline JS/Python [CI #40736760890](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40736760890). Both completed successfully.
 - Native artifacts: **0**. No APK build/package/upload.
 - Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**.
 - PR #2 remains Draft/open; PR #1 remains separate. No merge, `main` write, external assets, or new dependencies.
