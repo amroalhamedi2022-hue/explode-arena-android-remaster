@@ -821,9 +821,10 @@ Updated: 2026-10-23 (native migration first code slice)
 - APK packaging/artifacts: 0. Android device lifecycle, full gameplay, and Symbian/EKA2L1 parity: NOT TESTED.
 
 
-## 2026-10-28 N61 — canonical tick speed validation (source/test committed; CI PENDING)
+## 2026-10-28 N61 — canonical tick speed validation (source/test PASS; final docs-head CI pending)
 - Engineering question: can a terminal-round fast path mutate bot animation state before validating the full tick input? The canonical tick previously delegated speed validation to movement, which is skipped after the round is latched.
 - Production source: validate `playerSpeed.isFinite() && playerSpeed >= 0.0` alongside tick and direction before any terminal-round handling.
 - Regression: actual `NativeArenaTick.advance` is called on a LOST round with NaN, positive infinity, and negative speed; each call must throw before player/bot positions, bot walking, bombs, or round outcome change.
-- Plan: `docs/N61_CANONICAL_TICK_SPEED_VALIDATION_PLAN.md`. Source/test SHA and CI: PENDING.
-- Android device, full native gameplay, and Symbian/EKA2L1 parity: NOT TESTED. APK packaging/artifacts: 0.
+- Plan: `docs/N61_CANONICAL_TICK_SPEED_VALIDATION_PLAN.md`. Production SHA `781820215360137489aefdc7a2b2b159d780bd1c`; source/test SHA `3f831dc44adb9ac52d2e397d7243202e9ab77f6d`.
+- **PASS:** Native Kotlin/JUnit CI #40611588324 (`BUILD SUCCESSFUL in 49s`) and Mainline JS/Python CI #40611588341. Native artifact query: 0.
+- Final docs-updated PR-head CI after this evidence commit: PENDING. Android device, full native gameplay, and Symbian/EKA2L1 parity: NOT TESTED. APK packaging/artifacts: 0.
