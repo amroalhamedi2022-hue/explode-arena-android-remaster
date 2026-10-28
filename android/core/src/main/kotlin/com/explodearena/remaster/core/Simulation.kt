@@ -51,10 +51,21 @@ object StageCollision {
 
     fun tile(stage: StageData, x: Double, y: Double): Int {
         if (!x.isFinite() || !y.isFinite()) return -1
+        val gridWidth = stage.gridWidth
+        val gridHeight = stage.gridHeight
+        // StageData validates once at construction, but callers can retain a
+        // mutable grid list or row arrays. Treat post-construction corruption
+        // as outside the arena rather than indexing stale/ragged geometry.
+        if (gridWidth <= 0 || gridHeight <= 0 ||
+            gridWidth.toLong() * CELL.toLong() != stage.width.toLong() ||
+            gridHeight.toLong() * CELL.toLong() != stage.height.toLong()
+        ) return -1
         val col = floor((x - stage.obstacleX) / CELL).toInt()
         val row = floor((y - stage.obstacleY) / CELL).toInt()
-        if (col !in 0 until stage.gridWidth || row !in 0 until stage.gridHeight) return -1
-        return stage.grid[row][col]
+        if (col !in 0 until gridWidth || row !in 0 until gridHeight) return -1
+        val cells = stage.grid.getOrNull(row) ?: return -1
+        if (cells.size != gridWidth || col !in cells.indices) return -1
+        return cells[col]
     }
 
     fun blocked(
@@ -65,6 +76,12 @@ object StageCollision {
         // tile (floor(NaN).toInt() otherwise silently aliases tile zero).
         if (!x.isFinite() || !y.isFinite() || !radius.isFinite() || radius < 0) return true
         if (x - radius < 0 || y - radius < 0 || x + radius >= stage.width || y + radius >= stage.height) return true
+        val gridWidth = stage.gridWidth
+        val gridHeight = stage.gridHeight
+        if (gridWidth <= 0 || gridHeight <= 0 ||
+            gridWidth.toLong() * CELL.toLong() != stage.width.toLong() ||
+            gridHeight.toLong() * CELL.toLong() != stage.height.toLong()
+        ) return true
         // A 10px actor hitbox can fully contain an 8px solid cell while all
         // four corners are on empty neighbors. Check every overlapped cell,
         // not only the corners, or actors can clip through small obstacles.
@@ -74,9 +91,13 @@ object StageCollision {
         val right = floor((x + radius - stage.obstacleX) / CELL).toInt()
         val top = floor((y - radius - stage.obstacleY) / CELL).toInt()
         val bottom = floor((y + radius - stage.obstacleY) / CELL).toInt()
-        if (left < 0 || top < 0 || right >= stage.gridWidth || bottom >= stage.gridHeight) return true
-        for (row in top..bottom) for (col in left..right) {
-            if (stage.grid[row][col] != 0) return true
+        if (left < 0 || top < 0 || right >= gridWidth || bottom >= gridHeight) return true
+        for (row in top..bottom) {
+            val cells = stage.grid.getOrNull(row) ?: return true
+            if (cells.size != gridWidth) return true
+            for (col in left..right) {
+                if (cells[col] != 0) return true
+            }
         }
         // Mirrors the current PROVISIONAL JS touchesBomb (7px half-size),
         // not yet a verified Symbian collision rule.
