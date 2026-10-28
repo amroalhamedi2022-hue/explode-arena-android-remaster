@@ -160,4 +160,41 @@ class NativeArenaTickInputValidationTest {
         assertEquals(NativeRoundFlow.State.ADVANCING, round.state)
     }
 
+    @Test fun excessiveCollisionSubstepsAreRejectedBeforeTickReservationAndCanRetry() {
+        // Deliberately malformed dimensions prove the substep cap is independent
+        // of the arena's claimed pixel size; the real catalog is much smaller.
+        val stage = stage().copy(
+            width = Int.MAX_VALUE,
+            height = Int.MAX_VALUE,
+            spawns = listOf(Spawn(24.0, 24.0)),
+        )
+        val player = Actor(24.0, 24.0)
+        val roster = NativeOpponentRoster(emptyList())
+        val simulation = NativeBombSimulation(stage)
+        val vitality = NativeVitality()
+        val round = NativeRoundFlow()
+
+        assertThrows(IllegalArgumentException::class.java) {
+            NativeArenaTick.advance(
+                stage, player, vitality, roster, simulation, round,
+                tick = 0L, dx = 1.0, dy = 0.0, hasNextStage = false,
+                playerSpeed = 100_000_000.0,
+            )
+        }
+        assertEquals(24.0, player.x, 0.0)
+        assertEquals(24.0, player.y, 0.0)
+        assertEquals(3, vitality.health)
+        assertTrue(simulation.bombs.isEmpty())
+        assertTrue(simulation.flames.isEmpty())
+        assertEquals(NativeRoundFlow.State.PLAYING, round.state)
+
+        // The rejected request did not consume the canonical tick.
+        val retry = NativeArenaTick.advance(
+            stage, player, vitality, roster, simulation, round,
+            tick = 0L, dx = 0.0, dy = 0.0, hasNextStage = false,
+        )
+        assertFalse(retry.playerWalking)
+        assertEquals(NativeRoundFlow.State.PLAYING, round.state)
+    }
+
 }
