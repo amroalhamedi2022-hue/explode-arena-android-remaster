@@ -871,3 +871,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - Source/JUnit CI: **PENDING** for the exact source/test commit; no APK packaging/artifacts.
 - Android device and Symbian/EKA2L1 parity: **NOT TESTED**.
 - Google Drive LIVE sync: **SYNC FAILED** if Drive/Docs connector is unavailable; no sync claim without read-back verification.
+
+
+### N63 final verification — PASS (2026-10-28)
+
+- Exact production+test commit: 7bf33170fab67ea9b3f56bfad038ed35bba39e5a.
+- **PASS:** Native Kotlin/JUnit source CI #40623127680 completed successfully on that exact SHA.
+- **PASS:** Mainline JS/Python CI #40623127776 completed successfully on that exact SHA.
+- **Artifacts: 0**; native workflow ran :core:test only, no APK packaging/upload.
+- **NOT TESTED:** Android device launch, Xiaomi Pad 5 input/visuals, and Symbian/EKA2L1 gameplay parity.
+- Google Drive LIVE: **SYNC FAILED**; no Drive/Docs connector was available for read/write/read-back verification.
