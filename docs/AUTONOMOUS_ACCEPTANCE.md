@@ -977,7 +977,7 @@ Updated: 2026-10-23 (native migration first code slice)
 - Engineering question: can direct/replay calls to `NativeOpponentRoster.advanceSimulationTick` bypass the full start-world preflight in `NativeArenaTick` and mutate bots/fuses from an invalid start state?
 - Production change: centralized finite-coordinate, terrain, unauthorized-bomb, owner-exit-grace and pairwise actor-overlap checks in `NativeOpponentRoster.validateStartState`; both the canonical game tick and direct/replay roster entry point call it before mutation/reservation.
 - New integration tests: wall overlap, foreign-bomb overlap, overlapping actor starts, unchanged fuse/positions after rejection, and retrying the same tick after repair.
-- Source/test SHA and CI: pending.
+- **PASS:** exact tested PR head `e2512d92a6e8261259378a494d49e03d9f5969c9`; Native Kotlin/JUnit [CI #40684199692](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40684199692) completed `:core:test` successfully (BUILD SUCCESSFUL in 45s); Mainline PR CI [#40684199700](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40684199700) PASS. Artifact query: 0.
 - APK build/artifacts: 0 / not performed. Device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**.
 - No assets/dependencies, merge, main write, or auto-merge. PR #1 remains separate.
 - Google Drive LIVE sync: **SYNC FAILED** if no Drive/Docs connector is exposed; no Drive read/write/read-back is claimed.
