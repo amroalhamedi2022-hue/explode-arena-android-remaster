@@ -910,5 +910,6 @@ Updated: 2026-10-23 (native migration first code slice)
 - Production + integration regression SHA: 5ec9c3fed00dbb465ddb45a5acbe8475bd8c1d16.
 - Rejects NaN/infinite player coordinates before reserving a canonical tick, including solo arenas where no opponent movement runs.
 - Regression verifies bomb fuse stability on invalid attempts and successful reuse of the same tick after repairing coordinates.
-- CI and final-head verification: PENDING.
+- PASS: Native Kotlin/JUnit CI #40640834426 on final tested docs-head SHA bfe7fecb1dd9e125041bfe85ed9db172e91c19bb; Mainline PR CI #40640834344 PASS; Mainline push CI #40640828161 PASS on source/test SHA 5ec9c3fed00dbb465ddb45a5acbe8475bd8c1d16.
+- Native artifacts: 0; no APK packaging/upload. The earlier native run #40640828500 was cancelled by a newer push after its test step had succeeded; final docs-head run above completed PASS.
 - Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED. No APK packaging or assets added.
