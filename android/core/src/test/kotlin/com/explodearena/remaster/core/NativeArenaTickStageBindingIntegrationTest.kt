@@ -91,4 +91,49 @@ class NativeArenaTickStageBindingIntegrationTest {
         val simulation = NativeBombSimulation(stage())
         simulation.requireStageDefinition(stage())
     }
+
+    @Test fun callerMutationCannotChangeSimulationGeometryAndRejectedTickCanRetryAfterRepair() {
+        val base = stage()
+        val mutableGrid = base.grid.map { it.copyOf() }.toMutableList()
+        val mutableSpawns = base.spawns.toMutableList()
+        val callerStage = base.copy(grid = mutableGrid, spawns = mutableSpawns)
+        val simulation = NativeBombSimulation(callerStage)
+        val player = Actor(16.0, 16.0)
+        val bot = NativeOpponentRoster.BotSlot("bot", Actor(72.0, 24.0))
+        val roster = NativeOpponentRoster(listOf(bot))
+        val vitality = NativeVitality()
+        val round = NativeRoundFlow()
+
+        // The 16px bomb cell includes grid cell [3][3]. Mutating the caller's
+        // row after construction must not change the simulation's captured map.
+        mutableGrid[3][3] = 751
+        mutableSpawns[0] = Spawn(8.0, 8.0)
+        assertTrue("bomb placement must use the detached stage snapshot", simulation.place(player))
+        val fuseBefore = simulation.bombs.single().remaining
+
+        assertThrows(IllegalArgumentException::class.java) {
+            NativeArenaTick.advance(
+                callerStage, player, vitality, roster, simulation, round,
+                tick = 12L, dx = 0.0, dy = 0.0, hasNextStage = true,
+            )
+        }
+        assertEquals(16.0, player.x, 0.0)
+        assertEquals(16.0, player.y, 0.0)
+        assertEquals(fuseBefore, simulation.bombs.single().remaining)
+        assertEquals(NativeRoundFlow.State.PLAYING, round.state)
+
+        // Repair both caller-owned structures. The rejected tick was not
+        // reserved, so the same tick index is accepted and advances one fuse step.
+        mutableGrid[3][3] = 0
+        mutableSpawns[0] = base.spawns[0]
+        NativeArenaTick.advance(
+            callerStage, player, vitality, roster, simulation, round,
+            tick = 12L, dx = 0.0, dy = 0.0, hasNextStage = true,
+        )
+        assertEquals(
+            requireNotNull(fuseBefore) - FixedStepClock.STEP_SECONDS,
+            requireNotNull(simulation.bombs.single().remaining),
+            1e-9,
+        )
+    }
 }
