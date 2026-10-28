@@ -1006,3 +1006,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - Artifact query: **0**. No APK packaging/build/upload.
 - Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. PR #1 collision work remains separate; no merge or `main` write.
 - Google Drive LIVE sync: **SYNC FAILED** — this runtime exposes no Google Drive/Docs connector; no Drive read/write/read-back or folder metadata verification is claimed.
+
+## 2026-10-28 N76 — detached stage snapshot ownership (source/test PASS)
+
+- Production change: `NativeBombSimulation` now deep-copies each collision-grid row and the spawn collection on construction. N75 stage-definition checks compare against this private snapshot, so mutating a caller-retained grid or spawn list cannot silently alter bomb geometry.
+- Integration regression mutates both original containers, proves bomb placement still uses the captured geometry, confirms canonical preflight rejects before movement/fuse/round mutation, then repairs the stage and retries the same tick successfully.
+- Source/test SHA: `198dd1de0effd14fac0bc7f122bb70f2cf4f2d29`.
+- **PASS — Native Kotlin/JUnit `:core:test`:** [CI #40708209961](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40708209961), `BUILD SUCCESSFUL in 56s`.
+- **PASS — Mainline PR checks:** [CI #40708209862](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40708209862).
+- Native workflow artifact query: **0**. No APK build/package/upload.
+- Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. PR #1 collision work remains separate; no merge or `main` write.
+- Google Drive LIVE sync: **SYNC FAILED** — this runtime exposes no Google Drive/Docs connector; no Drive read/write/read-back or folder metadata verification is claimed.
