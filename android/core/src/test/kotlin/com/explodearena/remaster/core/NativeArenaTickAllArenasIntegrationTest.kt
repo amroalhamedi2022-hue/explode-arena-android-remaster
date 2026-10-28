@@ -108,6 +108,58 @@ class NativeArenaTickAllArenasIntegrationTest {
         assertEquals(NativeRoundFlow.State.LOST, round.state)
     }
 
+    @Test fun invalidPlayerSpeedIsRejectedBeforeTerminalTickStopsOpponents() {
+        val stage = StageData(
+            id = 0, image = "test.png", width = 64, height = 64,
+            obstacleX = 0, obstacleY = 0,
+            grid = List(8) { IntArray(8) },
+            spawns = listOf(Spawn(24.0, 24.0), Spawn(40.0, 40.0)),
+        )
+        val player = Actor(24.0, 24.0)
+        val roster = NativeOpponentRoster.create(stage, player)
+        val bot = roster.bots.single()
+        bot.walking = true
+        val simulation = NativeBombSimulation(stage)
+        assertTrue(simulation.place(player))
+        val playerVitality = NativeVitality()
+        val round = NativeRoundFlow(victoryHoldTicks = 1)
+        round.tick(
+            playerDefeated = true,
+            opponentDefeated = false,
+            opponentPresent = true,
+            hasNextStage = false,
+        )
+        assertEquals(NativeRoundFlow.State.LOST, round.state)
+
+        val playerPosition = player.x to player.y
+        val botPosition = bot.actor.x to bot.actor.y
+        val bombCount = simulation.bombs.size
+        for (invalidSpeed in listOf(Double.NaN, Double.POSITIVE_INFINITY, -1.0)) {
+            assertThrows(IllegalArgumentException::class.java) {
+                NativeArenaTick.advance(
+                    stage = stage,
+                    player = player,
+                    playerVitality = playerVitality,
+                    opponents = roster,
+                    simulation = simulation,
+                    roundFlow = round,
+                    tick = 0L,
+                    dx = 0.0,
+                    dy = 0.0,
+                    hasNextStage = false,
+                    playerSpeed = invalidSpeed,
+                )
+            }
+            assertEquals(playerPosition.first, player.x, 0.0)
+            assertEquals(playerPosition.second, player.y, 0.0)
+            assertEquals(botPosition.first, bot.actor.x, 0.0)
+            assertEquals(botPosition.second, bot.actor.y, 0.0)
+            assertTrue("terminal tick must not clear bot walking before validation", bot.walking)
+            assertEquals(bombCount, simulation.bombs.size)
+            assertEquals(NativeRoundFlow.State.LOST, round.state)
+        }
+    }
+
     private data class FinalFlameOutcome(
         val botDefeated: Boolean,
         val playerDefeated: Boolean,
