@@ -925,3 +925,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - **PASS:** Native Kotlin/JUnit CI #40646233882; Mainline PR CI #40646233855; Mainline push CI #40646228550. Native log: BUILD SUCCESSFUL in 50s; artifacts 0.
 - Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. No APK packaging or assets added.
 - Google Drive LIVE sync: **SYNC FAILED** — connector unavailable in this runtime.
+
+## 2026-10-28 N68 — bounded native collision substeps
+- Production + regression source/test SHA: `5970814c4a3e02b66286f36821f5188b0b1101d5`.
+- `StageCollision.movementStepCount` enforces a 4,096-step ceiling and shares preflight logic between direct movement and `NativeArenaTick`; the tick is validated before reservation/mutation.
+- Regression uses a deliberately huge custom stage and extreme finite speed, asserts no player/health/bomb/flame/round mutation, then retries the same tick at normal speed.
+- **PASS:** Native Kotlin/JUnit [#40653227950](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40653227950), `:core:test`, BUILD SUCCESSFUL in 40s; Mainline PR checks [#40653227854](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40653227854) PASS.
+- Source CI artifacts: 0. No APK packaging/build/upload.
+- Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. No third-party assets/code added; PR #1 remains separate.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime.
+- Final documentation-head CI: pending.
