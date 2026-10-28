@@ -38,6 +38,9 @@ internal object NativeArenaTick {
             dx.isFinite() && dy.isFinite() &&
                 dx in -1.0..1.0 && dy in -1.0..1.0
         ) { "Arena input must be finite and normalized" }
+        // Validate before the latched-round fast path too: terminal ticks must
+        // reject malformed input without mutating opponent animation state.
+        require(playerSpeed.isFinite() && playerSpeed >= 0.0) { "Invalid player speed" }
 
         var playerWalking = false
         var bombsPlaced = 0
