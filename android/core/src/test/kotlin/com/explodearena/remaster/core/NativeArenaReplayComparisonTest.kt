@@ -74,4 +74,53 @@ class NativeArenaReplayComparisonTest {
         val difference = NativeArenaReplayComparison.firstDivergence(emptyList(), emptyList())
         assertEquals("empty-trace", difference?.field)
     }
+    private fun terminalLine(state: String = "LOST"): String =
+        traceLine().replace("|round=PLAYING", "|round=$state")
+
+    private fun withPlayerX(line: String, x: Double): String {
+        val fields = line.split('|').toMutableList()
+        val player = fields[4].removePrefix("player=").split(',').toMutableList()
+        player[1] = java.lang.Long.toHexString(java.lang.Double.doubleToLongBits(x))
+        fields[4] = "player=" + player.joinToString(",")
+        return fields.joinToString("|")
+    }
+
+    @Test fun frozenTerminalHoldRejectsActorMutationAtTheSameTick() {
+        val terminal = terminalLine()
+        val changed = withPlayerX(terminal, 25.0)
+
+        val difference = NativeArenaReplayComparison.firstDivergence(
+            listOf(terminal, terminal),
+            listOf(terminal, changed),
+        )
+
+        assertEquals(1, difference?.frameIndex)
+        assertEquals("actual-terminal-hold-mutation", difference?.field)
+    }
+
+    @Test fun frozenTerminalStateCannotAdvanceItsTick() {
+        val terminal = terminalLine("COMPLETE")
+        val fields = terminal.split('|').toMutableList()
+        fields[2] = "1"
+        val advanced = fields.joinToString("|")
+
+        val difference = NativeArenaReplayComparison.firstDivergence(
+            listOf(terminal, terminal),
+            listOf(terminal, advanced),
+        )
+
+        assertEquals(1, difference?.frameIndex)
+        assertEquals("actual-terminal-state-advanced", difference?.field)
+    }
+
+    @Test fun identicalFrozenTerminalFramesRemainValid() {
+        val terminal = terminalLine("ADVANCING")
+        assertNull(
+            NativeArenaReplayComparison.firstDivergence(
+                listOf(terminal, terminal),
+                listOf(terminal, terminal),
+            ),
+        )
+    }
+
 }

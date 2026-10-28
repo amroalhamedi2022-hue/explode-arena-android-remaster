@@ -1038,3 +1038,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - Artifact query: 0; no APK build/package/upload, assets or dependencies.
 - Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. PR #1 remains separate; no merge or `main` write.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector exposed; no Drive read/write/read-back or folder metadata verification.
+
+
+## 2026-10-28 — N80 frozen terminal replay-frame invariant (CI pending)
+
+- Production change: full-roster replay comparison now validates latched terminal states before normal tick increments; same-tick terminal frames must be byte-for-byte field-identical, and LOST/DRAW may only retry into PLAYING at tick 0.
+- Regression tests: terminal actor mutation on a repeated tick, advancing after COMPLETE, and unchanged ADVANCING holds.
+- Plan: `docs/N80_TERMINAL_REPLAY_HOLD_INVARIANT_PLAN.md`.
+- Source/test + CI: PENDING until GitHub Actions runs on the exact commit are observed.
+- Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED. No APK build/package/upload, no external assets, no merge or main write.
+- Google Drive LIVE sync: SYNC FAILED unless the LIVE documents can be read, updated, and read back in the confirmed folder; no Drive sync is claimed here.

@@ -142,14 +142,25 @@ object NativeArenaReplayComparison {
         return FrameRecord(fields, stage, tick, state) to null
     }
 
+    private val frozenStates = setOf("LOST", "DRAW", "ADVANCING", "COMPLETE")
+
     private fun sequenceIssue(previous: FrameRecord?, current: FrameRecord): String? {
         if (previous == null) return null
         if (previous.stage != current.stage) return "stage-sequence"
+
+        // A latched terminal frame is frozen. Checking this before the ordinary
+        // tick increment prevents malformed traces from advancing after COMPLETE
+        // or mutating actors/hazards while reusing a terminal tick.
+        if (previous.state in frozenStates) {
+            if (previous.state in setOf("LOST", "DRAW") &&
+                current.state == "PLAYING" && current.tick == 0L) return null
+            if (current.tick == previous.tick && current.state == previous.state) {
+                return if (current.fields == previous.fields) null else "terminal-hold-mutation"
+            }
+            return "terminal-state-advanced"
+        }
+
         if (previous.tick < Long.MAX_VALUE && current.tick == previous.tick + 1L) return null
-        if (current.tick == previous.tick && current.state == previous.state &&
-            current.state in setOf("LOST", "DRAW", "ADVANCING", "COMPLETE")) return null
-        if (previous.state in setOf("LOST", "DRAW") &&
-            current.state == "PLAYING" && current.tick == 0L) return null
         return "tick-sequence"
     }
 
