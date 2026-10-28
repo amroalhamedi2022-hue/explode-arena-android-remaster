@@ -946,3 +946,15 @@ Updated: 2026-10-23 (native migration first code slice)
 - Native artifacts: 0. APK packaging/build/upload: NOT PERFORMED.
 - Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED. PR #1 remains separate; no external assets, merge, or main write.
 - Final docs-head recheck: recorded in the PR verification comment for the final documentation head; source/test code remains unchanged after the source/test SHA above.
+
+
+## 2026-10-28 N71 — actor/bomb start-state collision preflight
+
+- Initial source/test SHA `f050bbf931bbff8779ef86c4c70ba8012f7ad4e4`: Mainline CI [#40669350356](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40669350356) PASS; native CI [#40669350248](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40669350248) **FAIL** (4 tests). The failures exposed a real missing integration guard: a bomb could be placed over a nearby actor, which left the next canonical tick with a foreign-bomb overlap.
+- Corrective source/test SHA: `5a6b21dfc9571e67164457520df5a3a5ce36e5bb`.
+- Production now rejects bomb placement if its footprint overlaps another living actor, before consuming a bomb ID; native game, replay harness and opponent roster supply actor blockers. Canonical tick preflight permits only matching owner/passBomb exit grace and rejects other actor/bomb overlaps before tick reservation.
+- **PASS:** Native Kotlin/JUnit [CI #40670102041](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40670102041), `:core:test`, BUILD SUCCESSFUL in 57s; Mainline PR [CI #40670102080](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40670102080) PASS; Mainline push [CI #40670091795](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40670091795) PASS.
+- Artifacts: **0**. No APK build/package/upload.
+- Android device gameplay, original Symbian/EKA2L1 parity, 41-stage playthrough on device and performance: **NOT TESTED**.
+- No original assets/dependencies added, no merge/main write, and PR #1 collision work remains separate.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime; no Drive sync is claimed.
