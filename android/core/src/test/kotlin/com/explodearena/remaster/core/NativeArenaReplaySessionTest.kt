@@ -43,6 +43,8 @@ class NativeArenaReplaySessionTest {
         assertTrue(trace.any { it.contains("|remoteOwners=player|") })
         assertTrue(trace.any { line -> !line.endsWith("|flames=0") })
         assertTrue(trace.last().startsWith("EA-ARENA-PROVISIONAL-v1|7|"))
+        assertNull("full-roster trace must pass its own strict comparator",
+            NativeArenaReplayComparison.firstDivergence(trace, trace))
     }
 
     @Test fun invalidInputDoesNotMutateAnyPlayerBotBombOrFlameState() {
@@ -66,18 +68,24 @@ class NativeArenaReplaySessionTest {
         for (stage in stages) {
             val first = NativeArenaReplaySession(stage)
             val second = NativeArenaReplaySession(stage)
+            val expectedTrace = mutableListOf<String>()
+            val actualTrace = mutableListOf<String>()
             repeat(30) { tick ->
                 val input = NativeArenaReplayInput(
                     dx = if (tick % 9 in 0..2) 1.0 else 0.0,
                     dy = if (tick % 11 in 5..6) -1.0 else 0.0,
                     placeBomb = tick == 0,
                 )
-                assertEquals(
-                    "stage ${stage.id}, tick $tick",
-                    first.step(input).traceLine(),
-                    second.step(input).traceLine(),
-                )
+                val expected = first.step(input).traceLine()
+                val actual = second.step(input).traceLine()
+                assertEquals("stage ${stage.id}, tick $tick", expected, actual)
+                expectedTrace += expected
+                actualTrace += actual
             }
+            assertNull(
+                "stage ${stage.id} full-roster comparison",
+                NativeArenaReplayComparison.firstDivergence(expectedTrace, actualTrace),
+            )
         }
     }
 }
