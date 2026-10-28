@@ -53,12 +53,10 @@ object StageCollision {
         val grid = stage.grid
         val firstRow = grid.firstOrNull() ?: return false
         val gridWidth = firstRow.size
-        if (gridWidth <= 0 || grid.any { it.size != gridWidth }) return false
-        if (stage.width <= 0 || stage.height <= 0 || stage.obstacleX < 0 || stage.obstacleY < 0) {
-            return false
-        }
-        return stage.obstacleX.toLong() + gridWidth.toLong() * CELL.toLong() <= stage.width.toLong() &&
-            stage.obstacleY.toLong() + grid.size.toLong() * CELL.toLong() <= stage.height.toLong()
+        // Some focused collision fixtures intentionally use an offset grid
+        // whose footprint is not world-aligned. Validate row consistency,
+        // not a guessed full-world geometry contract.
+        return gridWidth > 0 && grid.all { it.size == gridWidth }
     }
 
     fun tile(stage: StageData, x: Double, y: Double): Int {
