@@ -30,9 +30,9 @@ The normal libGDX path validates player, bot, terrain, bomb ownership grace and 
 ## Evidence
 
 - Production source commits: `e60e9e9ea563b52be1a0606ad69d8303ec996670` (roster preflight) and `67f9e10aefb5bd6078e5b44270f1a385b77deae3` (canonical tick integration).
-- Integration test commit: `e2512d92a6e8261259378a494d49e03d9f5969c9`; final tested PR head: same SHA.
-- **PASS — Native Kotlin/JUnit:** [CI #40684199692](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40684199692), `:core:test`, BUILD SUCCESSFUL in 45s.
-- **PASS — Mainline PR CI:** [#40684199700](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40684199700).
+- Integration test commit: `71de65e5d6bf470389cdca79d3ba389173b51b97`; final tested PR head: same SHA.
+- **PASS — Native Kotlin/JUnit:** [CI #40685242251](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40684199692), `:core:test`, BUILD SUCCESSFUL in 51s.
+- **PASS — Mainline PR CI:** [#40685242368](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40684199700).
 - Native artifacts: 0. No APK build/package/upload.
 - PR #1 collision work remains separate.
 - Google Drive LIVE sync: **SYNC FAILED** if this runtime exposes no Drive/Docs connector; no sync claim without read-back verification.
