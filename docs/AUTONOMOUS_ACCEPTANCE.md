@@ -1077,7 +1077,7 @@ Updated: 2026-10-23 (native migration first code slice)
 
 ## 2026-10-28 — N80 final source/test verification
 
-- Complete source/test head: `7a77bba29ff53419294579788ec7d943c5b727a3` (production logic from `763256f7e5d6f27d4c620d576e72b7f82d968c6f), with an explicit LOST/DRAW retry-reset regression.
+- Complete source/test head: `7a77bba29ff53419294579788ec7d943c5b727a3` (production logic from `763256f7e5d6f27d4c620d576e72b7f82d968c6f`), with an explicit LOST/DRAW retry-reset regression.
 - **PASS:** Native Kotlin/JUnit [#40736761130](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40736761130), completed successfully.
 - **PASS:** Mainline JS/Python [#40736760890](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40736760890), completed successfully.
 - Artifact queries: **0**. No APK build/package/upload.
