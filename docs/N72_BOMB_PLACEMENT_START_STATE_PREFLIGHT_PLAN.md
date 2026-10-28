@@ -35,6 +35,3 @@ The placement routine previously checked only the snapped bomb center and whethe
 - Native artifacts: 0. No APK build/package/upload, no new assets/dependencies, no merge/main write.
 - Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. PR #1 remains separate.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime.
-
-
-CI is pending for the source/test commit. Do not treat source checks as device or EKA2L1 parity evidence.
