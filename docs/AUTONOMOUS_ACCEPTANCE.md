@@ -1017,3 +1017,12 @@ Updated: 2026-10-23 (native migration first code slice)
 - Native workflow artifact query: **0**. No APK build/package/upload.
 - Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. PR #1 collision work remains separate; no merge or `main` write.
 - Google Drive LIVE sync: **SYNC FAILED** — this runtime exposes no Google Drive/Docs connector; no Drive read/write/read-back or folder metadata verification is claimed.
+
+
+## N78 — Bounded collision-grid shape preflight (2026-10-28)
+
+- Production + regression test SHA: `b26fb6dca24169baffd1a77868d8b7e41cfc3fc1`.
+- Collision queries now use O(1) captured grid-shape/header checks and validate only touched rows; nearestFree safely aborts on malformed rows. This removes a full-grid row scan from the hot player/bot collision path while retaining fail-closed reads.
+- **PASS:** Native Kotlin/JUnit CI [#40722101182](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40722101182), BUILD SUCCESSFUL in 59s; Mainline CI [#40722101594](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40722101594) PASS. Artifact count 0.
+- Device gameplay and EKA2L1 parity: NOT TESTED. PR #1 remains separate; no merge/main write.
+- Google Drive LIVE: SYNC FAILED (Drive/Docs connector unavailable; no read/write/read-back performed).

@@ -31,5 +31,12 @@ The collision path is called repeatedly by movement substeps and bot route check
 
 ## Evidence
 
-Source/test SHA and CI: pending. Final-head verification: pending.  
-Google Drive LIVE sync: SYNC FAILED if the Drive/Docs connector is unavailable; no sync is claimed without read-back verification.
+## Verification — 2026-10-28
+
+- Exact production + regression-test commit: `b26fb6dca24169baffd1a77868d8b7e41cfc3fc1`.
+- **PASS:** Native Kotlin/JUnit source-only CI [#40722101182](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40722101182), `:core:test`, BUILD SUCCESSFUL in 59s.
+- **PASS:** Mainline JS/Python CI [#40722101594](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40722101594).
+- **PASS:** artifact query returned 0; no APK build/package/upload, no new assets/dependencies.
+- Regression verifies collision hot-path row reads are bounded, malformed touched rows fail closed, and nearestFree returns null instead of indexing a malformed row.
+- Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. PR #1 remains separate. No merge or main write.
+- Google Drive LIVE sync: **SYNC FAILED** — no Google Drive/Docs connector is exposed in this runtime; no LIVE read/write/read-back or folder metadata verification was possible.
