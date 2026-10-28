@@ -32,3 +32,11 @@ Can a caller mutate a `StageData` grid row or spawn list after constructing `Nat
 
 Source/test SHA and CI: pending. Final docs-head recheck: pending.
 Google Drive LIVE sync: **SYNC FAILED** if no Drive/Docs connector is available; do not claim sync without read-back verification.
+
+## Source/test evidence — 2026-10-28
+
+- Exact source/test SHA: `198dd1de0effd14fac0bc7f122bb70f2cf4f2d29`.
+- **PASS:** Native Kotlin/JUnit [#40708209961](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40708209961), `:core:test`, BUILD SUCCESSFUL in 56s.
+- **PASS:** Mainline PR [#40708209862](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40708209862).
+- Artifact query: 0. No APK build/package/upload. Android device and Symbian/EKA2L1: NOT TESTED.
+- Final documentation-head recheck: pending.
