@@ -1085,3 +1085,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED. PR #2 remains Draft/open; PR #1 remains separate; no merge, main write, external assets or dependency changes.
 - This evidence update is docs-only and uses `[skip ci]`; no source/test change follows the tested head.
 - Google Drive LIVE sync: SYNC FAILED — no Drive/Docs connector exposed; no read/write/read-back or folder metadata verification is claimed.
+
+
+## 2026-10-28 — N81 replay retry reset baseline (CI pending)
+
+- Engineering question: can a LOST/DRAW retry reset the tick to zero while retaining stale actors, health, bombs, remote owners or flames?
+- Production change: the replay comparator now requires the retry frame to match the trace's original PLAYING/tick-0 frame exactly; missing baseline and mutated reset frames fail closed.
+- Regression tests: valid LOST/DRAW retry, actor mutation on retry, and retry without a valid initial baseline; prior terminal freeze and 41-stage/1/2/4-spawn replay tests remain.
+- Source/test SHA and Native/Mainline CI: pending exact-commit verification.
+- Android gameplay and Symbian/EKA2L1 parity: NOT TESTED. No APK packaging/upload, external assets, merge or main write.
+- Google Drive LIVE sync: SYNC FAILED if no Drive/Docs connector is available; no Drive sync is claimed without read/write/read-back.

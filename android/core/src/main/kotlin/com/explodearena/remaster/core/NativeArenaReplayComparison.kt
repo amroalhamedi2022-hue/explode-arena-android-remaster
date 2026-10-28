@@ -144,7 +144,7 @@ object NativeArenaReplayComparison {
 
     private val frozenStates = setOf("LOST", "DRAW", "ADVANCING", "COMPLETE")
 
-    private fun sequenceIssue(previous: FrameRecord?, current: FrameRecord): String? {
+    private fun sequenceIssue(previous: FrameRecord?, current: FrameRecord, initial: FrameRecord?): String? {
         if (previous == null) return null
         if (previous.stage != current.stage) return "stage-sequence"
 
@@ -153,7 +153,15 @@ object NativeArenaReplayComparison {
         // or mutating actors/hazards while reusing a terminal tick.
         if (previous.state in frozenStates) {
             if (previous.state in setOf("LOST", "DRAW") &&
-                current.state == "PLAYING" && current.tick == 0L) return null
+                current.state == "PLAYING" && current.tick == 0L) {
+                val baseline = initial ?: return "retry-reset-baseline-missing"
+                if (baseline.state != "PLAYING" || baseline.tick != 0L) {
+                    return "retry-reset-baseline-missing"
+                }
+                // A retry must reconstruct the exact initial round, not merely
+                // reset the tick while retaining stale actors, bombs or flames.
+                return if (current.fields == baseline.fields) null else "retry-reset-mutation"
+            }
             if (current.tick == previous.tick && current.state == previous.state) {
                 return if (current.fields == previous.fields) null else "terminal-hold-mutation"
             }
@@ -174,6 +182,8 @@ object NativeArenaReplayComparison {
         var frame = 0
         var previousExpected: FrameRecord? = null
         var previousActual: FrameRecord? = null
+        var initialExpected: FrameRecord? = null
+        var initialActual: FrameRecord? = null
         while (frame < MAX_TRACE_FRAMES && left.hasNext() && right.hasNext()) {
             val leftLine = left.next()
             val rightLine = right.next()
@@ -181,7 +191,7 @@ object NativeArenaReplayComparison {
             if (leftIssue != null || leftRecord == null) {
                 return Divergence(frame, "expected-${leftIssue ?: "invalid"}", "valid arena trace", leftIssue)
             }
-            val leftSequenceIssue = sequenceIssue(previousExpected, leftRecord)
+            val leftSequenceIssue = sequenceIssue(previousExpected, leftRecord, initialExpected)
             if (leftSequenceIssue != null) {
                 return Divergence(frame, "expected-$leftSequenceIssue", "valid frame sequence", leftSequenceIssue)
             }
@@ -189,7 +199,7 @@ object NativeArenaReplayComparison {
             if (rightIssue != null || rightRecord == null) {
                 return Divergence(frame, "actual-${rightIssue ?: "invalid"}", "valid arena trace", rightIssue)
             }
-            val rightSequenceIssue = sequenceIssue(previousActual, rightRecord)
+            val rightSequenceIssue = sequenceIssue(previousActual, rightRecord, initialActual)
             if (rightSequenceIssue != null) {
                 return Divergence(frame, "actual-$rightSequenceIssue", "valid frame sequence", rightSequenceIssue)
             }
@@ -201,6 +211,10 @@ object NativeArenaReplayComparison {
                     frame, fieldNames[index],
                     preview(leftRecord.fields[index]), preview(rightRecord.fields[index]),
                 )
+            }
+            if (frame == 0) {
+                initialExpected = leftRecord
+                initialActual = rightRecord
             }
             previousExpected = leftRecord
             previousActual = rightRecord

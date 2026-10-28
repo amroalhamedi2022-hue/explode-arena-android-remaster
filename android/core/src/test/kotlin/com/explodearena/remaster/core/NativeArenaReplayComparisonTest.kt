@@ -74,8 +74,12 @@ class NativeArenaReplayComparisonTest {
         val difference = NativeArenaReplayComparison.firstDivergence(emptyList(), emptyList())
         assertEquals("empty-trace", difference?.field)
     }
-    private fun terminalLine(state: String = "LOST"): String =
-        traceLine().replace("|round=PLAYING", "|round=$state")
+    private fun terminalLine(state: String = "LOST", tick: Long = 0L): String {
+        val fields = traceLine().split('|').toMutableList()
+        fields[2] = tick.toString()
+        fields[3] = "round=$state"
+        return fields.joinToString("|")
+    }
 
     private fun withPlayerX(line: String, x: Double): String {
         val fields = line.split('|').toMutableList()
@@ -123,19 +127,37 @@ class NativeArenaReplayComparisonTest {
         )
     }
 
-    @Test fun lostAndDrawCanRetryAtTickZero() {
+    @Test fun lostAndDrawRetryMustRestoreTheExactInitialFrame() {
+        val initial = traceLine()
+        val mutatedRetry = withPlayerX(initial, 25.0)
+
         for (state in listOf("LOST", "DRAW")) {
-            val terminal = terminalLine(state)
-            val retry = traceLine()
+            val terminal = terminalLine(state, tick = 1L)
 
             assertNull(
-                "$state may reset to PLAYING at tick zero",
+                "$state may retry only by restoring the initial PLAYING frame at tick zero",
                 NativeArenaReplayComparison.firstDivergence(
-                    listOf(terminal, retry),
-                    listOf(terminal, retry),
+                    listOf(initial, terminal, initial),
+                    listOf(initial, terminal, initial),
                 ),
             )
+            val difference = NativeArenaReplayComparison.firstDivergence(
+                listOf(initial, terminal, initial),
+                listOf(initial, terminal, mutatedRetry),
+            )
+            assertEquals(2, difference?.frameIndex)
+            assertEquals("actual-retry-reset-mutation", difference?.field)
         }
+    }
+
+    @Test fun retryWithoutAnInitialPlayingTickZeroBaselineIsRejected() {
+        val terminal = terminalLine("LOST")
+        val retry = traceLine()
+        val difference = NativeArenaReplayComparison.firstDivergence(
+            listOf(terminal, retry),
+            listOf(terminal, retry),
+        )
+        assertEquals("expected-retry-reset-baseline-missing", difference?.field)
     }
 
 }
