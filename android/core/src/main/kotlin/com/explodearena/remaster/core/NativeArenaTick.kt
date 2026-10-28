@@ -53,10 +53,8 @@ internal object NativeArenaTick {
                 "Invalid actor collision blockers"
             }
             val requestedDistance = playerSpeed * FixedStepClock.STEP_SECONDS
-            require(
-                requestedDistance.isFinite() &&
-                    requestedDistance <= kotlin.math.max(stage.width, stage.height).toDouble() * 2.0
-            ) { "Movement exceeds safe arena bounds" }
+            // Match StageCollision's bounded substep preflight before reserving the tick.
+            StageCollision.movementStepCount(stage, requestedDistance)
         }
         // Reserve the round/presentation clock only after the non-mutating
         // preflight succeeds, but before movement, fuse aging or victory-hold work.
