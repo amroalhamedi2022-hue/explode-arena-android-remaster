@@ -76,4 +76,88 @@ class NativeArenaTickInputValidationTest {
             assertEquals(NativeRoundFlow.State.PLAYING, round.state)
         }
     }
+
+    @Test fun duplicateCanonicalTickIsRejectedBeforePlayerOrWorldMutation() {
+        val stage = stage()
+        val player = Actor(24.0, 24.0)
+        val bot = NativeOpponentRoster.BotSlot("bot", Actor(72.0, 24.0))
+        val roster = NativeOpponentRoster(listOf(bot))
+        val simulation = NativeBombSimulation(stage)
+        val vitality = NativeVitality()
+        val round = NativeRoundFlow()
+
+        NativeArenaTick.advance(
+            stage, player, vitality, roster, simulation, round,
+            tick = 7L, dx = 0.0, dy = 0.0, hasNextStage = true,
+        )
+        val playerBefore = Actor(player.x, player.y, player.passBomb)
+        val botBefore = Actor(bot.actor.x, bot.actor.y, bot.actor.passBomb)
+        val bombsBefore = simulation.bombs
+        val flamesBefore = simulation.flames
+        val playerHealthBefore = vitality.health
+        val botHealthBefore = bot.vitality.health
+        val roundBefore = round.state
+
+        assertThrows(IllegalArgumentException::class.java) {
+            NativeArenaTick.advance(
+                stage, player, vitality, roster, simulation, round,
+                tick = 7L, dx = 1.0, dy = 0.0, hasNextStage = true,
+            )
+        }
+
+        assertEquals(playerBefore.x, player.x, 0.0)
+        assertEquals(playerBefore.y, player.y, 0.0)
+        assertEquals(playerBefore.passBomb, player.passBomb)
+        assertEquals(botBefore.x, bot.actor.x, 0.0)
+        assertEquals(botBefore.y, bot.actor.y, 0.0)
+        assertEquals(botBefore.passBomb, bot.actor.passBomb)
+        assertEquals(bombsBefore, simulation.bombs)
+        assertEquals(flamesBefore, simulation.flames)
+        assertEquals(playerHealthBefore, vitality.health)
+        assertEquals(botHealthBefore, bot.vitality.health)
+        assertEquals(roundBefore, round.state)
+
+        // The rejected duplicate did not corrupt the clock; the next unique tick works.
+        NativeArenaTick.advance(
+            stage, player, vitality, roster, simulation, round,
+            tick = 8L, dx = 0.0, dy = 0.0, hasNextStage = true,
+        )
+    }
+
+    @Test fun duplicateTickCannotFastForwardTheFrozenVictoryHold() {
+        val stage = stage().copy(spawns = listOf(Spawn(24.0, 24.0)))
+        val player = Actor(24.0, 24.0)
+        val roster = NativeOpponentRoster(emptyList())
+        val simulation = NativeBombSimulation(stage)
+        val vitality = NativeVitality()
+        val round = NativeRoundFlow(victoryHoldTicks = 2)
+        assertFalse(round.tick(
+            playerDefeated = false, opponentDefeated = true,
+            opponentPresent = true, hasNextStage = true,
+        ))
+        assertEquals(NativeRoundFlow.State.WON, round.state)
+
+        val firstHoldTick = NativeArenaTick.advance(
+            stage, player, vitality, roster, simulation, round,
+            tick = 20L, dx = 0.0, dy = 0.0, hasNextStage = true,
+        )
+        assertFalse(firstHoldTick.advanceStage)
+        assertEquals(NativeRoundFlow.State.WON, round.state)
+
+        assertThrows(IllegalArgumentException::class.java) {
+            NativeArenaTick.advance(
+                stage, player, vitality, roster, simulation, round,
+                tick = 20L, dx = 0.0, dy = 0.0, hasNextStage = true,
+            )
+        }
+        assertEquals(NativeRoundFlow.State.WON, round.state)
+
+        val secondHoldTick = NativeArenaTick.advance(
+            stage, player, vitality, roster, simulation, round,
+            tick = 21L, dx = 0.0, dy = 0.0, hasNextStage = true,
+        )
+        assertTrue(secondHoldTick.advanceStage)
+        assertEquals(NativeRoundFlow.State.ADVANCING, round.state)
+    }
+
 }

@@ -17,6 +17,8 @@ class NativeRoundFlow(private val victoryHoldTicks: Int = 90) {
     // Lock campaign progression when victory begins; later caller changes must not
     // turn a final arena into a next-stage transition (or vice versa).
     private var hasNextStageAtVictory: Boolean? = null
+    // Every canonical arena tick, including the frozen victory hold, is consumed once.
+    private var lastCanonicalTick: Long? = null
 
     val canRetry: Boolean get() = state == State.LOST || state == State.DRAW
     val isPlaying: Boolean get() = state == State.PLAYING
@@ -34,6 +36,21 @@ class NativeRoundFlow(private val victoryHoldTicks: Int = 90) {
             State.LOST, State.DRAW, State.ADVANCING, State.COMPLETE -> true
             State.PLAYING, State.WON -> false
         }
+
+    /** Validate without consuming a tick so malformed requests fail before gameplay mutation. */
+    internal fun validateCanonicalTick(tick: Long) {
+        require(tick >= 0L) { "Invalid canonical arena tick" }
+        val previous = lastCanonicalTick
+        require(previous == null || tick > previous) {
+            "Canonical arena tick must increase strictly"
+        }
+    }
+
+    /** Reserve only after the whole request has passed its non-mutating preflight. */
+    internal fun reserveCanonicalTick(tick: Long) {
+        validateCanonicalTick(tick)
+        lastCanonicalTick = tick
+    }
 
     /** Returns true only once when the caller must load the next arena. */
     fun tick(

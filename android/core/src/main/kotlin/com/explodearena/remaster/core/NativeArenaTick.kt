@@ -41,6 +41,26 @@ internal object NativeArenaTick {
         // Validate before the latched-round fast path too: terminal ticks must
         // reject malformed input without mutating opponent animation state.
         require(playerSpeed.isFinite() && playerSpeed >= 0.0) { "Invalid player speed" }
+        require(player.x.isFinite() && player.y.isFinite()) { "Invalid player position" }
+        // Reject replayed ticks before moving the player: the roster's old guard
+        // ran only after player movement, leaving a partially advanced world.
+        roundFlow.validateCanonicalTick(tick)
+        if (roundFlow.isPlaying) {
+            opponents.validateNextSimulationTick(tick)
+            val blockers = opponents.blockingActors()
+            require(blockers.none { it === player } &&
+                blockers.all { it.x.isFinite() && it.y.isFinite() }) {
+                "Invalid actor collision blockers"
+            }
+            val requestedDistance = playerSpeed * FixedStepClock.STEP_SECONDS
+            require(
+                requestedDistance.isFinite() &&
+                    requestedDistance <= kotlin.math.max(stage.width, stage.height).toDouble() * 2.0
+            ) { "Movement exceeds safe arena bounds" }
+        }
+        // Reserve the round/presentation clock only after the non-mutating
+        // preflight succeeds, but before movement, fuse aging or victory-hold work.
+        roundFlow.reserveCanonicalTick(tick)
 
         var playerWalking = false
         var bombsPlaced = 0

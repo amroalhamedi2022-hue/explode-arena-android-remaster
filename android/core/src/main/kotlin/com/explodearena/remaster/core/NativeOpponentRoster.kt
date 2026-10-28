@@ -223,6 +223,15 @@ internal class NativeOpponentRoster(
      * The game loop and all-arena integration tests share this entry point so
      * callers cannot accidentally sample bot damage before the bomb update.
      */
+    /** Non-mutating tick preflight used by the outer canonical step before player movement. */
+    internal fun validateNextSimulationTick(tick: Long) {
+        require(tick >= 0L) { "Invalid opponent simulation tick" }
+        val previousTick = lastSimulationTick
+        require(previousTick == null || tick > previousTick) {
+            "Opponent simulation tick must increase strictly"
+        }
+    }
+
     fun advanceSimulationTick(
         stage: StageData,
         player: Actor,
@@ -232,11 +241,7 @@ internal class NativeOpponentRoster(
         // Even a solo arena must reject malformed player coordinates before reserving a tick
         // or advancing bombs; the empty-opponent fast path otherwise bypasses collision checks.
         require(player.x.isFinite() && player.y.isFinite()) { "Invalid player position" }
-        require(tick >= 0L) { "Invalid opponent simulation tick" }
-        val previousTick = lastSimulationTick
-        require(previousTick == null || tick > previousTick) {
-            "Opponent simulation tick must increase strictly"
-        }
+        validateNextSimulationTick(tick)
         // Reserve before mutating any actor/bomb/vitality state. If an internal
         // operation fails after partial work, the same tick cannot be replayed.
         lastSimulationTick = tick
