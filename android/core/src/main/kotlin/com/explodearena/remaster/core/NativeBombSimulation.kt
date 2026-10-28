@@ -10,13 +10,17 @@ import kotlin.math.floor
  * A caller advances this object exactly once per FixedStepClock tick (60 Hz).
  */
 class NativeBombSimulation(
-    private val stage: StageData,
+    stage: StageData,
     private val bombLimit: Int = 1,
     private val bombFuseSeconds: Double = 1.6,
     private val blastLifetimeSeconds: Double = 0.45,
     private val bombRange: Int = 3,
     initialBombId: Long = 1L,
 ) {
+    // Own a deep snapshot: List<IntArray> is not deeply immutable, and callers
+    // may retain/mutate either the list or its row arrays after construction.
+    private val stage: StageData = stage.detachedCopy()
+
     data class Bomb(val id: Long, val owner: String, val x: Double, val y: Double, val remaining: Double?, val remote: Boolean = false)
     data class Flame(val cells: List<Spawn>, val remaining: Double)
     private val activeBombs = mutableListOf<Bomb>()
