@@ -270,4 +270,85 @@ class NativeArenaTickInputValidationTest {
         )
         assertEquals(NativeRoundFlow.State.PLAYING, round.state)
     }
+    @Test fun playerOverlapWithLivingOpponentIsRejectedBeforeBombFuseAgesAndCanRetrySameTick() {
+        val stage = stage()
+        val player = Actor(24.0, 24.0)
+        val bot = NativeOpponentRoster.BotSlot("bot", Actor(72.0, 24.0))
+        val roster = NativeOpponentRoster(listOf(bot))
+        val simulation = NativeBombSimulation(stage)
+        assertTrue(simulation.place(player))
+        val bombId = simulation.bombs.single().id
+        val remainingBefore = requireNotNull(simulation.bombs.single().remaining)
+        val vitality = NativeVitality()
+        val round = NativeRoundFlow()
+
+        // Simulate a corrupt/replayed world after a valid roster was created.
+        bot.actor.x = player.x
+        bot.actor.y = player.y
+        assertThrows(IllegalArgumentException::class.java) {
+            NativeArenaTick.advance(
+                stage, player, vitality, roster, simulation, round,
+                tick = 31L, dx = 0.0, dy = 0.0, hasNextStage = true,
+            )
+        }
+
+        assertEquals(24.0, player.x, 0.0)
+        assertEquals(24.0, player.y, 0.0)
+        assertEquals(24.0, bot.actor.x, 0.0)
+        assertEquals(24.0, bot.actor.y, 0.0)
+        assertEquals(3, vitality.health)
+        assertEquals(remainingBefore, requireNotNull(simulation.bombs.single().remaining), 0.0)
+        assertTrue(simulation.flames.isEmpty())
+        assertEquals(NativeRoundFlow.State.PLAYING, round.state)
+
+        // Repair the overlap. Reusing tick 31 must succeed and age the live fuse
+        // exactly once; the rejected tick must not have been reserved.
+        bot.actor.x = 72.0
+        bot.actor.y = 24.0
+        NativeArenaTick.advance(
+            stage, player, vitality, roster, simulation, round,
+            tick = 31L, dx = 0.0, dy = 0.0, hasNextStage = true,
+        )
+        val remainingAfter = requireNotNull(simulation.bombs.first { it.id == bombId }.remaining)
+        assertEquals(remainingBefore - FixedStepClock.STEP_SECONDS, remainingAfter, 1e-9)
+    }
+
+    @Test fun livingOpponentsCannotStartOverlappingAndRejectedTickRemainsAvailable() {
+        val stage = stage()
+        val player = Actor(24.0, 24.0)
+        val first = NativeOpponentRoster.BotSlot("bot", Actor(72.0, 24.0))
+        val second = NativeOpponentRoster.BotSlot("bot2", Actor(72.0, 48.0))
+        val roster = NativeOpponentRoster(listOf(first, second))
+        val simulation = NativeBombSimulation(stage)
+        val vitality = NativeVitality()
+        val round = NativeRoundFlow()
+
+        second.actor.x = first.actor.x
+        second.actor.y = first.actor.y
+        assertThrows(IllegalArgumentException::class.java) {
+            NativeArenaTick.advance(
+                stage, player, vitality, roster, simulation, round,
+                tick = 18L, dx = 0.0, dy = 0.0, hasNextStage = true,
+            )
+        }
+        assertEquals(24.0, player.x, 0.0)
+        assertEquals(24.0, player.y, 0.0)
+        assertEquals(72.0, first.actor.x, 0.0)
+        assertEquals(24.0, first.actor.y, 0.0)
+        assertEquals(72.0, second.actor.x, 0.0)
+        assertEquals(24.0, second.actor.y, 0.0)
+        assertTrue(simulation.bombs.isEmpty())
+        assertTrue(simulation.flames.isEmpty())
+        assertEquals(3, vitality.health)
+        assertEquals(NativeRoundFlow.State.PLAYING, round.state)
+
+        second.actor.x = 72.0
+        second.actor.y = 48.0
+        NativeArenaTick.advance(
+            stage, player, vitality, roster, simulation, round,
+            tick = 18L, dx = 0.0, dy = 0.0, hasNextStage = true,
+        )
+        assertEquals(NativeRoundFlow.State.PLAYING, round.state)
+    }
+
 }
