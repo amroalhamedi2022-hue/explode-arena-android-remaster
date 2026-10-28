@@ -83,6 +83,33 @@ class NativeOpponentRosterTest {
         assertTrue(simulation.flames.isEmpty())
     }
 
+    @Test fun canonicalSimulationTicksMustIncreaseBeforeBombsOrBotsAdvance() {
+        val arena = stage(1)
+        val player = Actor(24.0, 24.0)
+        val roster = NativeOpponentRoster(emptyList())
+        val simulation = NativeBombSimulation(arena, bombFuseSeconds = 1.0)
+        assertTrue(simulation.place(Actor(40.0, 40.0), "player"))
+
+        roster.advanceSimulationTick(arena, player, simulation, 5L)
+        val remainingAfterFirstTick = requireNotNull(simulation.bombs.single().remaining)
+        assertTrue(remainingAfterFirstTick < 1.0)
+
+        assertThrows(IllegalArgumentException::class.java) {
+            roster.advanceSimulationTick(arena, player, simulation, 5L)
+        }
+        assertEquals(remainingAfterFirstTick, requireNotNull(simulation.bombs.single().remaining), 0.0)
+        assertTrue(simulation.flames.isEmpty())
+
+        assertThrows(IllegalArgumentException::class.java) {
+            roster.advanceSimulationTick(arena, player, simulation, 4L)
+        }
+        assertEquals(remainingAfterFirstTick, requireNotNull(simulation.bombs.single().remaining), 0.0)
+
+        roster.advanceSimulationTick(arena, player, simulation, 6L)
+        assertTrue(requireNotNull(simulation.bombs.single().remaining) < remainingAfterFirstTick)
+        assertEquals(1, simulation.bombs.size)
+    }
+
     @Test fun rejectsUnsupportedAndOverlappingSpawns() {
         assertThrows(IllegalArgumentException::class.java) {
             NativeOpponentRoster.create(stage(3), Actor(24.0, 24.0))

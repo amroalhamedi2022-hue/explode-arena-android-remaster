@@ -211,6 +211,11 @@ internal class NativeOpponentRoster(
 
     data class SimulationTickResult(val bombsPlaced: Int, val bombsDetonated: Int)
 
+    // A roster instance consumes each canonical simulation tick at most once.
+    // Reserve before mutable gameplay work so a failed partial tick cannot be
+    // replayed and accidentally age fuses or move bots twice.
+    private var lastSimulationTick: Long? = null
+
     /**
      * Canonical fixed-step order for bot gameplay: plan/move against the pre-tick
      * world, advance fuses and flames once, then sample bot damage against the
@@ -224,6 +229,15 @@ internal class NativeOpponentRoster(
         simulation: NativeBombSimulation,
         tick: Long,
     ): SimulationTickResult {
+        require(tick >= 0L) { "Invalid opponent simulation tick" }
+        val previousTick = lastSimulationTick
+        require(previousTick == null || tick > previousTick) {
+            "Opponent simulation tick must increase strictly"
+        }
+        // Reserve before mutating any actor/bomb/vitality state. If an internal
+        // operation fails after partial work, the same tick cannot be replayed.
+        lastSimulationTick = tick
+
         val placed = advance(stage, player, simulation, tick, applyDamage = false)
         val detonated = simulation.tick()
         applyDamageForLastTick(simulation)
