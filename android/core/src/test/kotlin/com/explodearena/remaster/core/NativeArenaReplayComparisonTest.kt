@@ -89,6 +89,14 @@ class NativeArenaReplayComparisonTest {
         return fields.joinToString("|")
     }
 
+    private fun withPlayerFields(line: String, vararg changes: Pair<Int, String>): String {
+        val fields = line.split('|').toMutableList()
+        val player = fields[4].removePrefix("player=").split(',').toMutableList()
+        changes.forEach { (index, value) -> player[index] = value }
+        fields[4] = "player=" + player.joinToString(",")
+        return fields.joinToString("|")
+    }
+
     @Test fun frozenTerminalHoldRejectsActorMutationAtTheSameTick() {
         val terminal = terminalLine()
         val changed = withPlayerX(terminal, 25.0)
@@ -159,5 +167,30 @@ class NativeArenaReplayComparisonTest {
         )
         assertEquals("expected-retry-reset-baseline-missing", difference?.field)
     }
+
+    @Test fun rejectsImpossibleActorHealthAndInvulnerabilityStatesEvenWhenComparedToValidTrace() {
+        val valid = traceLine()
+        val tooMuchHealth = withPlayerFields(valid, 3 to "100")
+        val impossibleInvulnerability = withPlayerFields(
+            valid,
+            4 to java.lang.Long.toHexString(java.lang.Double.doubleToLongBits(10.0001)),
+        )
+        val zeroHealthNotDefeated = withPlayerFields(valid, 3 to "0", 5 to "false")
+        val livingActorMarkedDefeated = withPlayerFields(valid, 3 to "3", 5 to "true")
+
+        for (malformed in listOf(
+            tooMuchHealth,
+            impossibleInvulnerability,
+            zeroHealthNotDefeated,
+            livingActorMarkedDefeated,
+        )) {
+            val difference = NativeArenaReplayComparison.firstDivergence(
+                listOf(malformed), listOf(valid),
+            )
+            assertEquals("malformed actor state must be rejected before trace equality", "expected-player", difference?.field)
+            assertEquals(0, difference?.frameIndex)
+        }
+    }
+
 
 }
