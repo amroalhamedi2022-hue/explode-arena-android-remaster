@@ -971,3 +971,14 @@ Updated: 2026-10-23 (native migration first code slice)
 - Native artifacts: **0**. No APK build/package/upload. No assets or dependencies added.
 - Android device gameplay and original Symbian/EKA2L1 parity: **NOT TESTED**. PR #1 collision work remains separate; no merge/main write.
 - Google Drive LIVE sync: **SYNC FAILED** — this runtime exposes no Google Drive/Docs connector; no Drive read/write/read-back is claimed.
+
+## 2026-10-28 — N73 canonical bot-tick start-state preflight
+
+- Engineering question: can direct/replay calls to `NativeOpponentRoster.advanceSimulationTick` bypass the full start-world preflight in `NativeArenaTick` and mutate bots/fuses from an invalid start state?
+- Production change: centralized finite-coordinate, terrain, unauthorized-bomb, owner-exit-grace and pairwise actor-overlap checks in `NativeOpponentRoster.validateStartState`; both the canonical game tick and direct/replay roster entry point call it before mutation/reservation.
+- New integration tests: wall overlap, foreign-bomb overlap, overlapping actor starts, unchanged fuse/positions after rejection, and retrying the same tick after repair.
+- Source/test SHA and CI: pending.
+- APK build/artifacts: 0 / not performed. Device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**.
+- No assets/dependencies, merge, main write, or auto-merge. PR #1 remains separate.
+- Google Drive LIVE sync: **SYNC FAILED** if no Drive/Docs connector is exposed; no Drive read/write/read-back is claimed.
+
