@@ -25,3 +25,11 @@ The debug APK is now a verified build artifact. Do not claim physical-device com
 - Native Kotlin/JUnit CI #40703078096 PASS; Mainline PR CI #40703078131 PASS. Native artifacts: 0.
 - Arena and bomb simulation must share the same structural stage definition; mismatch is rejected before player/bot/fuse/round mutation.
 - Next: prioritize a controlled Android gameplay run and EKA2L1 comparison before claiming native/Symbian parity; continue source-level milestones without adding unlicensed assets.
+
+## 2026-10-28 — N76 source checkpoint
+
+- Source/test SHA: `198dd1de0effd14fac0bc7f122bb70f2cf4f2d29`.
+- Native Kotlin/JUnit CI #40708209961 PASS; Mainline PR CI #40708209862 PASS; native artifact count 0.
+- Bomb simulation owns detached grid/spawn data; post-construction caller mutation is rejected by stage-binding preflight before gameplay mutation, and same-tick retry passes after repair.
+- Device gameplay and Symbian/EKA2L1 parity remain NOT TESTED. No APK build/package/upload.
+- Next: validate controlled gameplay on Android and compare collision, fuse/flame timing, stage transitions and audio against EKA2L1; continue source-only work without unlicensed assets.
