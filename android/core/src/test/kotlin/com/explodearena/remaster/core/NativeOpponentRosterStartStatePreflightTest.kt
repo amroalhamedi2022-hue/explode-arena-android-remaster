@@ -26,7 +26,7 @@ class NativeOpponentRosterStartStatePreflightTest {
         val fuseBefore = simulation.bombs.single().remaining
         val playerBefore = Actor(player.x, player.y, player.passBomb)
         val botBefore = Actor(bot.actor.x, bot.actor.y, bot.actor.passBomb)
-        val playerHealthBefore = NativeVitality().health
+        bot.walking = true
         val botHealthBefore = bot.vitality.health
 
         assertThrows(IllegalArgumentException::class.java) {
@@ -42,7 +42,7 @@ class NativeOpponentRosterStartStatePreflightTest {
         assertEquals(fuseBefore, simulation.bombs.single().remaining)
         assertEquals(1, simulation.bombs.size)
         assertEquals(botHealthBefore, bot.vitality.health)
-        assertEquals(playerHealthBefore, NativeVitality().health)
+        assertTrue("preflight must not mutate bot animation state", bot.walking)
 
         // Repair the actor and retry the exact same tick: the failed preflight
         // must not have reserved it or advanced the bomb fuse.
