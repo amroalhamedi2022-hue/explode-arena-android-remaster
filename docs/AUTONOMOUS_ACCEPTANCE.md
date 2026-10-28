@@ -829,3 +829,15 @@ Updated: 2026-10-23 (native migration first code slice)
 - **PASS:** Native Kotlin/JUnit CI #40611588324 (`BUILD SUCCESSFUL in 49s`) and Mainline JS/Python CI #40611588341. Native artifact query: 0.
 - Docs-updated head `5acb09802eb3391c54392381863e86380092820c`: Native Kotlin/JUnit CI #40611991238 PASS (`BUILD SUCCESSFUL in 50s`); Mainline JS/Python CI #40611991210 PASS; native artifact query 0.
 - Android device, full native gameplay, and Symbian/EKA2L1 parity: NOT TESTED. APK packaging/artifacts: 0.
+
+
+## 2026-10-28 N62 — opponent roster ownership invariants
+
+- Engineering question and acceptance criteria: docs/N62_OPPONENT_ROSTER_OWNERSHIP_INVARIANTS_PLAN.md.
+- Production source changed: YES — constructor now rejects duplicate owner IDs and shared Actor, NativeVitality, or NativeBotController references. This prevents accidental owner quota aliasing and shared mutable bot state before simulation begins.
+- Integration regressions: duplicate owner, shared actor, shared vitality, shared controller, and actual 4-spawn factory independence.
+- Source commit: 532c9d510a0659e56e31e77c4ab2545e6a055bda; test commit: 45ffd4fd17ef6511d53f3d4941b7c4d901f974f9; plan commit: a3fa7f852db212bb3061ef8cbb9cfc53dabb7228.
+- Exact source/test and docs-updated PR-head CI: PENDING.
+- Android device and Symbian/EKA2L1 parity: NOT TESTED. APK packaging/artifacts: 0; no APK build requested.
+- No merge, main write, release, asset upload or auto-merge.
+- Google Drive LIVE handoff/index: SYNC FAILED if connector unavailable; no LIVE read/write or folder metadata verification is claimed.
