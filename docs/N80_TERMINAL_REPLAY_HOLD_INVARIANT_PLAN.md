@@ -16,7 +16,7 @@ The comparator is a parser plus temporal state validator. A trace may be byte-id
 - Validate frozen states (LOST, DRAW, ADVANCING, COMPLETE) before the ordinary monotonic-tick rule.
 - Permit a same-tick terminal hold only when the complete serialized frame is unchanged.
 - Permit only the documented LOST/DRAW → PLAYING reset at tick 0; reject tick advancement or state mutation after other latched terminal frames.
-- Add regressions for terminal actor mutation, tick advancement after COMPLETE, and unchanged terminal holds.
+- Add regressions for terminal actor mutation, tick advancement after COMPLETE, unchanged terminal holds, and the allowed LOST/DRAW retry reset at tick 0.
 
 ## Acceptance criteria
 
@@ -30,11 +30,11 @@ The comparator is a parser plus temporal state validator. A trace may be byte-id
 
 ## Verification — 2026-10-28
 
-- Production + regression source/test commit: `763256f7e5d6f27d4c620d576e72b7f82d968c6f`.
+- Production logic commit: `763256f7e5d6f27d4c620d576e72b7f82d968c6f`; retry-reset regression follow-up: pending commit.
 - **PASS:** Native Kotlin/JUnit ` :core:test ` — [CI #40735461337](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461337), completed successfully.
 - **PASS:** Mainline JS/Python source checks — [CI #40735461131](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461131), completed successfully.
 - Native artifacts: **0**. No APK build/package/upload.
 - Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**.
 - PR #2 remains Draft/open; PR #1 remains separate. No merge, `main` write, external assets, or new dependencies.
-- Previous evidence-head recheck: Native [#40735894401](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735894401) PASS; Mainline [#40735894437](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735894437) PASS. The current evidence append is docs-only; its final-head recheck is pending.
+- Previous evidence-head recheck: Native [#40735894401](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735894401) PASS; Mainline [#40735894437](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735894437) PASS. The additional retry-reset regression changes the test head; final verification is pending.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed; no read/write/read-back or folder metadata verification is claimed.

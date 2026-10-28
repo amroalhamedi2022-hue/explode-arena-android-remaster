@@ -1066,3 +1066,10 @@ Updated: 2026-10-23 (native migration first code slice)
 - Source/test commit `763256f7e5d6f27d4c620d576e72b7f82d968c6f`: Native Kotlin/JUnit [#40735461337](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461337) PASS; Mainline JS/Python [#40735461131](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735461131) PASS.
 - Prior evidence-head `98f05bb738b9f55b99a45294bfebd0484d32e06e`: Native [#40735894401](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735894401) PASS; Mainline [#40735894437](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40735894437) PASS.
 - Current change is documentation-only; final-head CI will be verified after this append. Artifacts 0; no APK.
+
+
+## 2026-10-28 — N80 retry-reset regression follow-up (CI pending)
+
+- Added an explicit comparator regression proving both LOST and DRAW can transition to a fresh PLAYING frame at tick 0 without weakening frozen terminal holds.
+- This is test-only; production logic is unchanged from `763256f7e5d6f27d4c620d576e72b7f82d968c6f`.
+- Follow-up source/test commit and CI: PENDING.

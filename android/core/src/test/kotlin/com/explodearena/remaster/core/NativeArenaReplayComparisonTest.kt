@@ -123,4 +123,19 @@ class NativeArenaReplayComparisonTest {
         )
     }
 
+    @Test fun lostAndDrawCanRetryAtTickZero() {
+        for (state in listOf("LOST", "DRAW")) {
+            val terminal = terminalLine(state)
+            val retry = traceLine()
+
+            assertNull(
+                "$state may reset to PLAYING at tick zero",
+                NativeArenaReplayComparison.firstDivergence(
+                    listOf(terminal, retry),
+                    listOf(terminal, retry),
+                ),
+            )
+        }
+    }
+
 }
