@@ -28,6 +28,12 @@ The comparator validates serialized temporal sequences. The regression must exer
 6. No APK build/package/upload, new dependencies, external assets, merge, or main write.
 7. Android device gameplay and Symbian/EKA2L1 parity remain NOT TESTED.
 
-## Verification status at implementation commit
+## Verification — 2026-10-28
 
-Source/test change committed; exact-commit CI is pending. Final status will be appended after CI completes.
+- Exact source/test commit: 3127508c2f9350b76a4e01d970ab80b75e495c35.
+- PASS — Native Kotlin/JUnit, job native-source-check: [CI #40740125636](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40740125636); log reports BUILD SUCCESSFUL in 40s.
+- PASS — Mainline JS/Python, job source-checks: [CI #40740125935](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40740125935).
+- Artifact queries: 0. No APK build/package/upload.
+- Android gameplay and Symbian/EKA2L1 parity: NOT TESTED.
+- PR #2 remains Draft/open; PR #1 remains separate. No merge, main write, external assets, or dependency changes.
+- Google Drive LIVE sync: SYNC FAILED — this runtime has no Google Drive/Docs connector; no Drive read/write/read-back is claimed.
