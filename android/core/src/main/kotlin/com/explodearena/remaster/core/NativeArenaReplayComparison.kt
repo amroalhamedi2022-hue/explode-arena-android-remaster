@@ -49,9 +49,18 @@ object NativeArenaReplayComparison {
             (!isPlayer && owner == "player")) return null
         if (bitsValue(values[1]) == null || bitsValue(values[2]) == null) return null
         val health = values[3].toIntOrNull() ?: return null
-        if (health !in 0..1000) return null
+        // NativeVitality accepts at most 99 HP and defines defeat exactly as
+        // health == 0. Reject impossible serialized states before comparing
+        // traces, or two equally malformed traces could appear to match.
+        if (health !in 0..99) return null
         val invulnerability = bitsValue(values[4]) ?: return null
-        if (invulnerability < 0.0 || values[5] !in setOf("true", "false")) return null
+        if (invulnerability !in 0.0..10.0) return null
+        val defeated = when (values[5]) {
+            "true" -> true
+            "false" -> false
+            else -> return null
+        }
+        if (defeated != (health == 0)) return null
         val passBomb = if (values[6] == "none") null else positiveId(values[6]) ?: return null
         if (isPlayer) {
             if (values[7] != "na" || values[8] != "na") return null
