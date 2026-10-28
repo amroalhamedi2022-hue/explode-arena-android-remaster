@@ -29,3 +29,6 @@ In a one-spawn arena the opponent roster is empty. The canonical tick path calls
 - Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED.
 - Open-source/API reference checked: Kotlin `Double.isFinite()` semantics at https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/is-finite.html. No third-party implementation copied.
 - No merge, main write, paid service, or external game asset upload.
+
+
+- Google Drive LIVE handoff/index: SYNC FAILED — this runtime exposes no Google Drive/Docs connector; no LIVE read/write/read-back or folder metadata verification was possible.
