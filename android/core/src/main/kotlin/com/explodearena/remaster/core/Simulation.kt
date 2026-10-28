@@ -36,6 +36,8 @@ data class Actor(var x: Double, var y: Double, var passBomb: Long? = null)
 object StageCollision {
     const val CELL = 8
     const val ACTOR_RADIUS = 5.0
+    // A corrupt/custom arena must not turn one fixed step into millions of collision probes.
+    const val MAX_MOVEMENT_SUBSTEPS = 4096
 
     fun tile(stage: StageData, x: Double, y: Double): Int {
         if (!x.isFinite() || !y.isFinite()) return -1
@@ -76,6 +78,23 @@ object StageCollision {
             kotlin.math.abs(bomb.y - y) < 7.0 + radius
 
     /**
+     * Validate the requested travel and compute bounded collision substeps before
+     * any actor/pass-bomb state is mutated. Real catalog arenas need far fewer
+     * than this budget; the ceiling protects malformed/custom dimensions too.
+     */
+    internal fun movementStepCount(stage: StageData, distance: Double): Int {
+        val maxTravel = max(stage.width, stage.height).toDouble() * 2.0
+        require(distance.isFinite() && distance >= 0.0 && distance <= maxTravel) {
+            "Movement exceeds safe arena bounds"
+        }
+        val requestedSteps = ceil(distance / 3.0)
+        require(requestedSteps <= MAX_MOVEMENT_SUBSTEPS.toDouble()) {
+            "Movement exceeds safe collision substep budget"
+        }
+        return max(1, requestedSteps.toInt())
+    }
+
+    /**
      * Provisional 10px-square actor-to-actor collision. Keep this separate
      * from terrain/bomb collision so dead opponents can stop blocking paths.
      * Same strict AABB overlap rule as NativeSpawnLayout; edge contact is legal.
@@ -111,18 +130,13 @@ object StageCollision {
         // exit grace. Previously a rejected oversized replay could clear
         // passBomb, changing collision state despite throwing an exception.
         val distance = speed * dt
-        // A malformed replay/input must not overflow the step count or hang
-        // the render thread in billions of collision iterations. Normal
-        // 60 Hz movement is unchanged; the bound is relative to arena size.
-        val maxTravel = max(stage.width, stage.height).toDouble() * 2.0
-        require(distance.isFinite() && distance <= maxTravel) { "Movement exceeds safe arena bounds" }
+        val steps = movementStepCount(stage, distance)
         // Clear stale grace when standing still after a bomb detonates.
         val prior = actor.passBomb
         if (prior != null && bombs.none { it.id == prior && touchesBomb(it, actor.x, actor.y) }) {
             actor.passBomb = null
         }
         if (length == 0.0 || dt == 0.0) return
-        val steps = max(1, ceil(distance / 3.0).toInt())
         val sx = dx / length * distance / steps
         val sy = dy / length * distance / steps
         repeat(steps) {
