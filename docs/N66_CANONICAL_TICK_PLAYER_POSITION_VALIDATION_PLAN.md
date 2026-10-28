@@ -23,7 +23,9 @@ In a one-spawn arena the opponent roster is empty. The canonical tick path calls
 ## Evidence
 
 - Production + regression test commit: 5ec9c3fed00dbb465ddb45a5acbe8475bd8c1d16.
-- CI: pending; record the exact GitHub Actions run and final-head recheck after completion.
+- PASS — Native Kotlin/JUnit source-only CI #40640834426 on docs-head SHA bfe7fecb1dd9e125041bfe85ed9db172e91c19bb; job `native-source-check` completed successfully.
+- PASS — Mainline JS/Python CI #40640834344 on the same docs-head; source-checks completed successfully. Mainline push CI #40640828161 also PASS on source/test commit 5ec9c3fed00dbb465ddb45a5acbe8475bd8c1d16.
+- Native job log contains BUILD SUCCESSFUL: true. Native artifacts: 0.
 - Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED.
 - Open-source/API reference checked: Kotlin `Double.isFinite()` semantics at https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/is-finite.html. No third-party implementation copied.
 - No merge, main write, paid service, or external game asset upload.
