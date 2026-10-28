@@ -19,7 +19,7 @@ Does the roster keep the exact collection whose owner and object-identity invari
 5. No APK task, packaging, asset upload, release, merge or main write.
 
 ## Evidence boundaries
-- Source/JUnit CI: pending on this commit.
+- Source/test SHA: 6d8817a9b52dec61e641c47771f33a3ea476f8a6. Native Kotlin/JUnit CI #40629249497 PASS (:core:test only); Mainline JS/Python CI #40629249500 PASS. Artifact count: 0. This later plan/status-only commit will receive a separate final-head recheck.
 - Android device/native launch and Symbian/EKA2L1 parity: NOT TESTED.
 - APK artifacts: 0 (no APK build requested).
 - Google Drive LIVE sync: SYNC FAILED if the Drive/Docs connector is unavailable; no sync is claimed without read-back verification.

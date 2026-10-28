@@ -54,3 +54,9 @@
 - Added a regression for post-construction mutation of both the input list and a returned mutable snapshot.
 - Plan: docs/N64_ROSTER_MEMBERSHIP_IMMUTABILITY_PLAN.md. Source/test + final-head CI: pending.
 - Device gameplay and Symbian/EKA2L1 parity: NOT TESTED. APK artifacts: 0. No merge or main write.
+
+## 2026-10-28 N64 — roster membership immutability — source/test PASS
+- Source/test SHA: 6d8817a9b52dec61e641c47771f33a3ea476f8a6.
+- Native Kotlin/JUnit CI #40629249497 PASS; Mainline JS/Python CI #40629249500 PASS. Native task is :core:test only; artifacts 0.
+- Input MutableList and returned mutable snapshots are detached from the roster's private validated membership.
+- Android device and Symbian/EKA2L1 parity: NOT TESTED. A documentation-only final-head recheck follows.

@@ -890,3 +890,10 @@ Updated: 2026-10-23 (native migration first code slice)
 - Source/JUnit and final PR-head CI: PENDING at commit creation; exact SHA/run IDs will be recorded in the PR conversation after verification.
 - Android device/native launch and Symbian/EKA2L1 parity: NOT TESTED. APK build/artifacts: 0.
 - No merge, main write, or game asset upload. Google Drive LIVE sync: SYNC FAILED if no connector is available; no Drive sync is claimed.
+
+### N64 verification — source/test PASS (2026-10-28)
+- Source + regression test + plan/status commit: 6d8817a9b52dec61e641c47771f33a3ea476f8a6.
+- PASS — Native Kotlin/JUnit CI #40629249497 on that exact SHA; job native-source-check completed successfully and runs :core:test only.
+- PASS — Mainline JS/Python CI #40629249500 on that exact SHA.
+- Artifacts: 0. No APK build/package/upload. Android device and Symbian/EKA2L1 parity: NOT TESTED.
+- Documentation-only final-head CI will be checked separately; no merge/main write.
