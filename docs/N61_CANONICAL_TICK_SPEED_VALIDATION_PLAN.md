@@ -18,8 +18,11 @@ The invariant spans the production tick coordinator, opponent animation state, p
 - Native Kotlin/JUnit source CI and Mainline JS/Python CI pass; no APK packaging, asset upload, dependency change, merge, or main-branch write.
 
 ## Evidence
-- Source/test SHA: PENDING.
-- Native Kotlin/JUnit CI: PENDING.
-- Mainline JS/Python CI: PENDING.
+- Production source commit: `781820215360137489aefdc7a2b2b159d780bd1c`.
+- Source + regression-test commit: `3f831dc44adb9ac52d2e397d7243202e9ab77f6d`.
+- Final evidence/docs head before this result update: `92eb506b502984ff71d971b4af17228c056b62f4`.
+- Native Kotlin/JUnit CI #40611588324: PASS — `:core:test`, `BUILD SUCCESSFUL in 49s`, 0 artifacts.
+- Mainline JS/Python CI #40611588341: PASS — all workflow steps completed successfully.
 - Android device, full gameplay, and Symbian/EKA2L1 parity: NOT TESTED.
+- Final docs-updated PR-head CI after this evidence commit: PENDING until the workflow result is observed.
 - APK artifacts: 0; no APK build requested.
