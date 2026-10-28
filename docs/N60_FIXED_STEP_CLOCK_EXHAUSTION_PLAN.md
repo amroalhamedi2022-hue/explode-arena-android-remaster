@@ -20,6 +20,8 @@ The guard must compile in the existing Kotlin/JUnit module and preserve the last
 - Existing native core/JUnit and Mainline JS/Python checks pass; no APK packaging, artifact upload, game assets, or dependency changes.
 
 ## Evidence
-- Source/test commit and CI: PENDING.
-- Android device lifecycle, real gameplay, and Symbian/EKA2L1 parity: NOT TESTED.
-- APK artifacts: 0 expected.
+- Source/test commit: cdd56104db6c886102c6e31afb32946f5d997abb.
+- Native Kotlin/JUnit CI #40605994566: PASS; the job ran `gradle --project-dir android :core:test --stacktrace --no-daemon` and logged `BUILD SUCCESSFUL in 53s`.
+- Mainline JS/Python CI #40605994534: PASS on the same source head. Artifact query for the native run: 0.
+- Final docs-head CI: PENDING. Android device lifecycle, real gameplay, and Symbian/EKA2L1 parity: NOT TESTED.
+- APK artifacts: 0; no APK packaging or upload.

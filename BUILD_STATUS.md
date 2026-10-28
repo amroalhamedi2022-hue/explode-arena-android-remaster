@@ -30,3 +30,11 @@
 - Native job ran the core test task successfully; artifact query returned 0. No APK packaging/upload.
 - Android lifecycle/device and Symbian/EKA2L1 parity remain NOT TESTED. Final docs-head recheck: PENDING.
 - No assets/dependencies added, no merge or main write.
+
+
+## 2026-10-28 N60 — fixed-step clock exhaustion (source/test PASS; final docs-head CI pending)
+- Production change: reject a fixed-step tick when the counter is already Long.MAX_VALUE, before invoking gameplay; add a non-negative internal initial counter seam for boundary tests. Round AI tick clock keeps its overflow guard and now has near-limit regression coverage.
+- Tests: FixedStepClockTest covers the last representable tick, fail-before-callback on the next tick, zero-delta behavior at exhaustion, and invalid initial state; NativeRoundTickClockTest covers near-limit failure and negative initial state.
+- Source/test commit cdd56104db6c886102c6e31afb32946f5d997abb: Native Kotlin/JUnit CI #40605994566 PASS (BUILD SUCCESSFUL in 53s); Mainline JS/Python CI #40605994534 PASS. Native artifact query: 0.
+- Final docs-head CI: PENDING. No APK build/package/upload; artifacts 0.
+- Device lifecycle and Symbian/EKA2L1 parity: NOT TESTED.
