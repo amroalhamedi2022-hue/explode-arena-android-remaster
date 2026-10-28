@@ -993,3 +993,16 @@ Updated: 2026-10-23 (native migration first code slice)
 - **PASS — Mainline PR CI:** [#40692516813](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40692516813). Native artifacts: 0; no APK build.
 - Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. PR #1 remains separate; no merge/main write.
 - Google Drive LIVE sync: **SYNC FAILED** — no Google Drive/Docs connector is exposed in this runtime; no read/write/read-back or folder metadata verification is claimed.
+
+
+## 2026-10-28 N75 — simulation-stage binding preflight (source/test PASS)
+
+- Engineering question: can arena movement/collision use one `StageData` while bomb placement/blast simulation uses a different stage definition with the same ID?
+- Production guard: `NativeOpponentRoster.validateStartState` now asks `NativeBombSimulation` to compare the complete stage definition (ID, image path, dimensions, obstacle origin, spawn coordinates and every collision-grid row) before any gameplay mutation.
+- Integration tests: mismatched grid rejected before player/bot movement, health/fuse changes or tick reservation; direct roster tick follows the same guard; retry with the same tick and matching stage succeeds; structurally equivalent copies remain accepted.
+- Exact source/test/plan commit: `dff3a69fd394b5b8dbb38a6d12000eff5b472603`.
+- **PASS — Native Kotlin/JUnit `:core:test`:** [CI #40703078096](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40703078096), job `native-source-check` completed successfully.
+- **PASS — Mainline PR source checks:** [CI #40703078131](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40703078131), job `source-checks` completed successfully.
+- Artifact query: **0**. No APK packaging/build/upload.
+- Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. PR #1 collision work remains separate; no merge or `main` write.
+- Google Drive LIVE sync: **SYNC FAILED** — this runtime exposes no Google Drive/Docs connector; no Drive read/write/read-back or folder metadata verification is claimed.

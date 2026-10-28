@@ -18,3 +18,10 @@ The debug APK is now a verified build artifact. Do not claim physical-device com
 - **PASS:** Native Kotlin/JUnit [#40670102041](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40670102041); Mainline PR [#40670102080](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40670102080); Mainline push [#40670091795](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40670091795). Native artifacts: 0; no APK build.
 - Device gameplay and Symbian/EKA2L1 parity remain **NOT TESTED**.
 - Next: device-side gameplay capture and EKA2L1 comparison before replacing provisional timing/collision/AI rules; continue native feature work without importing unlicensed assets.
+
+
+## 2026-10-28 — N75 source checkpoint
+- Source/test commit: `dff3a69fd394b5b8dbb38a6d12000eff5b472603`.
+- Native Kotlin/JUnit CI #40703078096 PASS; Mainline PR CI #40703078131 PASS. Native artifacts: 0.
+- Arena and bomb simulation must share the same structural stage definition; mismatch is rejected before player/bot/fuse/round mutation.
+- Next: prioritize a controlled Android gameplay run and EKA2L1 comparison before claiming native/Symbian parity; continue source-level milestones without adding unlicensed assets.

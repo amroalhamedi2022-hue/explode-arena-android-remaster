@@ -87,3 +87,10 @@
 - Native Kotlin/JUnit CI #40660972234 PASS; Mainline PR CI #40660972227 PASS. Native task: :core:test only; artifacts 0.
 - Player/opponent positions overlapping solid terrain are rejected before canonical tick reservation and movement; same-tick repair/retry regressions pass.
 - Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED. No APK packaging, external assets, merge or main write.
+
+
+## 2026-10-28 N75 — stage/simulation binding consistency
+- Source/test SHA: `dff3a69fd394b5b8dbb38a6d12000eff5b472603`.
+- **PASS:** Native Kotlin/JUnit CI #40703078096 and Mainline PR CI #40703078131.
+- Mismatched stage definitions now fail during non-mutating preflight; regression covers same-ID/different-grid rejection, no partial mutation, direct roster API and same-tick retry.
+- APK artifacts: 0. Device gameplay and Symbian/EKA2L1 parity: NOT TESTED.
