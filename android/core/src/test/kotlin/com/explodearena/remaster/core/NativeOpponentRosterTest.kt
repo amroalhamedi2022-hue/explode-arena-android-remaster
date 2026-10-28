@@ -110,6 +110,32 @@ class NativeOpponentRosterTest {
         assertEquals(1, simulation.bombs.size)
     }
 
+    @Test fun canonicalSimulationRejectsNonFinitePlayerPositionBeforeReservingTick() {
+        val arena = stage(1)
+        val player = Actor(Double.NaN, 24.0)
+        val roster = NativeOpponentRoster(emptyList())
+        val simulation = NativeBombSimulation(arena, bombFuseSeconds = 1.0)
+        assertTrue(simulation.place(Actor(40.0, 40.0), "player"))
+        val remainingBefore = requireNotNull(simulation.bombs.single().remaining)
+
+        assertThrows(IllegalArgumentException::class.java) {
+            roster.advanceSimulationTick(arena, player, simulation, 0L)
+        }
+        assertEquals(remainingBefore, requireNotNull(simulation.bombs.single().remaining), 0.0)
+
+        player.x = 24.0
+        player.y = Double.POSITIVE_INFINITY
+        assertThrows(IllegalArgumentException::class.java) {
+            roster.advanceSimulationTick(arena, player, simulation, 0L)
+        }
+        assertEquals(remainingBefore, requireNotNull(simulation.bombs.single().remaining), 0.0)
+
+        // Invalid input must not consume tick 0; the same tick succeeds after repair.
+        player.y = 24.0
+        roster.advanceSimulationTick(arena, player, simulation, 0L)
+        assertTrue(requireNotNull(simulation.bombs.single().remaining) < remainingBefore)
+    }
+
     @Test fun rejectsUnsupportedAndOverlappingSpawns() {
         assertThrows(IllegalArgumentException::class.java) {
             NativeOpponentRoster.create(stage(3), Actor(24.0, 24.0))
