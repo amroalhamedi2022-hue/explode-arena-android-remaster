@@ -98,4 +98,22 @@ class NativeOpponentRosterStartStatePreflightTest {
         bot.actor.x = 72.0
         roster.advanceSimulationTick(arena, player, simulation, tick = 0L)
     }
+
+    @Test fun directBotTickPreservesRightfulOwnersBombExitGrace() {
+        val arena = stage()
+        val player = Actor(24.0, 24.0)
+        val simulation = NativeBombSimulation(arena)
+        assertTrue(simulation.place(player, "player"))
+        val bombId = simulation.bombs.single().id
+        assertEquals(bombId, player.passBomb)
+        val fuseBefore = simulation.bombs.single().remaining
+        val bot = NativeOpponentRoster.BotSlot("bot", Actor(88.0, 24.0))
+        val roster = NativeOpponentRoster(listOf(bot))
+
+        val result = roster.advanceSimulationTick(arena, player, simulation, tick = 0L)
+
+        assertEquals(0, result.bombsDetonated)
+        assertEquals(bombId, player.passBomb)
+        assertTrue(simulation.bombs.single().remaining!! < fuseBefore!!)
+    }
 }
