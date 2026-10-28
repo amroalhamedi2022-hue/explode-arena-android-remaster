@@ -49,22 +49,25 @@ object StageCollision {
     // A corrupt/custom arena must not turn one fixed step into millions of collision probes.
     const val MAX_MOVEMENT_SUBSTEPS = 4096
 
+    private fun hasConsistentGridShape(stage: StageData): Boolean {
+        val grid = stage.grid
+        val firstRow = grid.firstOrNull() ?: return false
+        val gridWidth = firstRow.size
+        if (gridWidth <= 0 || grid.any { it.size != gridWidth }) return false
+        if (stage.width <= 0 || stage.height <= 0 || stage.obstacleX < 0 || stage.obstacleY < 0) {
+            return false
+        }
+        return stage.obstacleX.toLong() + gridWidth.toLong() * CELL.toLong() <= stage.width.toLong() &&
+            stage.obstacleY.toLong() + grid.size.toLong() * CELL.toLong() <= stage.height.toLong()
+    }
+
     fun tile(stage: StageData, x: Double, y: Double): Int {
-        if (!x.isFinite() || !y.isFinite()) return -1
-        val gridWidth = stage.gridWidth
-        val gridHeight = stage.gridHeight
-        // StageData validates once at construction, but callers can retain a
-        // mutable grid list or row arrays. Treat post-construction corruption
-        // as outside the arena rather than indexing stale/ragged geometry.
-        if (gridWidth <= 0 || gridHeight <= 0 ||
-            gridWidth.toLong() * CELL.toLong() != stage.width.toLong() ||
-            gridHeight.toLong() * CELL.toLong() != stage.height.toLong()
-        ) return -1
+        if (!x.isFinite() || !y.isFinite() || !hasConsistentGridShape(stage)) return -1
         val col = floor((x - stage.obstacleX) / CELL).toInt()
         val row = floor((y - stage.obstacleY) / CELL).toInt()
-        if (col !in 0 until gridWidth || row !in 0 until gridHeight) return -1
+        if (col !in 0 until stage.gridWidth || row !in 0 until stage.gridHeight) return -1
         val cells = stage.grid.getOrNull(row) ?: return -1
-        if (cells.size != gridWidth || col !in cells.indices) return -1
+        if (cells.size != stage.gridWidth || col !in cells.indices) return -1
         return cells[col]
     }
 
@@ -76,12 +79,9 @@ object StageCollision {
         // tile (floor(NaN).toInt() otherwise silently aliases tile zero).
         if (!x.isFinite() || !y.isFinite() || !radius.isFinite() || radius < 0) return true
         if (x - radius < 0 || y - radius < 0 || x + radius >= stage.width || y + radius >= stage.height) return true
+        if (!hasConsistentGridShape(stage)) return true
         val gridWidth = stage.gridWidth
         val gridHeight = stage.gridHeight
-        if (gridWidth <= 0 || gridHeight <= 0 ||
-            gridWidth.toLong() * CELL.toLong() != stage.width.toLong() ||
-            gridHeight.toLong() * CELL.toLong() != stage.height.toLong()
-        ) return true
         // A 10px actor hitbox can fully contain an 8px solid cell while all
         // four corners are on empty neighbors. Check every overlapped cell,
         // not only the corners, or actors can clip through small obstacles.
