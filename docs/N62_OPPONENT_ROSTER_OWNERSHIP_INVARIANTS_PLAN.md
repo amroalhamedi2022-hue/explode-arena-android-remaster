@@ -51,3 +51,13 @@ The invariant is enforced at roster construction, but its failure behavior and t
 - **Artifacts: 0** confirmed for Native CI. No APK packaging occurred.
 - Device/Xiaomi Pad 5 and Symbian/EKA2L1 parity: **NOT TESTED**.
 - The subsequent docs-only evidence commit requires its own final-head native CI recheck.
+
+
+## Final PR-head verification — 2026-10-28
+
+- Exact tested PR head: 7bb70840266cdde03ce55af5d1366633964b55ce.
+- **PASS:** Native Kotlin/JUnit CI #40617592479 — `:core:test` succeeded.
+- **PASS:** Mainline JS/Python CI #40617592453 — all source checks succeeded.
+- Native workflow artifact query for #40617592479: 0. No APK build/package/upload.
+- This note is documentation-only; source/test commits remain 532c9d510a0659e56e31e77c4ab2545e6a055bda and 45ffd4fd17ef6511d53f3d4941b7c4d901f974f9.
+- Android device/Xiaomi Pad 5 and Symbian/EKA2L1 parity: NOT TESTED.
