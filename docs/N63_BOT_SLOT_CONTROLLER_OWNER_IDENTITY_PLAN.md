@@ -22,10 +22,11 @@ Can a roster slot and its AI controller disagree about which owner owns a timed 
 4. Free PR CI runs :core:test on the source/test commit; no APK packaging.
 5. Android device and Symbian/EKA2L1 parity remain separately reported as NOT TESTED.
 
-## Evidence at commit creation
+## Final evidence — PASS
 
-- Source/test change: included in this commit.
-- Native Kotlin/JUnit CI: PENDING.
+- Production+test SHA: 7bf33170fab67ea9b3f56bfad038ed35bba39e5a.
+- Native Kotlin/JUnit CI #40623127680: PASS on the exact source/test SHA.
+- Mainline JS/Python CI #40623127776: PASS on the exact source/test SHA.
+- APK artifacts: 0; native workflow ran core tests only.
 - Android device / EKA2L1: NOT TESTED.
-- APK artifacts: 0; no packaging requested.
-- Google Drive LIVE: SYNC FAILED unless an available Drive/Docs connector can be used and read-back verified.
+- Google Drive LIVE: SYNC FAILED; no Drive/Docs connector was available for read/write/read-back verification.
