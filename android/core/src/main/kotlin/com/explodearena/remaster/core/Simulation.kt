@@ -31,6 +31,16 @@ data class StageData(
     }
 }
 
+/**
+ * Detach the mutable grid rows and caller-owned spawn collection from a stage.
+ * StageData intentionally remains source-compatible; simulation owners must
+ * not retain aliases to caller-controlled collision geometry.
+ */
+internal fun StageData.detachedCopy(): StageData = copy(
+    grid = grid.map { row -> row.copyOf() },
+    spawns = spawns.toList(),
+)
+
 data class Actor(var x: Double, var y: Double, var passBomb: Long? = null)
 
 object StageCollision {
