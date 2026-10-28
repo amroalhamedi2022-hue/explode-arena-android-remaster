@@ -30,8 +30,10 @@ The public movement-only entry point is also used by deterministic tests and foc
 
 ## Evidence
 
-- Source/test/docs commit: pending.
-- Native Kotlin/JUnit and Mainline PR CI: pending.
-- APK build/artifacts: 0; no APK build requested.
-- Xiaomi Pad 5/native gameplay and EKA2L1 parity: **NOT TESTED**.
-- Google Drive LIVE sync: **SYNC FAILED** if no Drive/Docs connector is exposed; no sync claim without read-back verification.
+- Exact source/test/docs commit: `89c35d0667fafea93c4857762f8479b80cc71372`.
+- **PASS — Native Kotlin/JUnit:** [CI #40692516957](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40692516957), `:core:test`, `BUILD SUCCESSFUL in 53s`.
+- **PASS — Mainline JS/Python PR CI:** [#40692516813](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40692516813).
+- Native workflow artifact query: **0**. No APK build/package/upload.
+- Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**.
+- The evidence append triggers a final documentation-head CI recheck; its result will be recorded in the PR conversation to avoid a docs-only commit loop.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime; no sync is claimed.
