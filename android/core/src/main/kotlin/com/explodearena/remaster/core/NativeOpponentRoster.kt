@@ -121,6 +121,11 @@ internal class NativeOpponentRoster(
      *
      * These AI and timing rules remain provisional; this is not Symbian parity.
      */
+    /**
+     * Movement-only entry point used by focused simulations and tests. It still
+     * enforces the canonical world-start contract before touching bot animation,
+     * AI decisions, bomb quota, movement, or vitality.
+     */
     fun advance(
         stage: StageData,
         player: Actor,
@@ -128,9 +133,19 @@ internal class NativeOpponentRoster(
         tick: Long,
         applyDamage: Boolean = true,
     ): Int {
-        // Validate before touching bot animation state or taking the solo-arena
-        // early return. advanceSimulationTick must not age fuses on an invalid tick.
         require(tick >= 0L) { "Invalid opponent tick" }
+        validateStartState(stage, player, simulation)
+        return advanceValidated(stage, player, simulation, tick, applyDamage)
+    }
+
+    /** Caller has already validated the complete world and tick input. */
+    private fun advanceValidated(
+        stage: StageData,
+        player: Actor,
+        simulation: NativeBombSimulation,
+        tick: Long,
+        applyDamage: Boolean,
+    ): Int {
         slots.filter { it.vitality.defeated }.forEach { it.walking = false }
         val living = slots.filterNot { it.vitality.defeated }.sortedBy { it.owner }
         if (living.isEmpty()) return 0
@@ -299,7 +314,7 @@ internal class NativeOpponentRoster(
         // operation fails after partial work, the same tick cannot be replayed.
         lastSimulationTick = tick
 
-        val placed = advance(stage, player, simulation, tick, applyDamage = false)
+        val placed = advanceValidated(stage, player, simulation, tick, applyDamage = false)
         val detonated = simulation.tick()
         applyDamageForLastTick(simulation)
         return SimulationTickResult(placed, detonated)

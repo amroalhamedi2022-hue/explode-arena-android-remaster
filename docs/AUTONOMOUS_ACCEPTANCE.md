@@ -982,3 +982,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - No assets/dependencies, merge, main write, or auto-merge. PR #1 remains separate.
 - Google Drive LIVE sync: **SYNC FAILED** if no Drive/Docs connector is exposed; no Drive read/write/read-back is claimed.
 
+
+## 2026-10-28 N74 — direct roster movement preflight
+
+- Engineering question: can `NativeOpponentRoster.advance` bypass the canonical start-world preflight and mutate a bot from invalid terrain, bomb or actor-overlap state?
+- Production change: public `advance` now validates the complete start state before any mutation; canonical `advanceSimulationTick` calls a private validated body after its own preflight, avoiding a duplicate world scan.
+- Integration regressions cover terrain overlap, foreign-bomb overlap, actor overlap, unchanged fuse/position/health/animation, and same-tick retry after repair.
+- Source/test/docs commit: **PENDING**.
+- Native Kotlin/JUnit and Mainline PR CI: **PENDING**. APK artifacts: 0; no APK build.
+- Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. PR #1 remains separate; no merge/main write.
+- Google Drive LIVE sync: **SYNC FAILED** — no Google Drive/Docs connector is exposed in this runtime; no read/write/read-back or folder metadata verification is claimed.

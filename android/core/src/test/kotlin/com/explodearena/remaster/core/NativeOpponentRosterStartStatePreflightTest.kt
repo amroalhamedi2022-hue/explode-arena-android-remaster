@@ -116,4 +116,72 @@ class NativeOpponentRosterStartStatePreflightTest {
         assertEquals(bombId, player.passBomb)
         assertTrue(simulation.bombs.single().remaining!! < fuseBefore!!)
     }
+    @Test fun movementOnlyAdvanceRejectsInvalidStartBeforeAnyMutationAndAllowsSameTickRetry() {
+        val arena = stage(wallColumn = 4)
+        val player = Actor(88.0, 24.0)
+        val bot = NativeOpponentRoster.BotSlot("bot", Actor(31.0, 24.0))
+        val roster = NativeOpponentRoster(listOf(bot))
+        val simulation = NativeBombSimulation(arena)
+        assertTrue(simulation.place(player, "player"))
+        val playerBombFuse = simulation.bombs.single().remaining
+        val botBefore = Actor(bot.actor.x, bot.actor.y, bot.actor.passBomb)
+        val healthBefore = bot.vitality.health
+        bot.walking = true
+
+        assertThrows(IllegalArgumentException::class.java) {
+            roster.advance(arena, player, simulation, tick = 17L, applyDamage = false)
+        }
+
+        assertEquals(botBefore.x, bot.actor.x, 0.0)
+        assertEquals(botBefore.y, bot.actor.y, 0.0)
+        assertEquals(botBefore.passBomb, bot.actor.passBomb)
+        assertEquals(healthBefore, bot.vitality.health)
+        assertTrue("failed direct movement must not clear animation state", bot.walking)
+        assertEquals(playerBombFuse, simulation.bombs.single { it.owner == "player" }.remaining)
+        assertEquals(1, simulation.bombs.size)
+
+        // The movement-only path does not reserve canonical fuse ticks; repair
+        // the world and retry the same requested tick without stale state.
+        bot.actor.x = 24.0
+        roster.advance(arena, player, simulation, tick = 17L, applyDamage = false)
+        assertEquals(playerBombFuse, simulation.bombs.single { it.owner == "player" }.remaining)
+    }
+
+    @Test fun movementOnlyAdvanceRejectsForeignBombAndActorOverlapBeforeBotStateChanges() {
+        val arena = stage()
+        val player = Actor(24.0, 24.0)
+        val simulation = NativeBombSimulation(arena)
+        assertTrue(simulation.place(player, "player"))
+        val fuseBefore = simulation.bombs.single().remaining
+        player.x = 88.0
+        val bot = NativeOpponentRoster.BotSlot("bot", Actor(24.0, 24.0))
+        val roster = NativeOpponentRoster(listOf(bot))
+        bot.walking = true
+
+        assertThrows(IllegalArgumentException::class.java) {
+            roster.advance(arena, player, simulation, tick = 4L, applyDamage = false)
+        }
+        assertTrue(bot.walking)
+        assertEquals(24.0, bot.actor.x, 0.0)
+        assertEquals(fuseBefore, simulation.bombs.single().remaining)
+
+        bot.actor.x = 40.0
+        roster.advance(arena, player, simulation, tick = 4L, applyDamage = false)
+        assertEquals(fuseBefore, simulation.bombs.single { it.owner == "player" }.remaining)
+
+        val overlapBot = NativeOpponentRoster.BotSlot("bot", Actor(48.0, 24.0))
+        val overlapRoster = NativeOpponentRoster(listOf(overlapBot))
+        val overlapPlayer = Actor(40.0, 24.0)
+        overlapBot.walking = true
+        val emptySimulation = NativeBombSimulation(arena)
+        assertThrows(IllegalArgumentException::class.java) {
+            overlapRoster.advance(arena, overlapPlayer, emptySimulation, tick = 9L, applyDamage = false)
+        }
+        assertTrue(overlapBot.walking)
+        assertEquals(48.0, overlapBot.actor.x, 0.0)
+        assertTrue(emptySimulation.bombs.isEmpty())
+        overlapBot.actor.x = 72.0
+        overlapRoster.advance(arena, overlapPlayer, emptySimulation, tick = 9L, applyDamage = false)
+    }
+
 }
