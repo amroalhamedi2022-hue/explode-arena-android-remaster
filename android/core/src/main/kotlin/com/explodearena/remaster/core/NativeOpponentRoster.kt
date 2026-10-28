@@ -229,6 +229,9 @@ internal class NativeOpponentRoster(
         simulation: NativeBombSimulation,
         tick: Long,
     ): SimulationTickResult {
+        // Even a solo arena must reject malformed player coordinates before reserving a tick
+        // or advancing bombs; the empty-opponent fast path otherwise bypasses collision checks.
+        require(player.x.isFinite() && player.y.isFinite()) { "Invalid player position" }
         require(tick >= 0L) { "Invalid opponent simulation tick" }
         val previousTick = lastSimulationTick
         require(previousTick == null || tick > previousTick) {
