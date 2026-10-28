@@ -70,3 +70,12 @@
 - Device gameplay, Android lifecycle, original audio/HD fidelity and Symbian/EKA2L1 parity: NOT TESTED.
 - Google Drive LIVE sync: SYNC FAILED — no Google Drive/Docs connector is exposed in this execution environment. No LIVE read/write or folder metadata verification is claimed.
 - No external game assets added; PR #1 remains separate; no merge or main write. Documentation-only follow-up does not change source behavior.
+
+## 2026-10-28 N67 — canonical tick preflight and victory-hold monotonicity
+
+- Source/test SHA: a57caa1ef14a8ffef635a8e03d3e6c8b3f4f361b.
+- PASS: Native Kotlin/JUnit CI #40646233882; Mainline PR CI #40646233855; Mainline push CI #40646228550. All source/test runs succeeded; Native `:core:test` completed in 50s.
+- Duplicate ticks are rejected before player/world mutation; round/presentation clock also prevents a repeated tick from consuming the victory hold twice. Added two canonical-tick integration regressions.
+- Artifact query: 0. No APK packaging/build/upload.
+- Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED. No external game assets. PR #1 remains separate; no merge or main write.
+- Google Drive LIVE sync: SYNC FAILED — no Drive/Docs connector is exposed.

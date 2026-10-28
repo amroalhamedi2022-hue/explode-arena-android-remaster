@@ -915,3 +915,13 @@ Updated: 2026-10-23 (native migration first code slice)
 - Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED. No APK packaging or assets added.
 
 - Google Drive LIVE handoff/index: SYNC FAILED — this runtime exposes no Google Drive/Docs connector; no LIVE read/write/read-back or folder metadata verification was possible.
+
+
+## N67 — Canonical tick preflight before world mutation (2026-10-28)
+
+- Production + integration-test SHA: `a57caa1ef14a8ffef635a8e03d3e6c8b3f4f361b`.
+- Duplicate/out-of-order ticks are preflighted before player movement; the round/presentation clock now also rejects duplicate ticks during victory hold. Roster validation remains reserve-before-mutation.
+- Regression tests prove duplicate gameplay ticks leave player/bot positions, bombs, flames, vitality, and round state unchanged; a later unique tick still succeeds. A separate test proves a duplicate victory-hold tick cannot trigger stage advancement.
+- **PASS:** Native Kotlin/JUnit CI #40646233882; Mainline PR CI #40646233855; Mainline push CI #40646228550. Native log: BUILD SUCCESSFUL in 50s; artifacts 0.
+- Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. No APK packaging or assets added.
+- Google Drive LIVE sync: **SYNC FAILED** — connector unavailable in this runtime.
