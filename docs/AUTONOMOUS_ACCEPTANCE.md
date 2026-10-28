@@ -958,3 +958,16 @@ Updated: 2026-10-23 (native migration first code slice)
 - Android device gameplay, original Symbian/EKA2L1 parity, 41-stage playthrough on device and performance: **NOT TESTED**.
 - No original assets/dependencies added, no merge/main write, and PR #1 collision work remains separate.
 - Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime; no Drive sync is claimed.
+
+
+## 2026-10-28 N72 — validate actual actor state before bomb placement
+
+- Engineering question: can direct placement create a bomb when the actor's hitbox overlaps terrain, its `passBomb` belongs to a different owner, or another actor overlaps the placer even though the snapped bomb center is clear?
+- Production/test SHA: `4b2c7f0c8677ab184b6c8f467c1ad5effea37c4d`.
+- Production guard now validates the current 5px actor hitbox against terrain/live bombs, checks that any active `passBomb` belongs to the requested owner, and refuses actor-to-actor overlap before quota/ID mutation.
+- The first native run at SHA `96f3ec4c6c5c9555e3ea24bea497509efb5d72f9` failed two tests because older fixtures placed actors inside terrain under the stricter start-state contract. Mainline CI #40677000922 passed. The test fixtures were corrected without changing the intended bomb center or blast corridor.
+- **PASS — Native Kotlin/JUnit:** [CI #40677471792](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40677471792), `:core:test`, BUILD SUCCESSFUL in 49s.
+- **PASS — Mainline PR CI:** [#40677471695](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40677471695). **PASS — Mainline push CI:** [#40677460732](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40677460732).
+- Native artifacts: **0**. No APK build/package/upload. No assets or dependencies added.
+- Android device gameplay and original Symbian/EKA2L1 parity: **NOT TESTED**. PR #1 collision work remains separate; no merge/main write.
+- Google Drive LIVE sync: **SYNC FAILED** — this runtime exposes no Google Drive/Docs connector; no Drive read/write/read-back is claimed.

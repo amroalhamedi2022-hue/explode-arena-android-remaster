@@ -26,6 +26,15 @@ The placement routine previously checked only the snapped bomb center and whethe
 4. Source/JUnit CI only; no APK build/package/upload or external assets.
 5. Android device gameplay and original Symbian/EKA2L1 parity remain NOT TESTED.
 
-## Evidence
+## Evidence — 2026-10-28
+
+- Initial source/test SHA `96f3ec4c6c5c9555e3ea24bea497509efb5d72f9`: Mainline PR CI [#40677000922](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40677000922) PASS; Native Kotlin/JUnit [#40677000893](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40677000893) FAIL because two older fixtures placed actors inside terrain under the new preflight.
+- Corrected test fixture SHA: `4b2c7f0c8677ab184b6c8f467c1ad5effea37c4d`; production source remains the same N72 guard. The fixtures now keep the actor hitbox clear while preserving the target bomb center/blast path.
+- **PASS — Native Kotlin/JUnit:** [CI #40677471792](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40677471792), `:core:test`, BUILD SUCCESSFUL in 49s.
+- **PASS — Mainline PR:** [#40677471695](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40677471695). **PASS — Mainline push:** [#40677460732](https://github.com/amroalhamedi2022-hue/explode-arena-android-remaster/actions/runs/40677460732).
+- Native artifacts: 0. No APK build/package/upload, no new assets/dependencies, no merge/main write.
+- Android device gameplay and Symbian/EKA2L1 parity: **NOT TESTED**. PR #1 remains separate.
+- Google Drive LIVE sync: **SYNC FAILED** — no Drive/Docs connector is exposed in this runtime.
+
 
 CI is pending for the source/test commit. Do not treat source checks as device or EKA2L1 parity evidence.
