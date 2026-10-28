@@ -38,3 +38,10 @@
 - Source/test commit cdd56104db6c886102c6e31afb32946f5d997abb: Native Kotlin/JUnit CI #40605994566 PASS (BUILD SUCCESSFUL in 53s); Mainline JS/Python CI #40605994534 PASS. Native artifact query: 0.
 - Docs-head commit cc975afb85df5b3b4b07a9c5aaa3c9e00f2d2386: Native Kotlin/JUnit CI #40606358590 PASS; Mainline JS/Python CI #40606358711 PASS. Artifact query: 0.
 - No APK build/package/upload; artifacts 0. Device lifecycle and Symbian/EKA2L1 parity: NOT TESTED.
+
+
+## 2026-10-28 N61 — canonical tick speed validation (CI PENDING)
+- Production change: `NativeArenaTick.advance` now validates finite, non-negative `playerSpeed` before the latched-round early return, so malformed input cannot clear terminal bot animation state.
+- Integration regression: NaN, positive infinity, and negative speed are rejected while the round is LOST; actor positions, bot walking state, bomb count, and round outcome must remain unchanged.
+- Plan: `docs/N61_CANONICAL_TICK_SPEED_VALIDATION_PLAN.md`.
+- Source/test and docs-head CI: PENDING. Android device and Symbian/EKA2L1 parity: NOT TESTED. APK artifacts: 0; no packaging.
