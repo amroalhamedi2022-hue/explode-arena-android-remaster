@@ -904,3 +904,11 @@ Updated: 2026-10-23 (native migration first code slice)
 - Source/integration tests: PASS on SHA be81a164c2ac3d86778bbe8d58d7e397f4556337.
 - Native Kotlin/JUnit CI #40634566362 PASS; Mainline JS/Python PR CI #40634566314 PASS; Mainline push CI #40634561086 PASS; native artifacts 0.
 - Device gameplay and Symbian/EKA2L1 parity: NOT TESTED. Google Drive LIVE sync: SYNC FAILED — connector unavailable.
+
+### N66 — Canonical player-position validation (2026-10-28)
+
+- Production + integration regression SHA: 5ec9c3fed00dbb465ddb45a5acbe8475bd8c1d16.
+- Rejects NaN/infinite player coordinates before reserving a canonical tick, including solo arenas where no opponent movement runs.
+- Regression verifies bomb fuse stability on invalid attempts and successful reuse of the same tick after repairing coordinates.
+- CI and final-head verification: PENDING.
+- Android device gameplay and Symbian/EKA2L1 parity: NOT TESTED. No APK packaging or assets added.
